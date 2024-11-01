@@ -7,7 +7,20 @@ import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 import Chart from 'chart.js/auto';
 import PrimeVue from 'primevue/config';
 import FullCalendar from '@fullcalendar/vue3';
-import { AgGridVue } from 'ag-grid-vue3';
+
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ColumnGroup from 'primevue/columngroup';   // optional
+import Row from 'primevue/row';                   // optional
+import InputText from 'primevue/inputtext';
+import Calendar from 'primevue/calendar';
+import Checkbox from 'primevue/checkbox';
+import Dropdown from 'primevue/dropdown';
+
+// PrimeVue 기본 CSS 및 테마 추가
+import 'primevue/resources/themes/saga-blue/theme.css'; // 원하는 테마 (예: saga-blue)
+import 'primevue/resources/primevue.min.css';
+import 'primeicons/primeicons.css';
 
 import '@/assets/main.css';
 import '@/assets/utils.css';
@@ -25,6 +38,13 @@ app.use(router);
 app.use(CkeditorPlugin);
 app.use(PrimeVue);
 app.component('FullCalendar', FullCalendar);
-app.component('AgGridVue', AgGridVue);
+app.component('DataTable', DataTable);
+app.component('Column', Column);
+app.component('ColumnGroup', ColumnGroup); // optional 사용 설정
+app.component('Row', Row);                 // optional 사용 설정
+app.component('InputText', InputText);
+app.component('Calendar', Calendar);
+app.component('Checkbox', Checkbox);
+app.component('Dropdown', Dropdown);
 
 app.mount('#app');
