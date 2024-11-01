@@ -1,0 +1,119 @@
+/* 공유할 css class 작성 */
+
+/* flex, grid 관련 클래스 */
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+.items-end {
+    align-items: flex-end;
+}
+
+.content-center {
+    justify-content: center;
+}
+
+.content-between {
+    justify-content: space-between;
+}
+
+.grow-1 {
+    flex-grow: 1;
+}
+
+.shrink-0 {
+    flex-shrink: 0;
+}
+
+.gap-5 {
+    gap: 5px;
+}
+
+.gap-10 {
+    gap: 10px;
+}
+
+.gap-20 {
+    gap: 20px;
+}
+
+/* padding */
+.p-16 {
+    padding: 16px;
+}
+    
+.p-20 {
+    padding: 20px;
+}
+
+/* margin */
+.mb-xxs {
+    margin-bottom: 4px;
+}
+.mb-xs {
+    margin-bottom: 8px;
+}
+.mb-s {
+    margin-bottom: 16px;
+}
+.mb-m {
+    margin-bottom: 24px;
+}
+.mb-l {
+    margin-bottom: 32px;
+}
+.mb-xl {
+    margin-bottom: 48px;
+}
+
+.mt-xxs {
+    margin-top: 4px;
+}
+.mt-xs {
+    margin-top: 8px;
+}
+.mt-s {
+    margin-top: 16px;
+}
+.mt-m {
+    margin-top: 24px;
+}
+.mt-l {
+    margin-top: 32px;
+}
+.mt-xl {
+    margin-top: 48px;
+}
+
+.mr-xxs {
+    margin-right: 4px;
+}
+.mr-xs {
+    margin-right: 8px;
+}
+.mr-s {
+    margin-right: 16px;
+}
+.mr-m {
+    margin-right: 24px;
+}
+.mr-l {
+    margin-right: 32px;
+}
+.mr-xl {
+    margin-right: 48px;
+}
