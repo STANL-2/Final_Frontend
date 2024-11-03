@@ -1,12 +1,13 @@
 <template>
     <div class="loading-view">
         <ProgressSpinner />
-        <span class="mt-s">데이터를 가져오는 중입니다...</span>
+        <Typography color="darkgray" class="mt-m">데이터를 가져오는 중입니다...</Typography>
     </div>
 </template>
 
 <script setup>
 import ProgressSpinner from 'primevue/progressspinner';
+import Typography from '../Typography.vue';
 </script>
 
 <style scoped>
