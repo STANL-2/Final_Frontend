@@ -14,7 +14,6 @@ import { RouterView } from 'vue-router';
 import PageHeader from './components/PageHeader.vue';
 import PageAside from './components/PageAside.vue';
 import { onMounted, onUnmounted } from 'vue';
-import DOMEventService from './services/DOMEventService';
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 
