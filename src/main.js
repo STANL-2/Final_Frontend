@@ -6,6 +6,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 import Chart from 'chart.js/auto';
 import PrimeVue from 'primevue/config';
+import Button from 'primevue/button';
+import Tree from 'primevue/tree';
 import FullCalendar from '@fullcalendar/vue3';
 
 import DataTable from 'primevue/datatable';
@@ -40,6 +42,8 @@ app.use(pinia);
 app.use(router);
 app.use(CkeditorPlugin);
 app.use(PrimeVue);
+app.component('Button', Button);
+app.component('Tree', Tree);
 app.component('FullCalendar', FullCalendar);
 app.component('DataTable', DataTable);
 app.component('Column', Column);

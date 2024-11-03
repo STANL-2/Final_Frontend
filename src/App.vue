@@ -1,6 +1,9 @@
 <template>
+  
+  <PageHeader />
 
   <main>
+    <PageAside />
     <RouterView />
   </main>
 
@@ -8,6 +11,8 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
+import PageHeader from './components/PageHeader.vue';
+import PageAside from './components/PageAside.vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
@@ -22,5 +27,7 @@ const userStore = useUserStore();
 main {
   flex-grow: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: row;
 }
 </style>

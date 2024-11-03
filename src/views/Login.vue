@@ -1,4 +1,6 @@
 <template>
+    <div>
+        
     <h2>로그인</h2>
     <form @submit.prevent="login">
         <div>
@@ -11,10 +13,12 @@
         </div>
         <button type="submit">로그인</button>
     </form>
+
+</div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
