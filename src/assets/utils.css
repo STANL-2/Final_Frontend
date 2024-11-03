@@ -117,3 +117,22 @@
 .mr-xl {
     margin-right: 48px;
 }
+
+.ml-xxs {
+    margin-left: 4px;
+}
+.ml-xs {
+    margin-left: 8px;
+}
+.ml-s {
+    margin-left: 16px;
+}
+.ml-m {
+    margin-left: 24px;
+}
+.ml-l {
+    margin-left: 32px;
+}
+.ml-xl {
+    margin-left: 48px;
+}
