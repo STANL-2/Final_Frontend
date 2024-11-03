@@ -79,7 +79,7 @@ const logout = () => {
 }
 
 .name {
-    font-size: 20px;
+    font-size: 14px;
     color: #777777;
     padding-right: 20px;
 }

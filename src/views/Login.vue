@@ -37,7 +37,7 @@ const login = async () => {
 
     userStore.logout();
 
-    const userTokens = await $api.member.post(
+    const userTokens = await $api.auth.post(
         {
             loginId: loginId.value,
             password: password.value,
@@ -46,7 +46,7 @@ const login = async () => {
     );
 
     // userStore에 발급된 토큰 저장
-    userStore.saveTokens(userTokens.jwt);
+    userStore.saveTokens(userTokens.result);
 
     goHome();
 }
