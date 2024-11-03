@@ -4,8 +4,7 @@
 
   <main>
     <PageAside />
-    <!-- <RouterView /> -->
-    <LodingView />
+    <RouterView />
   </main>
 
 </template>
@@ -17,7 +16,6 @@ import PageAside from './components/PageAside.vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
-import LodingView from './components/common/LodingView.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
