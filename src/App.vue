@@ -36,10 +36,6 @@ const userStore = useUserStore();
   flex-direction: row;
 }
 
-.aside {
-  flex: 3; /* aside 비율 30% */
-}
-
 .body {
   flex: 7; /* body 비율 70% */
   padding: 1rem;
