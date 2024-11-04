@@ -10,7 +10,7 @@
     />
     </template>
     <script setup>
-    import ViewTable from '@/components/common/ViewTable.vue';
+    import ViewTable from '@/components/common/ListTable.vue';
     const tableHeaders = [
     { field: 'code', label: 'Code', width: '25%' },
     { field: 'name', label: 'Name', width: '25%' },

@@ -19,7 +19,11 @@ const router = createRouter({
                 {
                     path: 'tableform',
                     component: () => import('@/views/sample/TableFormTest.vue')
-                }
+                },
+                {
+                    path: 'tableView',
+                    component: () => import('@/views/sample/TableViewTest.vue')
+                },
             ]
         },
         {
