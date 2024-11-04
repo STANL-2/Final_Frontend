@@ -10,7 +10,7 @@ export const asideMenu = [
             { key: '1-0', label: 'SearchForm', url: '/sample/searchform' },
             { key: '1-1', label: 'ListTable', url: '/sample/tabledata' },
             { key: '1-1', label: 'ViewForm', url: '/sample/tableform' },
-            { key: '1-1', label: 'ViewTable', url: '/sample/tableView' }
+            { key: '1-1', label: 'ViewTable', url: '/sample/tableview' }
         ]
     },
     { key: '2', label: '로그인 페이지로 이동', url: '/login',
