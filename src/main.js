@@ -23,6 +23,7 @@ import InputGroupAddon from 'primevue/inputgroupaddon';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 import ConfirmDialog from 'primevue/confirmdialog';
+import Card from 'primevue/card';
 
 
 // PrimeVue 기본 CSS 및 테마 추가
@@ -46,6 +47,7 @@ app.use(router);
 app.use(CkeditorPlugin);
 app.use(PrimeVue);
 app.component('Button', Button);
+app.component('Card', Card);
 app.component('Tree', Tree);
 app.component('FullCalendar', FullCalendar);
 app.component('DataTable', DataTable);

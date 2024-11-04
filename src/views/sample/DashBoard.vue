@@ -5,11 +5,15 @@
     <div>
         <SmallCard/>
     </div>
+    <div>
+        <Card/>
+    </div>
 </template>
 
 <script setup>
 import BigCard from '@/components/common/DashBoardBigCard.vue';
 import SmallCard from '@/components/common/DashBoardSmallCard.vue';
+import Card from '@/components/common/Card.vue';
 
 const bigCardChartData = {
     labels: Array.from({ length: 30 }, (_, i) => i + 1), // 1일부터 30일까지
