@@ -5,10 +5,11 @@ export const asideMenu = [
             { key: '0-1', label: '고비 2', url: '/notice/2' }
         ]
     },
-    { key: '1', label: '기초정보', url: '/basic-info',
+    { key: '1', label: '샘플', url: '/sample',
         children: [
-            { key: '1-0', label: '기초 1', url: '/basic-info/1' },
-            { key: '1-1', label: '가조 2', url: '/basic-info/2' }
+            { key: '1-0', label: 'SearchForm', url: '/sample/searchform' },
+            { key: '1-1', label: 'ViewTable', url: '/sample/tabledata' },
+            { key: '1-1', label: 'ViewForm', url: '/sample/tableform' }
         ]
     },
     { key: '2', label: '로그인 페이지로 이동', url: '/login',

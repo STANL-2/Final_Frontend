@@ -5,6 +5,24 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
+            path: '/sample',
+            component: () => import('@/views/sample/Sample.vue'),
+            children: [
+                {
+                    path: 'searchform',
+                    component: () => import('@/views/sample/SearchFormTest.vue')
+                },
+                {
+                    path: 'tabledata',
+                    component: () => import('@/views/sample/TableDataTest.vue')
+                },
+                {
+                    path: 'tableform',
+                    component: () => import('@/views/sample/TableFormTest.vue')
+                }
+            ]
+        },
+        {
             path: '/',
             component: () => import('@/views/HomeView.vue'),
         },
@@ -12,6 +30,10 @@ const router = createRouter({
             path: '/login',
             component: () => import('@/views/Login.vue'),
         },
+        {
+            path: '/test',
+            component: () => import('@/views/sample/TableFormTest.vue')
+        }
     ],
 });
 

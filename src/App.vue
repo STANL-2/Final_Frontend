@@ -1,10 +1,15 @@
 <template>
-  
-  <PageHeader />
+  <div class="header">
+    <PageHeader />
+  </div>
 
   <main>
-    <PageAside />
-    <RouterView />
+    <div class="aside">
+      <PageAside />
+    </div>
+    <div class="body">
+      <RouterView />
+    </div>
   </main>
 
 </template>

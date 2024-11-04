@@ -1,5 +1,7 @@
-import MemberApiService from '@/services/api/MemberApiService'
+import AuthApiService from './AuthApiService';
+import MemberApiService from './MemberApiService'
 
 export const $api = {
-    member: new MemberApiService(),
+    auth: new AuthApiService(),
+    member: new MemberApiService()
 };
