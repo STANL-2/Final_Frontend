@@ -6,28 +6,29 @@
         <div class="small-cards">
             <div class="card">
                 <Card>
-                    <div class="card-name">영업실적</div>
+                    <div class="card-content">
+                        <div class="card-name">영업실적</div>
                     <div class="gauge-chart-container">
                         <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
+                    </div>
                     </div>
                 </Card>
             </div>
             <div class="card">
                 <Card>
-                    <div class="card-name">일정표</div>
+                    <div class="card-content">
+                        <div class="card-name">일정표</div>
+                        <DashTimeLine :resources="resources" :events="events" />
+                    </div>
                 </Card>
             </div>
             <div class="customer-card card">
-                <!-- <Card>
-                    <div class="card-name">나의 고객</div>
-                    <div class="customer-rank">
-                        <CustomerRank /> CustomerRank 컴포넌트를 슬롯으로 전달
-                    </div>
-                </Card> -->
                 <Card>
-                    <div class="card-name">나의 고객</div>
+                    <div class="card-content">
+                        <div class="card-name">나의 고객</div>
                     <div class="customer-rank">
                         <CustomerRank :customers="customers" /> <!-- CustomerRank 컴포넌트에 고객 데이터를 props로 전달 -->
+                    </div>
                     </div>
                 </Card>
             </div>
@@ -40,6 +41,7 @@ import BigCard from '@/components/common/GraghCard.vue';
 import Card from '@/components/common/Card.vue';
 import GaugeChart from '@/components/common/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
+import DashTimeLine from '@/components/common/DashTimeLine.vue';
 
 
 const bigCardChartData = {
@@ -102,7 +104,18 @@ const thirdChartData = {
 // 1번 차트 그림 value
 const gaugeChartValue = 40; // Gauge Chart에 전달할 값
 
+// 2번 차트 그림 value
+const resources = [
+    { id: 'a', title: 'Resource A' },
+    { id: 'b', title: 'Resource B' },
+    { id: 'c', title: 'Resource C' }
+];
 
+const events = [
+    { id: '1', resourceId: 'a', start: '2024-11-05T09:00:00', end: '2024-11-05T10:00:00', title: 'Meeting' },
+    { id: '2', resourceId: 'b', start: '2024-11-05T12:00:00', end: '2024-11-05T14:00:00', title: 'Lunch Break' },
+    { id: '3', resourceId: 'c', start: '2024-11-05T15:00:00', end: '2024-11-05T17:00:00', title: 'Work Session' }
+];
 
 // 3번 차트 고객 value
 const customers = [

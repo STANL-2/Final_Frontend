@@ -23,7 +23,7 @@ const props = defineProps({
 <style scoped>
 .customer-rank {
     display: flex;
-    height: 100%; /* 카드 내에서 사용하는 경우 높이를 카드 크기에 맞춤 */
+    height: 100%; 
 }
 
 .customer-item {
