@@ -1,22 +1,35 @@
 <template>
-    <main>
+    <main class="dashboard">
         <div>
             <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
         </div>
         <div class="small-cards">
             <div class="card">
                 <Card>
-                    <div class="card1-name">영업실적</div>
+                    <div class="card-name">영업실적</div>
                     <div class="gauge-chart-container">
                         <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
                     </div>
                 </Card>
             </div>
             <div class="card">
-                <Card />
+                <Card>
+                    <div class="card-name">일정표</div>
+                </Card>
             </div>
-            <div class="card">
-                <Card />
+            <div class="customer-card card">
+                <!-- <Card>
+                    <div class="card-name">나의 고객</div>
+                    <div class="customer-rank">
+                        <CustomerRank /> CustomerRank 컴포넌트를 슬롯으로 전달
+                    </div>
+                </Card> -->
+                <Card>
+                    <div class="card-name">나의 고객</div>
+                    <div class="customer-rank">
+                        <CustomerRank :customers="customers" /> <!-- CustomerRank 컴포넌트에 고객 데이터를 props로 전달 -->
+                    </div>
+                </Card>
             </div>
         </div>
     </main>
@@ -26,6 +39,8 @@
 import BigCard from '@/components/common/GraghCard.vue';
 import Card from '@/components/common/Card.vue';
 import GaugeChart from '@/components/common/GaugeChart.vue';
+import CustomerRank from '@/components/common/CustomerRank.vue';
+
 
 const bigCardChartData = {
     labels: Array.from({ length: 30 }, (_, i) => i + 1), // 1일부터 30일까지
@@ -86,9 +101,24 @@ const thirdChartData = {
 
 // 1번 차트 그림 value
 const gaugeChartValue = 40; // Gauge Chart에 전달할 값
+
+
+
+// 3번 차트 고객 value
+const customers = [
+    { name: '기우석' },
+    { name: '김민석' },
+    { name: '방동호' },
+    { name: '송의혁' },
+    { name: '유혜진' },
+];
 </script>
 
 <style scoped>
+.dashboard{
+    background-color: #F1F1FD;
+}
+
 .small-cards {
     display: flex;
     flex-direction: row;
@@ -101,21 +131,25 @@ const gaugeChartValue = 40; // Gauge Chart에 전달할 값
 
 .card:not(:last-child) {
     margin-right: 30px;
-    /* 카드끼리의 간격 */
 }
 
-.card1-name {
+.card-name {
     font-size: 25px;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 10px; /* 제목과 차트 사이의 간격 조절 */
+    margin-bottom: 10px;
 }
 
-.gauge-chart-container {
+.gauge-chart-container,
+.customer-rank {
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* 차트를 위쪽에 맞추도록 설정 */
-    height: 120px; /* 컨테이너 높이를 적절하게 설정 */
+    align-items: flex-start;
+    height: 120px;
     width: 100%;
+}
+
+.customer-card{
+    width: 60%;
 }
 </style>
