@@ -1,7 +1,9 @@
 <template>
-    <div class="rectangle">
+    <div class="card-wrapper">
         <Card>
-            <h1>s</h1>
+            <template #content>
+                <slot />
+            </template>
         </Card>
     </div>
 </template>
@@ -11,12 +13,12 @@ import Card from 'primevue/card';
 </script>
 
 <style scoped>
-.rectangle {
-    position: absolute;
-    width: 330px;
-    height: 150px;
+.card-wrapper {
     background: #FFFFFF;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
     border-radius: 3px;
+}
+
+.p-card {
+    height: 250px;
 }
 </style>

@@ -1,19 +1,31 @@
 <template>
-    <div>
-        <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
-    </div>
-    <div>
-        <SmallCard/>
-    </div>
-    <div>
-        <Card/>
-    </div>
+    <main>
+        <div>
+            <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+        </div>
+        <div class="small-cards">
+            <div class="card">
+                <Card>
+                    <div class="card1-name">영업실적</div>
+                    <div class="gauge-chart-container">
+                        <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
+                    </div>
+                </Card>
+            </div>
+            <div class="card">
+                <Card />
+            </div>
+            <div class="card">
+                <Card />
+            </div>
+        </div>
+    </main>
 </template>
 
 <script setup>
-import BigCard from '@/components/common/DashBoardBigCard.vue';
-import SmallCard from '@/components/common/DashBoardSmallCard.vue';
+import BigCard from '@/components/common/GraghCard.vue';
 import Card from '@/components/common/Card.vue';
+import GaugeChart from '@/components/common/GaugeChart.vue';
 
 const bigCardChartData = {
     labels: Array.from({ length: 30 }, (_, i) => i + 1), // 1일부터 30일까지
@@ -71,8 +83,39 @@ const thirdChartData = {
     ],
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 };
+
+// 1번 차트 그림 value
+const gaugeChartValue = 40; // Gauge Chart에 전달할 값
 </script>
 
 <style scoped>
+.small-cards {
+    display: flex;
+    flex-direction: row;
+}
 
+.card {
+    width: 100%;
+    padding-top: 15px;
+}
+
+.card:not(:last-child) {
+    margin-right: 30px;
+    /* 카드끼리의 간격 */
+}
+
+.card1-name {
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px; /* 제목과 차트 사이의 간격 조절 */
+}
+
+.gauge-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 차트를 위쪽에 맞추도록 설정 */
+    height: 120px; /* 컨테이너 높이를 적절하게 설정 */
+    width: 100%;
+}
 </style>
