@@ -24,6 +24,10 @@ const router = createRouter({
                     path: 'tableview',
                     component: () => import('@/views/sample/TableViewTest.vue')
                 },
+                {
+                    path: 'dashboard',
+                    component: () => import('@/views/sample/DashBoard.vue')
+                }
             ]
         },
         {
