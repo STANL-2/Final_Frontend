@@ -24,7 +24,7 @@ import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Card from 'primevue/card';
-
+import Dialog from 'primevue/dialog';
 
 // PrimeVue 기본 CSS 및 테마 추가
 import 'primevue/resources/themes/saga-blue/theme.css'; // 원하는 테마 (예: saga-blue)
@@ -63,5 +63,6 @@ app.component('InputGroupAddon', InputGroupAddon);
 app.component('Divider', Divider);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
+app.component('Dialog', Dialog);
 
 app.mount('#app');

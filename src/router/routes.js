@@ -21,7 +21,7 @@ const router = createRouter({
                     component: () => import('@/views/sample/TableFormTest.vue')
                 },
                 {
-                    path: 'tableView',
+                    path: 'tableview',
                     component: () => import('@/views/sample/TableViewTest.vue')
                 },
                 {
