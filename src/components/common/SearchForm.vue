@@ -41,7 +41,7 @@
                 <div class="search-input">
                     <input type="text" v-model="validFrom" class="form-input">
                     <button class="search-button">
-                        <span class="search-icon">🔍</span>
+                        <span class="search-icon pi pi-search"></span>
                     </button>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                 <div class="search-input">
                     <input type="text" v-model="licenseDate" class="form-input">
                     <button class="search-button">
-                        <span class="search-icon">🔍</span>
+                        <span class="search-icon pi pi-search"></span>
                     </button>
                 </div>
             </div>
@@ -93,6 +93,7 @@
                 <div class="label">면허 유효 마감일</div>
                 <input type="text" v-model="validTo" class="form-input">
             </div>
+        
         </div>
 
         <!-- 나머지 코드 -->
@@ -182,7 +183,7 @@ const issueDateTo = ref('')
     top: 0;
     width: 25px;
     height: 25px;
-    background: #666;
+    background: #6360AB;
     border: none;
     display: flex;
     align-items: center;
