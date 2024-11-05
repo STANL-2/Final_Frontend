@@ -1,42 +1,75 @@
 <template>
-    <CommonForm :fields="formFields" />
+    <div>
+        <SearchForm :fields="formFields" />
+    </div>
 </template>
 
 <script setup>
-import CommonForm from '@/components/common/SearchForm.vue';
+import SearchForm from '@/components/common/SearchForm.vue';
+
 
 const formFields = [
-    [
-        { label: '고용 보험 여부', name: 'employmentInsurance', type: 'input', props: { type: 'text' } },
-        { 
-            label: '운전 면허 종류', 
-            name: 'licenseType', 
-            type: 'select', 
-            props: { 
-                options: [
-                    { label: '종류1', value: 'type1' },
-                    { label: '종류2', value: 'type2' }
-                ],
-                optionLabel: 'label', 
-                optionValue: 'value' 
-            }
-        },
-        { label: '택시 자격 여부', name: 'taxiQualification', type: 'checkbox', props: {} },
-        { label: '택시 자격 번호', name: 'taxiNumber', type: 'input', props: { type: 'text' } }
-    ],
-    [
-        { label: '택시 자격 발급일', name: 'issueDate', type: 'date', props: {} },
-        { label: '면허 유효 시작일', name: 'licenseStartDate', type: 'date', props: {} },
-        { label: '면허 유효 만료일', name: 'licenseEndDate', type: 'date', props: {} },
-        { label: '운전 면허 발급지', name: 'licensePlace', type: 'input', props: { type: 'text' } }
-    ],
-
-    [
-        { label: '택시 자격 발급일', name: 'issueDate', type: 'date', props: {} },
-        { label: '면허 유효 시작일', name: 'licenseStartDate', type: 'date', props: {} },
-        { label: '면허 유효 만료일', name: 'licenseEndDate', type: 'date', props: {} },
-        { label: '운전 면허 발급지', name: 'licensePlace', type: 'input', props: { type: 'text' } }
-    ],
-];
-
+    {
+        label: '고객 보딩 여부',
+        type: 'input',
+        model: 'customerBoarding',
+        placeholder: '보딩 여부 입력',
+        showDivider: true
+    },
+    {
+        label: '운전 면허 종류',
+        type: 'select',
+        model: 'driverLicenseType',
+        options: ['선택하세요', 'A', 'B', 'C'],
+        showDivider: false
+    },
+    {
+        label: '택시 자격 발급일',
+        type: 'calendar',
+        model: 'issueDate',
+        showIcon: true,
+        iconDisplay: 'input',
+        selectionMode: 'multiple',
+        manualInput: false,
+        showDivider: true
+    },
+    {
+        label: '면허 유효 시작일',
+        type: 'inputWithButton',
+        model: 'validFrom',
+        placeholder: '유효 시작일 입력',
+        showDivider: false
+    },
+    {
+        label: '고객 보딩 여부',
+        type: 'input',
+        model: 'customerBoarding',
+        placeholder: '보딩 여부 입력',
+        showDivider: true
+    },
+    {
+        label: '운전 면허 종류',
+        type: 'select',
+        model: 'driverLicenseType',
+        options: ['선택하세요', 'A', 'B', 'C'],
+        showDivider: false
+    },
+    {
+        label: '택시 자격 발급일',
+        type: 'calendar',
+        model: 'issueDate',
+        showIcon: true,
+        iconDisplay: 'input',
+        selectionMode: 'multiple',
+        manualInput: false,
+        showDivider: true
+    },
+    {
+        label: '면허 유효 시작일',
+        type: 'inputWithButton',
+        model: 'validFrom',
+        placeholder: '유효 시작일 입력',
+        showDivider: false
+    }
+]
 </script>

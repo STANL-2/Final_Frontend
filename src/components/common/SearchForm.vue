@@ -1,131 +1,92 @@
 <template>
     <div class="search-container">
         <div class="form-row">
-            <div class="form-group">
-                <div class="label">고객 보딩 여부</div>
-                <input type="text" v-model="customerBoarding" class="form-input">
-            </div>
+            <!-- 각 필드를 반복하여 렌더링, 필요한 경우 Divider도 포함 -->
+            <template v-for="(field, index) in fields" :key="index">
+                <div class="form-group">
+                    <div class="label">{{ field.label }}</div>
 
-            <div class="form-group">
-                <div class="label">운전 면허 종류</div>
-                <select v-model="driverLicenseType" class="form-select">
-                    <option value="선택하세요">선택하세요</option>
-                </select>
-            </div>
+                    <!-- 필드 타입에 따른 조건부 렌더링 -->
+                    <template v-if="field.type === 'input'">
+                        <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                            class="form-input" />
+                    </template>
 
-            <div class="form-group">
-                <div class="label">택시 자격 번호</div>
-                <input type="text" v-model="licenseNumber" class="form-input">
-            </div>
+                    <template v-else-if="field.type === 'select'">
+                        <select v-model="formData[field.model]" class="form-select">
+                            <option v-for="(option, idx) in field.options" :key="idx" :value="option">{{ option }}
+                            </option>
+                        </select>
+                    </template>
 
-            <div class="form-group">
-                <div class="label">택시 자격 번호</div>
-                <input type="text" v-model="licenseNumber" class="form-input">
-            </div>
-        </div>
+                    <template v-else-if="field.type === 'calendar'">
+                        <Calendar v-model="formData[field.model]" :showIcon="field.showIcon"
+                            :iconDisplay="field.iconDisplay" :selectionMode="field.selectionMode"
+                            :manualInput="field.manualInput" class="small-calendar" />
+                    </template>
 
-        <Divider />
-
-        <div class="form-row">
-            <div class="form-group">
-                <div class="label">택시 자격 발급일</div>
-                <div class="date-range">
-                    <Calendar v-model="icondisplay" showIcon iconDisplay="input" />
-                    <span class="date-separator">~</span>
-                    <Calendar v-model="icondisplay" showIcon iconDisplay="input" class="small-calendar"/>
+                    <template v-else-if="field.type === 'inputWithButton'">
+                        <div class="search-input">
+                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                                class="form-input" />
+                            <button class="search-button">
+                                <span class="search-icon pi pi-search"></span>
+                            </button>
+                        </div>
+                    </template>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <div class="label">면허 유효 시작일</div>
-                <div class="search-input">
-                    <input type="text" v-model="validFrom" class="form-input">
-                    <button class="search-button">
-                        <span class="search-icon pi pi-search"></span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="label">면허 유효 마감일</div>
-                <input type="text" v-model="validTo" class="form-input">
-            </div>
-
-            <div class="form-group">
-                <div class="label">면허 유효 마감일</div>
-                <input type="text" v-model="validTo" class="form-input">
-            </div>
+            </template>
         </div>
 
-        <Divider />
-
-        <div class="form-row">
-            <div class="form-group">
-                <div class="label">운전 면허번호</div>
-                <input type="text" v-model="licenseNumber" class="form-input">
-            </div>
-
-            <div class="form-group">
-                <div class="label">운전 면허 발급처</div>
-                <input type="text" v-model="licenseIssuer" class="form-input">
-            </div>
-
-            <div class="form-group">
-                <div class="label">운전 면허 발급일</div>
-                <div class="search-input">
-                    <input type="text" v-model="licenseDate" class="form-input">
-                    <button class="search-button">
-                        <span class="search-icon pi pi-search"></span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="label">면허유효 시작일</div>
-                <input type="text" v-model="validFrom" class="form-input">
-            </div>
-        </div>
-
-        <Divider />
-
-        <div class="form-row">
-            <div class="form-group">
-                <div class="label">면허 유효 마감일</div>
-                <input type="text" v-model="validTo" class="form-input">
-            </div>
-        
-        </div>
-
-        <!-- 나머지 코드 -->
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
+import Divider from 'primevue/divider' // Divider 컴포넌트 import
+import Calendar from 'primevue/calendar' // Calendar 컴포넌트 import
 
-const customerBoarding = ref('')
-const driverLicenseType = ref('선택하세요')
-const licenseNumber = ref('')
-const licenseIssuer = ref('')
-const licenseDate = ref('')
-const validFrom = ref('')
-const validTo = ref('')
-const issueDateFrom = ref('')
-const issueDateTo = ref('')
+// Props 정의: 뷰 컴포넌트에서 필드 설정을 전달받음
+const props = defineProps({
+    fields: {
+        type: Array,
+        required: true,
+        default: () => []
+    }
+})
+
+// formData 객체에 각 필드의 초기값을 reactive로 설정
+const formData = reactive(
+    Object.fromEntries(props.fields.map(field => [field.model, field.default || '']))
+)
 </script>
 
 <style scoped>
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    overflow-x: hidden;
+}
+
 .search-container {
+    max-width: 100%;
+    overflow-x: hidden;
     border-top: 1.5px solid #EEEEEE;
     border-bottom: 1.5px solid #EEEEEE;
     background-color: #F8F8F8;
-    padding: 0 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 0 5px;
 }
 
 .form-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    /* 항상 4열 고정 */
     gap: 1rem;
     margin: 10px 0;
 }
@@ -133,22 +94,20 @@ const issueDateTo = ref('')
 .form-group {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .label {
-    min-width: 130px;
-    /* 고정된 넓이 */
+    min-width: 100px;
     font-size: 13px;
     color: #333;
     text-align: left;
     padding-right: 8px;
-    /* 레이블과 입력 필드 간격 조정 */
 }
 
 .form-input,
 .form-select {
     flex: 1;
-    /* 입력 필드가 가능한 넓이를 차지 */
     height: 25px;
     border: 1px solid #ddd;
     padding: 0 8px;
@@ -159,7 +118,6 @@ const issueDateTo = ref('')
 .form-select {
     background-color: white;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
 }
@@ -167,6 +125,7 @@ const issueDateTo = ref('')
 .date-range {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .date-separator {
@@ -175,6 +134,7 @@ const issueDateTo = ref('')
 
 .search-input {
     position: relative;
+    width: 100%;
 }
 
 .search-button {
@@ -196,7 +156,6 @@ const issueDateTo = ref('')
     font-size: 14px;
 }
 
-/* 포커스 스타일 제거 */
 .form-input:focus,
 .form-select:focus {
     outline: none;
@@ -207,57 +166,35 @@ const issueDateTo = ref('')
     margin-bottom: 0 !important;
 }
 
-/* Calendar 높이 조정 */
-.p-calendar {
-    height: 25px !important;
-}
-
 .p-calendar .p-inputtext {
     height: 25px !important;
-    padding: 0 8px;
     font-size: 13px;
-    box-sizing: border-box;
 }
 
-.p-calendar .p-datepicker-trigger {
+.p-calendar {
     height: 25px !important;
-    display: flex;
-    align-items: center;
-}
-
-/* 캘린더 팝업 크기 조절 */
-.p-datepicker {
-    font-size: 12px; /* 텍스트 크기 */
-    width: 200px !important; /* 캘린더 팝업 너비 조정 */
-}
-
-.p-datepicker-calendar {
-    width: 180px !important; /* 캘린더 내부의 날짜 셀 영역 너비 조정 */
-}
-
-.p-datepicker .p-datepicker-header {
-    font-size: 12px !important; /* 헤더 텍스트 크기 */
-}
-
-.p-datepicker .p-datepicker-month, .p-datepicker .p-datepicker-year {
-    font-size: 12px !important;
-}
-
-.p-datepicker td {
-    height: 1.5rem; /* 각 날짜 셀의 높이 조정 */
-    width: 1.5rem; /* 각 날짜 셀의 너비 조정 */
-    padding: 0.25rem; /* 셀 내부 패딩 조정 */
-}
-
-/* 캘린더 아이콘과 입력 필드 크기 조정 */
-.small-calendar .p-inputtext {
-    height: 25px;
     font-size: 13px;
 }
 
+.p-calendar .p-datepicker-trigger,
 .small-calendar .p-datepicker-trigger {
     height: 25px;
     display: flex;
     align-items: center;
+}
+
+/* 반응형 디자인: 화면이 작을 때는 열 개수를 줄입니다 */
+@media (max-width: 1024px) {
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+        /* 중간 화면에서는 2열 */
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        /* 작은 화면에서는 1열 */
+    }
 }
 </style>
