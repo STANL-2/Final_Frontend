@@ -1,12 +1,26 @@
 <template>
-    <Dialog v-model:visible="localVisible" modal :header="header" :style="{ width: '50rem' }" @hide="hide">
+    <Dialog 
+        v-model:visible="localVisible" 
+        modal 
+        :header="header" 
+        :style="{ width: dialogWidth }" 
+        @hide="hide"
+    >
         <slot></slot>
+        <!-- footer 슬롯을 이용해 하단에 버튼 배치 -->
+        <template #footer>
+            <div class="dialog-footer">
+                <CommonButton label="확인" @click="confirmAction" />
+                <CommonButton label="취소" color="#ffffff" textColor="#6360AB" borderColor="#6360AB" @click="hide" />
+            </div>
+        </template>
     </Dialog>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
+import CommonButton from './button/CommonButton.vue';
 
 const props = defineProps({
     modelValue: {
@@ -17,12 +31,18 @@ const props = defineProps({
         type: String,
         default: 'Modal Header',
     },
+    width: {
+        type: String,
+        default: '40rem', // 기본 너비값 설정
+    },
 });
 
 const emit = defineEmits(['update:modelValue']);
 const localVisible = ref(props.modelValue);
 
-// 부모 컴포넌트의 modelValue가 바뀌면 localVisible도 업데이트
+// 유동적으로 전달된 너비 값 설정
+const dialogWidth = props.width;
+
 watch(
     () => props.modelValue,
     (newVal) => {
@@ -30,13 +50,27 @@ watch(
     }
 );
 
-// localVisible이 바뀔 때마다 부모 컴포넌트에 상태를 업데이트
 const hide = () => {
     localVisible.value = false;
     emit('update:modelValue', false);
 };
 
-watch(localVisible, (newVal) => {
-    emit('update:modelValue', newVal);
-});
+const confirmAction = () => {
+    hide(); // 모달 닫기
+};
 </script>
+
+<style scoped>
+.dialog-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+</style>
+
+<style>
+.p-dialog .p-dialog-footer {
+    justify-content: center !important;
+}
+</style>

@@ -7,8 +7,9 @@
         <CommonButton label="상세보기" @click="showModal = true" class="mt-4" />
 
         <!-- 모달 컴포넌트 -->
-        <Modal v-model="showModal" header="상세 정보">
+        <Modal v-model="showModal" header="상세 정보" width="40rem">
             <p>여기에 모달 내용을 추가하세요. 원하는 정보를 표시할 수 있습니다.</p>
+
         </Modal>
     </div>
 </template>
@@ -17,7 +18,7 @@
 import { ref } from 'vue';
 import ViewTable from '@/components/common/ViewTable.vue';
 import Modal from '@/components/common/Modal.vue';
-import CommonButton from '@/components/common/Button/CommonButton.vue';
+import CommonButton from '@/components/common/button/CommonButton.vue';
 
 const showModal = ref(false); // 모달의 열림/닫힘 상태 관리
 
