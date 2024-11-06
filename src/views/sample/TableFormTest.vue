@@ -1,10 +1,13 @@
 <template>
-    <div class="viewform">
-        <ViewForm :data="data"/>
-    </div>  
+    <PageLayout>
+        <div class="viewform">
+            <ViewForm :data="data" />
+        </div>
+    </PageLayout>
 </template>
 
 <script setup>
+import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewForm from '@/components/common/ViewForm.vue';
 import { ref } from 'vue';
 
@@ -26,7 +29,7 @@ const data = ref([
 </script>
 
 <style scoped>
-.viewform{
+.viewform {
     display: flex;
     width: 100%;
 }
