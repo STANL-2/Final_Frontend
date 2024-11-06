@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <PageLayout>
         <!-- ViewTable 컴포넌트 -->
         <ViewTable :headers="headers" :tableData="tableData" />
 
@@ -11,7 +11,7 @@
             <p>여기에 모달 내용을 추가하세요. 원하는 정보를 표시할 수 있습니다.</p>
 
         </Modal>
-    </div>
+    </PageLayout>
 </template>
 
 <script setup>
@@ -19,6 +19,7 @@ import { ref } from 'vue';
 import ViewTable from '@/components/common/ViewTable.vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/button/CommonButton.vue';
+import PageLayout from '@/components/common/layouts/PageLayout.vue';
 
 const showModal = ref(false); // 모달의 열림/닫힘 상태 관리
 

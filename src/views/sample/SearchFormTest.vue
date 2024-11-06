@@ -1,10 +1,11 @@
 <template>
-    <div>
+    <PageLayout>
         <SearchForm :fields="formFields" />
-    </div>
+    </PageLayout>
 </template>
 
 <script setup>
+import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import SearchForm from '@/components/common/SearchForm.vue';
 
 

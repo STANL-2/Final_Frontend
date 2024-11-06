@@ -80,7 +80,6 @@ body {
     border-top: 1.5px solid #EEEEEE;
     border-bottom: 1.5px solid #EEEEEE;
     background-color: #F8F8F8;
-    padding: 0 5px;
 }
 
 .form-row {
