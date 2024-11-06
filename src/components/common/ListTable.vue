@@ -99,7 +99,6 @@ const selectedItems = ref([]);
     justify-content: center !important;
     align-items: center !important;
     padding: 8px 12px 8px 12px !important;
-    /* 상하좌우 패딩 */
 }
 
 /* 버튼 스타일 */
@@ -111,6 +110,7 @@ const selectedItems = ref([]);
     border: 1px solid #6360AB;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 13px;
 }
 
 /* 버튼 셀 정렬 */
@@ -119,7 +119,7 @@ const selectedItems = ref([]);
 }
 
 .custom-button:hover {
-    background-color: #0056b3;
+    background-color: #F1F1FD;
 }
 
 /* 양쪽 테두리 제거 */
@@ -148,16 +148,16 @@ const selectedItems = ref([]);
 
 /* 컬럼 헤더 높이 설정 */
 .custom-datatable .p-datatable .p-datatable-thead>tr>th {
-    height: 40px !important;
-    line-height: 40px !important;
+    height: 35px !important;
     padding: 0 !important;
+    font-size: 14px;
 }
 
 /* 셀 높이 설정 */
 .custom-datatable .p-datatable .p-datatable-tbody>tr>td {
-    height: 40px !important;
-    line-height: 40px !important;
+    height: 35px !important;
     padding: 0 !important;
+    font-size: 14px;
 }
 
 /* 정렬된 컬럼 헤더 배경색 완전 제거 */
@@ -190,5 +190,27 @@ const selectedItems = ref([]);
 /* hover 시 정렬 아이콘 색상 유지 */
 .custom-datatable .p-datatable .p-sortable-column:hover .p-sortable-column-icon {
     color: inherit !important;
+}
+
+/* 정렬 아이콘 크기 및 위치 */
+.custom-datatable .p-datatable .p-sortable-column .p-sortable-column-icon {
+    font-size: 12px !important; /* 아이콘 크기 */
+    width: 12px !important;     /* 아이콘 너비 */
+    height: 12px !important;    /* 아이콘 높이 */
+    display: inline-block;
+    line-height: 12px !important;
+    vertical-align: middle;
+}
+
+.p-checkbox .p-checkbox-box {
+    border: 1px solid #ced4da !important;
+    border-radius: 0px !important;
+    width: 17px;
+    height: 17px;
+}
+
+.p-checkbox.p-highlight .p-checkbox-box {
+    background: #6360AB;
+    font-size: 15px;
 }
 </style>

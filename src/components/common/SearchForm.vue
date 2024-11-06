@@ -1,176 +1,201 @@
 <template>
-    <div class="form-container">
-        <!-- 상단 Divider -->
-        <Divider class="thick-divider" />
+    <div class="search-container">
+        <div class="form-row">
+            <!-- 각 필드를 반복하여 렌더링, 필요한 경우 Divider도 포함 -->
+            <template v-for="(field, index) in fields" :key="index">
+                <div class="form-group">
+                    <div class="label">{{ field.label }}</div>
 
-        <div v-for="(row, rowIndex) in fields" :key="rowIndex">
-            <div class="form-row">
-                <div class="form-column" v-for="(field, colIndex) in row" :key="colIndex">
-                    <label class="label-box ml-xl" :for="field.name">{{ field.label }}</label>
-                    <!-- 필드의 타입에 따라 컴포넌트 렌더링 -->
-                    <component
-                        :is="getComponentType(field.type)"
-                        v-bind="field.props"
-                        v-model="formValues[field.name]"
-                        :appendTo="'body'" 
-                    >
-                        <template v-if="field.slotContent" v-slot>
-                            <component :is="field.slotContent"></component>
-                        </template>
-                    </component>
+                    <!-- 필드 타입에 따른 조건부 렌더링 -->
+                    <template v-if="field.type === 'input'">
+                        <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                            class="form-input" />
+                    </template>
+
+                    <template v-else-if="field.type === 'select'">
+                        <select v-model="formData[field.model]" class="form-select">
+                            <option v-for="(option, idx) in field.options" :key="idx" :value="option">{{ option }}
+                            </option>
+                        </select>
+                    </template>
+
+                    <template v-else-if="field.type === 'calendar'">
+                        <Calendar v-model="formData[field.model]" :showIcon="field.showIcon"
+                            :iconDisplay="field.iconDisplay" :selectionMode="field.selectionMode"
+                            :manualInput="field.manualInput" class="small-calendar" />
+                    </template>
+
+                    <template v-else-if="field.type === 'inputWithButton'">
+                        <div class="search-input">
+                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                                class="form-input" />
+                            <button class="search-button">
+                                <span class="search-icon pi pi-search"></span>
+                            </button>
+                        </div>
+                    </template>
                 </div>
-            </div>
-            <!-- 각 행 아래에 얇은 Divider 추가 -->
-            <Divider v-if="rowIndex < fields.length - 1" class="thin-divider" />
+
+            </template>
         </div>
 
-        <!-- 하단 Divider -->
-        <Divider class="thick-divider" />
     </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue';
-import Divider from 'primevue/divider';
-import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
-import Checkbox from 'primevue/checkbox';
-import Calendar from 'primevue/calendar';
+import { ref, reactive } from 'vue'
+import Divider from 'primevue/divider' // Divider 컴포넌트 import
+import Calendar from 'primevue/calendar' // Calendar 컴포넌트 import
 
+// Props 정의: 뷰 컴포넌트에서 필드 설정을 전달받음
 const props = defineProps({
     fields: {
         type: Array,
         required: true,
         default: () => []
     }
-});
+})
 
-const formValues = reactive({});
-
-// 필드 타입에 따라 PrimeVue 컴포넌트를 반환하는 함수
-function getComponentType(type) {
-    switch (type) {
-        case 'input':
-            return InputText;
-        case 'select':
-            return Dropdown;
-        case 'checkbox':
-            return Checkbox;
-        case 'date':
-            return Calendar;
-        default:
-            return InputText; // 기본적으로 InputText 반환
-    }
-}
+// formData 객체에 각 필드의 초기값을 reactive로 설정
+const formData = reactive(
+    Object.fromEntries(props.fields.map(field => [field.model, field.default || '']))
+)
 </script>
 
 <style scoped>
-/* 컨테이너 전체 스타일 */
-.form-container {
-    display: flex;
-    flex-direction: column;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    position: relative; /* Dropdown 컨테이너가 상대적 위치 */
-    overflow: visible; /* 자식 요소가 잘리지 않도록 */
-}
-
-/* 각 행의 레이아웃: 한 줄에 4개의 필드 */
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-}
-
-/* 각 필드 항목을 정렬 */
-.form-column {
-    display: flex;
-    align-items: center;
-}
-
-/* 마지막 열의 오른쪽에 추가 마진 */
-.form-column:last-child {
-    margin-right: 40px;
-}
-
-.label-box {
-    white-space: nowrap;
-    width: 7.5rem;
-    color: #777777;
-    margin-right: 2rem;
-}
-
-/* Divider 스타일 */
-.thick-divider {
-    border-top: 2px solid #e0e0e0;
-    margin: 0.5rem 0;
-}
-
-.thin-divider {
-    border-top: 0.5px solid #e0e0e0;
-    margin: 0.5rem 0;
-}
-
-/* 입력 필드 및 컴포넌트의 전체 너비 설정 */
-.p-inputtext,
-.p-dropdown,
-.p-calendar,
-.p-checkbox {
-    width: 100%;
-}
-
-/* PrimeVue 기본 스타일 커스터마이징 */
-.p-inputtext,
-.p-dropdown,
-.p-calendar .p-inputtext,
-.p-checkbox-box {
-    height: 30px !important; /* 통일된 높이 */
-    font-size: 0.875rem;
-    border: 1px solid #cccccc;
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
-.p-dropdown, .p-checkbox-box {
-    padding: none !important;
+html,
+body {
+    overflow-x: hidden;
 }
 
-.p-dropdown .p-dropdown-label {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.search-container {
+    max-width: 100%;
+    overflow-x: hidden;
+    border-top: 1.5px solid #EEEEEE;
+    border-bottom: 1.5px solid #EEEEEE;
+    background-color: #F8F8F8;
+    padding: 0 5px;
 }
 
-/* Dropdown 패널이 다른 요소 위에 나타나도록 설정 */
-.p-dropdown-panel {
-    z-index: 1000 !important;
-    max-height: 200px; /* 드롭다운 패널의 최대 높이 */
-    overflow: auto; /* 드롭다운이 잘리지 않도록 오버플로우 설정 */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* 항상 4열 고정 */
+    gap: 1rem;
+    margin: 10px 0;
 }
 
-/* Calendar의 전체 wrapper의 border 제거 */
-.p-calendar {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Calendar의 input field border 제거 */
-.p-calendar .p-inputtext {
-    border: none !important;
-    box-shadow: none !important;
-    background-color: transparent;
-}
-
-/* Checkbox의 높이 줄이기 */
-.p-checkbox-box {
+.form-group {
     display: flex;
     align-items: center;
-    height: 18px !important; /* 체크박스 높이 조정 */
-    width: 18px !important; /* 체크박스 너비 조정 */
+    width: 100%;
 }
 
-/* label과 checkbox를 나란히 정렬 */
-.checkbox-group label {
-    margin-left: 4px;
-    font-size: 0.5rem;
+.label {
+    min-width: 120px;
+    font-size: 13px;
+    color: #333;
+    text-align: left;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.form-input,
+.form-select {
+    flex: 1;
+    height: 25px;
+    border: 1px solid #ddd;
+    padding: 0 8px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.form-select {
+    background-color: white;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.date-separator {
+    margin: 0 5px;
+}
+
+.search-input {
+    position: relative;
+    width: 100%;
+}
+
+.search-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 25px;
+    height: 25px;
+    background: #6360AB;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-icon {
+    color: white;
+    font-size: 14px;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+}
+
+.p-divider {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.p-calendar .p-inputtext {
+    height: 25px !important;
+    font-size: 13px;
+}
+
+.p-calendar {
+    height: 25px !important;
+    font-size: 13px;
+}
+
+.p-calendar .p-datepicker-trigger,
+.small-calendar .p-datepicker-trigger {
+    height: 25px;
+    display: flex;
+    align-items: center;
+}
+
+/* 반응형 디자인: 화면이 작을 때는 열 개수를 줄입니다 */
+@media (max-width: 1024px) {
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+        /* 중간 화면에서는 2열 */
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        /* 작은 화면에서는 1열 */
+    }
 }
 </style>
