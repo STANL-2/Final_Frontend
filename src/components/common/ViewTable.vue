@@ -43,7 +43,6 @@ td {
     padding: 8px 16px 8px 16px; /* 일정한 패딩을 줘서 각 셀의 간격을 맞춤 */
     text-align: center;
     font-weight: normal;
-    font-family: 'Pretendard';
     font-size: 13px;
 }
 

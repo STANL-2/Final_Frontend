@@ -36,6 +36,5 @@ const props = defineProps({
     font-size: 20px;
     line-height: 30px;
     color: #000000;
-    font-family: 'Pretendard', sans-serif;
 }
 </style>

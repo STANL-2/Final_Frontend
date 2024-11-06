@@ -58,7 +58,6 @@ onMounted(() => {
     left: 50%;
     top: 70%;
     transform: translate(-50%, -50%);
-    font-family: 'Pretendard', sans-serif;
     font-weight: 700;
     font-size: 35px;
     line-height: 36px;
