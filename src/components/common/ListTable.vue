@@ -148,14 +148,14 @@ const selectedItems = ref([]);
 
 /* 컬럼 헤더 높이 설정 */
 .custom-datatable .p-datatable .p-datatable-thead>tr>th {
-    height: 30px !important;
+    height: 35px !important;
     padding: 0 !important;
     font-size: 14px;
 }
 
 /* 셀 높이 설정 */
 .custom-datatable .p-datatable .p-datatable-tbody>tr>td {
-    height: 30px !important;
+    height: 35px !important;
     padding: 0 !important;
     font-size: 14px;
 }
@@ -190,5 +190,27 @@ const selectedItems = ref([]);
 /* hover 시 정렬 아이콘 색상 유지 */
 .custom-datatable .p-datatable .p-sortable-column:hover .p-sortable-column-icon {
     color: inherit !important;
+}
+
+/* 정렬 아이콘 크기 및 위치 */
+.custom-datatable .p-datatable .p-sortable-column .p-sortable-column-icon {
+    font-size: 12px !important; /* 아이콘 크기 */
+    width: 12px !important;     /* 아이콘 너비 */
+    height: 12px !important;    /* 아이콘 높이 */
+    display: inline-block;
+    line-height: 12px !important;
+    vertical-align: middle;
+}
+
+.p-checkbox .p-checkbox-box {
+    border: 1px solid #ced4da !important;
+    border-radius: 0px !important;
+    width: 17px;
+    height: 17px;
+}
+
+.p-checkbox.p-highlight .p-checkbox-box {
+    background: #6360AB;
+    font-size: 15px;
 }
 </style>

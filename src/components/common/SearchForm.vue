@@ -98,11 +98,12 @@ body {
 }
 
 .label {
-    min-width: 100px;
+    min-width: 120px;
     font-size: 13px;
     color: #333;
     text-align: left;
     padding-right: 8px;
+    padding-left: 8px;
 }
 
 .form-input,
