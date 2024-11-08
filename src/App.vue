@@ -3,7 +3,8 @@
     <PageHeader />
   </div>
 
-  <button class="toggle-button" @click="toggleSidebar">Toggle Sidebar</button>
+  <!-- 사이드바 열고 닫기 버튼 -->
+  <!-- <button class="toggle-button" @click="toggleSidebar">Toggle Sidebar</button> -->
 
   <main class="main">
     <!-- <div class="aside">

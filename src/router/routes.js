@@ -27,6 +27,10 @@ const router = createRouter({
                 {
                     path: 'dashboard',
                     component: () => import('@/views/sample/DashBoard.vue')
+                },
+                {
+                    path: 'ckeditor',
+                    component: () => import('@/views/sample/CKEditorTest.vue')
                 }
             ]
         },

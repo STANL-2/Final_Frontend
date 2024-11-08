@@ -39,7 +39,7 @@
 <script setup>
 import BigCard from '@/components/common/GraghCard.vue';
 import Card from '@/components/common/Card.vue';
-import GaugeChart from '@/components/common/GaugeChart.vue';
+import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
 import DashTimeLine from '@/components/common/DashTimeLine.vue';
 
