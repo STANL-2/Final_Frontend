@@ -31,6 +31,10 @@ const router = createRouter({
                 {
                     path: 'ckeditor',
                     component: () => import('@/views/sample/CKEditorTest.vue')
+                },
+                {
+                    path: 'toastui',
+                    component: () => import('@/views/sample/ToastUIEditortest.vue')
                 }
             ]
         },
