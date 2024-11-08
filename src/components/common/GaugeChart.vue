@@ -49,7 +49,7 @@ onMounted(() => {
 .gauge-chart {
     position: relative;
     width: 250px;
-    height: 200px;
+    height: 150px;
 }
 
 .gauge-chart::after {
