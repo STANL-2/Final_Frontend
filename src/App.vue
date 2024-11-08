@@ -14,16 +14,21 @@
       <PageAside />
     </div>
     <div class="body">
-      <RouterView />
+      <div class="path">
+        <PagePath />
+      </div>
+      <div class="body-content">
+        <RouterView />
+      </div>
     </div>
   </main>
-
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
 import PageHeader from './components/PageHeader.vue';
+import PagePath from './components/common/PagePath.vue';
 import PageAside from './components/PageAside.vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
@@ -39,20 +44,18 @@ const toggleSidebar = () => {
 
 <style scoped>
 .main {
-  flex-grow: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: row;
 }
 
 .body {
-  flex: 7; /* body 비율 70% */
+  flex: 1;
   padding: 1rem;
 }
 
-
-
-
+.path {
+  margin-bottom: 1rem;
+}
 
 .aside {
   transition: width 0.3s ease;
@@ -63,6 +66,7 @@ const toggleSidebar = () => {
   width: 0;
   overflow: hidden;
 }
+
 .toggle-button {
   margin: 10px;
   padding: 5px 10px;

@@ -12,7 +12,6 @@ import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 import SummernoteEditor from 'vue3-summernote-editor';
 
 // jQuery 및 Bootstrap 추가
-import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
