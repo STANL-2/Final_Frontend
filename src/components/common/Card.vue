@@ -21,7 +21,7 @@ import Card from 'primevue/card';
 }
 
 .p-card {
-    height: 300px;
+    height: 250px;
     /* height: 100%; */
     overflow-y: 250px; /* 내부 스크롤 설정 */
 }

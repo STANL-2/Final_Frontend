@@ -27,8 +27,10 @@ const calendarOptions = ref({
     initialView: 'resourceTimelineDay',
     headerToolbar: {
         left: '',
-        center: 'title',
-        right: 'resourceTimelineDay'
+        // center: 'title',
+        center: '',
+        // right: 'resourceTimelineDay'
+        right: ''
     },
     resources: props.resources,
     events: props.events,

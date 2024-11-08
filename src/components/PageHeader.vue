@@ -13,7 +13,8 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} 사원님</div>
                 <div class="right-logo">
-                    <img src="../assets/header/settings-logo.png" class="settings-logo" />
+                    <img src="../assets/header/alarm.png" class="alarm" />
+                    <img src="../assets/header/organization-logo.png" class="organization-logo" />
                     <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
                 </div>
             </div>
@@ -90,7 +91,15 @@ const logout = () => {
     flex-direction: row;
 }
 
-.settings-logo {
+.alarm {
+    padding: 20px 0px 20px 20px;
+    border-left: 2px solid #CCCCCC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.organization-logo {
     padding: 20px 0px 20px 20px;
     border-left: 2px solid #CCCCCC;
     display: flex;

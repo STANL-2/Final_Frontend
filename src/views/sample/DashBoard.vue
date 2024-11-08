@@ -4,17 +4,17 @@
             <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
         </div>
         <div class="small-cards">
-            <div class="card">
+            <div class="sell-card card">
                 <Card>
                     <div class="card-content">
                         <div class="card-name">영업실적</div>
-                    <div class="gauge-chart-container">
-                        <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
-                    </div>
+                        <div class="gauge-chart-container">
+                            <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
+                        </div>
                     </div>
                 </Card>
             </div>
-            <div class="card">
+            <div class="plan-card card">
                 <Card>
                     <div class="card-content">
                         <div class="card-name">일정표</div>
@@ -26,9 +26,9 @@
                 <Card>
                     <div class="card-content">
                         <div class="card-name">나의 고객</div>
-                    <div class="customer-rank">
-                        <CustomerRank :customers="customers" /> <!-- CustomerRank 컴포넌트에 고객 데이터를 props로 전달 -->
-                    </div>
+                        <div class="customer-rank">
+                            <CustomerRank :customers="customers" /> <!-- CustomerRank 컴포넌트에 고객 데이터를 props로 전달 -->
+                        </div>
                     </div>
                 </Card>
             </div>
@@ -39,7 +39,7 @@
 <script setup>
 import BigCard from '@/components/common/GraghCard.vue';
 import Card from '@/components/common/Card.vue';
-import GaugeChart from '@/components/common/GaugeChart.vue';
+import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
 import DashTimeLine from '@/components/common/DashTimeLine.vue';
 
@@ -112,9 +112,9 @@ const resources = [
 ];
 
 const events = [
-    { id: '1', resourceId: 'a', start: '2024-11-05T09:00:00', end: '2024-11-05T10:00:00', title: 'Meeting' },
-    { id: '2', resourceId: 'b', start: '2024-11-05T12:00:00', end: '2024-11-05T14:00:00', title: 'Lunch Break' },
-    { id: '3', resourceId: 'c', start: '2024-11-05T15:00:00', end: '2024-11-05T17:00:00', title: 'Work Session' }
+    { id: '1', resourceId: 'a', start: '2024-11-07T09:00:00', end: '2024-11-05T10:00:00', title: 'Meeting' },
+    { id: '2', resourceId: 'b', start: '2024-11-07T12:00:00', end: '2024-11-05T14:00:00', title: 'Lunch Break' },
+    { id: '3', resourceId: 'c', start: '2024-11-07T15:00:00', end: '2024-11-05T17:00:00', title: 'Work Session' }
 ];
 
 // 3번 차트 고객 value
@@ -128,7 +128,7 @@ const customers = [
 </script>
 
 <style scoped>
-.dashboard{
+.dashboard {
     background-color: #F1F1FD;
 }
 
@@ -162,7 +162,15 @@ const customers = [
     width: 100%;
 }
 
-.customer-card{
-    width: 60%;
+.sell-card {
+    width: 50%;
+}
+
+.plan-card {
+    width: 100%;
+}
+
+.customer-card {
+    width: 30%;
 }
 </style>
