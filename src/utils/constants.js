@@ -63,7 +63,8 @@ export const asideMenu = [
             { key: '9-4', label: 'DashBoard', url: '/sample/dashboard' },
             { key: '9-5', label: 'Login', url: '/login'},
             { key: '9-6', label: 'CKEditor', url: '/sample/ckeditor'},
-            { key: '9-7', label: 'ToastUIEditor', url: '/sample/toastui'}
+            { key: '9-7', label: 'ToastUIEditor', url: '/sample/toastui'},
+            { key: '9-8', label: 'SummerNoteEditor', url: '/sample/summernote'}
         ]
     }
 ];

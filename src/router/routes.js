@@ -35,6 +35,10 @@ const router = createRouter({
                 {
                     path: 'toastui',
                     component: () => import('@/views/sample/ToastUIEditortest.vue')
+                },
+                {
+                    path: 'summernote',
+                    component: () => import('@/views/sample/SummerNoteTest.vue')
                 }
             ]
         },
