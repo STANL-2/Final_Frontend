@@ -3,17 +3,24 @@ import App from './App.vue';
 import router from '@/router/routes';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 import Chart from 'chart.js/auto';
 import PrimeVue from 'primevue/config';
 import Button from 'primevue/button';
 import Tree from 'primevue/tree';
 import FullCalendar from '@fullcalendar/vue3';
+import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
+import SummernoteEditor from 'vue3-summernote-editor';
 
+// jQuery 및 Bootstrap 추가
+import $ from 'jquery';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+// PrimeVue 및 기타 컴포넌트 설정
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
+import ColumnGroup from 'primevue/columngroup';
+import Row from 'primevue/row';
 import InputText from 'primevue/inputtext';
 import Calendar from 'primevue/calendar';
 import Checkbox from 'primevue/checkbox';
@@ -26,11 +33,9 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import Card from 'primevue/card';
 import Dialog from 'primevue/dialog';
 
-// PrimeVue 기본 CSS 및 테마 추가
-import 'primevue/resources/themes/saga-blue/theme.css'; // 원하는 테마 (예: saga-blue)
+import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
-
 import '@/assets/main.css';
 import '@/assets/utils.css';
 
@@ -41,7 +46,6 @@ const app = createApp(App);
 
 app.config.globalProperties.$Chart = Chart;
 
-// use()
 app.use(pinia);
 app.use(router);
 app.use(CkeditorPlugin);
@@ -52,8 +56,8 @@ app.component('Tree', Tree);
 app.component('FullCalendar', FullCalendar);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
-app.component('ColumnGroup', ColumnGroup); // optional 사용 설정
-app.component('Row', Row);                 // optional 사용 설정
+app.component('ColumnGroup', ColumnGroup);
+app.component('Row', Row);
 app.component('InputText', InputText);
 app.component('Calendar', Calendar);
 app.component('Checkbox', Checkbox);
@@ -64,5 +68,6 @@ app.component('Divider', Divider);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('Dialog', Dialog);
+app.component('SummernoteEditor', SummernoteEditor);
 
 app.mount('#app');
