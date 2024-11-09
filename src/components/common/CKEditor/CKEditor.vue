@@ -1,7 +1,10 @@
 <template>
 	<div>
 		<div class="main-container">
-			<div class="editor-container editor-container_classic-editor" ref="editorContainerElement">
+			<div
+				class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
+				ref="editorContainerElement"
+			>
 				<div class="editor-container__editor">
 					<div ref="editorElement">
 						<ckeditor v-if="isLayoutReady" v-model="config.initialData" :editor="editor" :config="config" />
@@ -16,17 +19,28 @@
 import {
 	ClassicEditor,
 	AccessibilityHelp,
+	Alignment,
 	Autoformat,
 	AutoImage,
 	AutoLink,
 	Autosave,
+	BalloonToolbar,
+	BlockQuote,
+	BlockToolbar,
 	Bold,
 	Code,
 	CodeBlock,
 	Essentials,
+	FindAndReplace,
+	FontBackgroundColor,
+	FontColor,
+	FontFamily,
+	FontSize,
 	FullPage,
 	GeneralHtmlSupport,
 	Heading,
+	Highlight,
+	HorizontalLine,
 	HtmlEmbed,
 	ImageBlock,
 	ImageCaption,
@@ -38,17 +52,34 @@ import {
 	ImageTextAlternative,
 	ImageToolbar,
 	ImageUpload,
+	Indent,
+	IndentBlock,
 	Italic,
 	Link,
 	LinkImage,
 	List,
 	ListProperties,
+	Markdown,
+	MediaEmbed,
+	Mention,
+	PageBreak,
 	Paragraph,
 	PasteFromOffice,
+	RemoveFormat,
 	SelectAll,
-	ShowBlocks,
 	SimpleUploadAdapter,
 	SourceEditing,
+	SpecialCharacters,
+	SpecialCharactersArrows,
+	SpecialCharactersCurrency,
+	SpecialCharactersEssentials,
+	SpecialCharactersLatin,
+	SpecialCharactersMathematical,
+	SpecialCharactersText,
+	Strikethrough,
+	Style,
+	Subscript,
+	Superscript,
 	Table,
 	TableCaption,
 	TableCellProperties,
@@ -57,6 +88,7 @@ import {
 	TableToolbar,
 	TextTransformation,
 	TodoList,
+	Underline,
 	Undo
 } from 'ckeditor5';
 
@@ -81,40 +113,72 @@ export default {
 					'redo',
 					'|',
 					'sourceEditing',
-					'showBlocks',
+					'findAndReplace',
 					'|',
 					'heading',
+					'style',
+					'|',
+					'fontSize',
+					'fontFamily',
+					'fontColor',
+					'fontBackgroundColor',
 					'|',
 					'bold',
 					'italic',
+					'underline',
+					'strikethrough',
+					'subscript',
+					'superscript',
 					'code',
+					'removeFormat',
 					'|',
+					'specialCharacters',
+					'horizontalLine',
+					'pageBreak',
 					'link',
 					'insertImage',
 					'insertImageViaUrl',
+					'mediaEmbed',
 					'insertTable',
+					'highlight',
+					'blockQuote',
 					'codeBlock',
 					'htmlEmbed',
 					'|',
+					'alignment',
+					'|',
 					'bulletedList',
 					'numberedList',
-					'todoList'
+					'todoList',
+					'outdent',
+					'indent'
 				],
 				shouldNotGroupWhenFull: false
 			},
 			plugins: [
 				AccessibilityHelp,
+				Alignment,
 				Autoformat,
 				AutoImage,
 				AutoLink,
 				Autosave,
+				BalloonToolbar,
+				BlockQuote,
+				BlockToolbar,
 				Bold,
 				Code,
 				CodeBlock,
 				Essentials,
+				FindAndReplace,
+				FontBackgroundColor,
+				FontColor,
+				FontFamily,
+				FontSize,
 				FullPage,
 				GeneralHtmlSupport,
 				Heading,
+				Highlight,
+				HorizontalLine,
 				HtmlEmbed,
 				ImageBlock,
 				ImageCaption,
@@ -126,17 +190,34 @@ export default {
 				ImageTextAlternative,
 				ImageToolbar,
 				ImageUpload,
+				Indent,
+				IndentBlock,
 				Italic,
 				Link,
 				LinkImage,
 				List,
 				ListProperties,
+				Markdown,
+				MediaEmbed,
+				Mention,
+				PageBreak,
 				Paragraph,
 				PasteFromOffice,
+				RemoveFormat,
 				SelectAll,
-				ShowBlocks,
 				SimpleUploadAdapter,
 				SourceEditing,
+				SpecialCharacters,
+				SpecialCharactersArrows,
+				SpecialCharactersCurrency,
+				SpecialCharactersEssentials,
+				SpecialCharactersLatin,
+				SpecialCharactersMathematical,
+				SpecialCharactersText,
+				Strikethrough,
+				Style,
+				Subscript,
+				Superscript,
 				Table,
 				TableCaption,
 				TableCellProperties,
@@ -145,8 +226,34 @@ export default {
 				TableToolbar,
 				TextTransformation,
 				TodoList,
+				Underline,
 				Undo
 			],
+			balloonToolbar: ['bold', 'italic', '|', 'link', 'insertImage', '|', 'bulletedList', 'numberedList'],
+			blockToolbar: [
+				'fontSize',
+				'fontColor',
+				'fontBackgroundColor',
+				'|',
+				'bold',
+				'italic',
+				'|',
+				'link',
+				'insertImage',
+				'insertTable',
+				'|',
+				'bulletedList',
+				'numberedList',
+				'outdent',
+				'indent'
+			],
+			fontFamily: {
+				supportAllValues: true
+			},
+			fontSize: {
+				options: [10, 12, 14, 'default', 18, 20, 22],
+				supportAllValues: true
+			},
 			heading: {
 				options: [
 					{
@@ -237,10 +344,69 @@ export default {
 					reversed: true
 				}
 			},
+			mention: {
+				feeds: [
+					{
+						marker: '@',
+						feed: [
+							/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+						]
+					}
+				]
+			},
 			menuBar: {
 				isVisible: true
 			},
 			placeholder: 'Type or paste your content here!',
+			style: {
+				definitions: [
+					{
+						name: 'Article category',
+						element: 'h3',
+						classes: ['category']
+					},
+					{
+						name: 'Title',
+						element: 'h2',
+						classes: ['document-title']
+					},
+					{
+						name: 'Subtitle',
+						element: 'h3',
+						classes: ['document-subtitle']
+					},
+					{
+						name: 'Info box',
+						element: 'p',
+						classes: ['info-box']
+					},
+					{
+						name: 'Side quote',
+						element: 'blockquote',
+						classes: ['side-quote']
+					},
+					{
+						name: 'Marker',
+						element: 'span',
+						classes: ['marker']
+					},
+					{
+						name: 'Spoiler',
+						element: 'span',
+						classes: ['spoiler']
+					},
+					{
+						name: 'Code (dark)',
+						element: 'pre',
+						classes: ['fancy-code', 'fancy-code-dark']
+					},
+					{
+						name: 'Code (bright)',
+						element: 'pre',
+						classes: ['fancy-code', 'fancy-code-bright']
+					}
+				]
+			},
 			table: {
 				contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
 			},
