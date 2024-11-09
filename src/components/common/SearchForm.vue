@@ -1,86 +1,114 @@
 <template>
     <div class="search-container">
         <div class="form-row">
-            <!-- 각 필드를 반복하여 렌더링, 필요한 경우 Divider도 포함 -->
             <template v-for="(field, index) in fields" :key="index">
                 <div class="form-group">
                     <div class="label">{{ field.label }}</div>
 
                     <!-- 필드 타입에 따른 조건부 렌더링 -->
                     <template v-if="field.type === 'input'">
-                        <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
-                            class="form-input" />
+                        <input type="text" v-model="formData[`${field.model}_${index}`]"
+                            :placeholder="field.placeholder" class="form-input" />
                     </template>
 
                     <template v-else-if="field.type === 'select'">
-                        <select v-model="formData[field.model]" class="form-select">
-                            <option v-for="(option, idx) in field.options" :key="idx" :value="option">{{ option }}
+                        <select v-model="formData[`${field.model}_${index}`]" class="form-select">
+                            <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                {{ option }}
                             </option>
                         </select>
                     </template>
 
                     <template v-else-if="field.type === 'calendar'">
-                        <Calendar v-model="formData[field.model]" :showIcon="field.showIcon"
+                        <Calendar v-model="formData[`${field.model}_${index}`]" :showIcon="field.showIcon"
                             :iconDisplay="field.iconDisplay" :selectionMode="field.selectionMode"
                             :manualInput="field.manualInput" class="small-calendar" />
                     </template>
 
-                    <template v-else-if="field.type === 'inputWithButton'">
+                    <template v-if="field.type === 'inputWithButton'">
                         <div class="search-input">
-                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                            <input type="text" disabled v-model="formData[`validFrom_${index}`]" :placeholder="field.placeholder"
                                 class="form-input" />
-                            <button class="search-button">
+                            <button class="search-button" @click="openModal(index)">
                                 <span class="search-icon pi pi-search"></span>
                             </button>
                         </div>
                     </template>
 
-                    <!-- 라디오 버튼 -->
                     <template v-else-if="field.type === 'radio'">
                         <div class="radio-group">
                             <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                <input type="radio" :name="field.model" :value="option"
-                                    v-model="formData[field.model]" />
+                                <input type="radio" :name="`${field.model}_${index}`" :value="option"
+                                    v-model="formData[`${field.model}_${index}`]" />
                                 {{ option }}
                             </label>
                         </div>
                     </template>
 
-                    <!-- 체크박스 -->
                     <template v-else-if="field.type === 'checkbox'">
                         <div class="checkbox-group">
                             <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
-                                <input type="checkbox" :value="option" v-model="formData[field.model]" />
+                                <input type="checkbox" :value="option" v-model="formData[`${field.model}_${index}`]" />
                                 {{ option }}
                             </label>
                         </div>
                     </template>
                 </div>
-
             </template>
         </div>
-
     </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import Divider from 'primevue/divider' // Divider 컴포넌트 import
-import Calendar from 'primevue/calendar' // Calendar 컴포넌트 import
+import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
+import Calendar from 'primevue/calendar';
 
-// Props 정의: 뷰 컴포넌트에서 필드 설정을 전달받음
+const emit = defineEmits(['open-modal']);
 const props = defineProps({
     fields: {
         type: Array,
         required: true,
         default: () => []
     }
-})
+});
 
-// formData 객체에 각 필드의 초기값을 reactive로 설정
-const formData = reactive(
-    Object.fromEntries(props.fields.map(field => [field.model, field.default || '']))
-)
+// formData를 ref 객체로 정의
+const formData = ref({});
+
+// 컴포넌트 초기화 시 모든 필드 초기화
+function initializeFormData() {
+    formData.value = {};
+    props.fields.forEach((field, index) => {
+        if (field.type === 'inputWithButton') {
+            formData.value[`validFrom_${index}`] = field.default || '';
+        }
+    });
+}
+
+// 컴포넌트가 로드될 때 formData 초기화
+onMounted(() => {
+    initializeFormData();
+});
+
+// 모달 열기 메서드
+function openModal(index) {
+    // 모달 열기 전에 해당 인덱스의 필드 초기화
+    formData.value[`validFrom_${index}`] = '';
+    console.log(`Modal opened for index ${index}, field reset`);
+    emit('open-modal', index);
+}
+
+// 부모 컴포넌트에서 호출하여 input 필드 값을 업데이트하는 메서드
+function updateFieldValue(index, value) {
+    console.log(`Updating field at index ${index} with value:`, value);
+    formData.value[`validFrom_${index}`] = value;
+    console.log('Updated formData:', formData.value);
+}
+
+// expose로 부모 컴포넌트에서 접근 가능하도록 설정
+defineExpose({
+    updateFieldValue
+});
 </script>
 
 <style scoped>
@@ -123,7 +151,7 @@ body {
     color: #333;
     text-align: left;
     padding-right: 8px;
-    padding-left: 8px;
+    padding-left: 30px;
 }
 
 .form-input,
@@ -134,6 +162,7 @@ body {
     padding: 0 8px;
     font-size: 13px;
     box-sizing: border-box;
+    border-radius: 0px;
 }
 
 .form-select {
@@ -155,7 +184,6 @@ body {
 
 .search-input {
     position: relative;
-    width: 100%;
 }
 
 .search-button {

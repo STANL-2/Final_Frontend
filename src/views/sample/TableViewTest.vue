@@ -18,7 +18,7 @@
 import { ref } from 'vue';
 import ViewTable from '@/components/common/ViewTable.vue';
 import Modal from '@/components/common/Modal.vue';
-import CommonButton from '@/components/common/button/CommonButton.vue';
+import CommonButton from '@/components/common/Button/CommonButton.vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 
 const showModal = ref(false); // 모달의 열림/닫힘 상태 관리
