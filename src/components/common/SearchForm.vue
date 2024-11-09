@@ -34,6 +34,27 @@
                             </button>
                         </div>
                     </template>
+
+                    <!-- 라디오 버튼 -->
+                    <template v-else-if="field.type === 'radio'">
+                        <div class="radio-group">
+                            <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
+                                <input type="radio" :name="field.model" :value="option"
+                                    v-model="formData[field.model]" />
+                                {{ option }}
+                            </label>
+                        </div>
+                    </template>
+
+                    <!-- 체크박스 -->
+                    <template v-else-if="field.type === 'checkbox'">
+                        <div class="checkbox-group">
+                            <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
+                                <input type="checkbox" :value="option" v-model="formData[field.model]" />
+                                {{ option }}
+                            </label>
+                        </div>
+                    </template>
                 </div>
 
             </template>
@@ -196,5 +217,21 @@ body {
         grid-template-columns: 1fr;
         /* 작은 화면에서는 1열 */
     }
+}
+
+.radio-group {
+    display: flex;
+    gap: 10px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.radio-label input[type='radio'] {
+    margin-right: 5px;
 }
 </style>

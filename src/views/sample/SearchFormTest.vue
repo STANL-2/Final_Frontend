@@ -71,6 +71,14 @@ const formFields = [
         model: 'validFrom',
         placeholder: '유효 시작일 입력',
         showDivider: false
+    },
+
+    {
+        type: 'radio',
+        label: '구독 여부',
+        model: 'subscription',
+        options: ['예', '아니오'],
+        default: '아니오'
     }
 ]
 </script>
