@@ -47,3 +47,12 @@ ul {
 ul > li {
   list-style-type: none;
 }
+
+/* PrimeVue의 기본 p-dialog-footer 스타일 덮어쓰기 */
+.p-dialog .p-dialog-footer {
+  display: flex !important;
+  justify-content: center !important; /* 가운데 정렬 강제 적용 */
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: none;
+}
