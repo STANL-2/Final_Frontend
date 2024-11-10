@@ -1,16 +1,24 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from '@/router/routes';
+
+// pinia 설정
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+
+// ckeditor 설정
+import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
+
+// fullcalendar 설정
+import FullCalendar from '@fullcalendar/vue3';
+
+// chart 설정
 import Chart from 'chart.js/auto';
+
+// PrimeVue 및 기타 컴포넌트 설정
 import PrimeVue from 'primevue/config';
 import Button from 'primevue/button';
 import Tree from 'primevue/tree';
-import FullCalendar from '@fullcalendar/vue3';
-import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
-
-// PrimeVue 및 기타 컴포넌트 설정
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';

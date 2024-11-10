@@ -7,7 +7,12 @@
 			>
 				<div class="editor-container__editor">
 					<div ref="editorElement">
-						<ckeditor v-if="isLayoutReady" v-model="config.initialData" :editor="editor" :config="config" />
+						<ckeditor
+							v-if="isLayoutReady"
+							v-model="config.initialData"
+							:editor="editor"
+							:config="config"
+						/>
 					</div>
 				</div>
 			</div>
@@ -24,76 +29,46 @@ import {
 	AutoImage,
 	AutoLink,
 	Autosave,
-	BalloonToolbar,
 	BlockQuote,
-	BlockToolbar,
 	Bold,
 	Code,
 	CodeBlock,
 	Essentials,
-	FindAndReplace,
 	FontBackgroundColor,
 	FontColor,
 	FontFamily,
 	FontSize,
-	FullPage,
-	GeneralHtmlSupport,
 	Heading,
 	Highlight,
 	HorizontalLine,
-	HtmlEmbed,
 	ImageBlock,
 	ImageCaption,
 	ImageInline,
 	ImageInsert,
-	ImageInsertViaUrl,
 	ImageResize,
 	ImageStyle,
 	ImageTextAlternative,
 	ImageToolbar,
 	ImageUpload,
 	Indent,
-	IndentBlock,
 	Italic,
 	Link,
-	LinkImage,
 	List,
-	ListProperties,
-	Markdown,
 	MediaEmbed,
-	Mention,
 	PageBreak,
 	Paragraph,
 	PasteFromOffice,
 	RemoveFormat,
-	SelectAll,
 	SimpleUploadAdapter,
 	SourceEditing,
 	SpecialCharacters,
-	SpecialCharactersArrows,
-	SpecialCharactersCurrency,
-	SpecialCharactersEssentials,
-	SpecialCharactersLatin,
-	SpecialCharactersMathematical,
-	SpecialCharactersText,
-	Strikethrough,
-	Style,
-	Subscript,
-	Superscript,
 	Table,
-	TableCaption,
-	TableCellProperties,
-	TableColumnResize,
-	TableProperties,
 	TableToolbar,
-	TextTransformation,
-	TodoList,
 	Underline,
 	Undo
 } from 'ckeditor5';
 
 import translations from 'ckeditor5/translations/ko.js';
-
 import 'ckeditor5/ckeditor5.css';
 
 export default {
@@ -101,7 +76,7 @@ export default {
 	data() {
 		return {
 			isLayoutReady: false,
-			config: null, // CKEditor needs the DOM tree before calculating the configuration.
+			config: null,
 			editor: ClassicEditor
 		};
 	},
@@ -109,173 +84,127 @@ export default {
 		this.config = {
 			toolbar: {
 				items: [
-					'undo',
-					'redo',
-					'|',
-					'sourceEditing',
-					'findAndReplace',
-					'|',
-					'heading',
-					'style',
-					'|',
-					'fontSize',
-					'fontFamily',
-					'fontColor',
-					'fontBackgroundColor',
-					'|',
-					'bold',
-					'italic',
-					'underline',
-					'strikethrough',
-					'subscript',
-					'superscript',
-					'code',
-					'removeFormat',
-					'|',
-					'specialCharacters',
-					'horizontalLine',
-					'pageBreak',
-					'link',
-					'insertImage',
-					'insertImageViaUrl',
-					'mediaEmbed',
-					'insertTable',
-					'highlight',
-					'blockQuote',
-					'codeBlock',
-					'htmlEmbed',
-					'|',
-					'alignment',
-					'|',
-					'bulletedList',
-					'numberedList',
-					'todoList',
-					'outdent',
-					'indent'
-				],
-				shouldNotGroupWhenFull: false
+					'undo', 'redo', '|', 'sourceEditing', 'heading', '|',
+					'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+					'bold', 'italic', 'underline', 'strikethrough', 'removeFormat', '|',
+					'link', 'bulletedList', 'numberedList', '|',
+					'insertImage', 'mediaEmbed', 'insertTable', '|',
+					'blockQuote', 'codeBlock', 'htmlEmbed', 'highlight'
+				]
 			},
 			plugins: [
-				AccessibilityHelp,
-				Alignment,
-				Autoformat,
-				AutoImage,
-				AutoLink,
-				Autosave,
-				BalloonToolbar,
-				BlockQuote,
-				BlockToolbar,
-				Bold,
-				Code,
-				CodeBlock,
-				Essentials,
-				FindAndReplace,
-				FontBackgroundColor,
-				FontColor,
-				FontFamily,
-				FontSize,
-				FullPage,
-				GeneralHtmlSupport,
-				Heading,
-				Highlight,
-				HorizontalLine,
-				HtmlEmbed,
-				ImageBlock,
-				ImageCaption,
-				ImageInline,
-				ImageInsert,
-				ImageInsertViaUrl,
-				ImageResize,
-				ImageStyle,
-				ImageTextAlternative,
-				ImageToolbar,
-				ImageUpload,
-				Indent,
-				IndentBlock,
-				Italic,
-				Link,
-				LinkImage,
-				List,
-				ListProperties,
-				Markdown,
-				MediaEmbed,
-				Mention,
-				PageBreak,
-				Paragraph,
-				PasteFromOffice,
-				RemoveFormat,
-				SelectAll,
-				SimpleUploadAdapter,
-				SourceEditing,
-				SpecialCharacters,
-				SpecialCharactersArrows,
-				SpecialCharactersCurrency,
-				SpecialCharactersEssentials,
-				SpecialCharactersLatin,
-				SpecialCharactersMathematical,
-				SpecialCharactersText,
-				Strikethrough,
-				Style,
-				Subscript,
-				Superscript,
-				Table,
-				TableCaption,
-				TableCellProperties,
-				TableColumnResize,
-				TableProperties,
-				TableToolbar,
-				TextTransformation,
-				TodoList,
-				Underline,
-				Undo
+				AccessibilityHelp, Alignment, Autoformat, AutoImage, AutoLink, Autosave,
+				BlockQuote, Bold, Code, CodeBlock, Essentials, FontBackgroundColor,
+				FontColor, FontFamily, FontSize, Heading, Highlight, HorizontalLine,
+				ImageBlock, ImageCaption, ImageInline, ImageInsert, ImageResize, ImageStyle,
+				ImageTextAlternative, ImageToolbar, ImageUpload, Indent, Italic, Link,
+				List, MediaEmbed, PageBreak, Paragraph, PasteFromOffice, RemoveFormat,
+				SimpleUploadAdapter, SourceEditing, SpecialCharacters, Table,
+				TableToolbar, Underline, Undo
 			],
-			simpleUpload: {
-				uploadUrl: 'https://your-server.com/api/upload', // 이미지 업로드를 처리할 서버 URL을 입력하세요.
-				headers: {
-					Authorization: 'Bearer <your-token>' // 필요 시, 인증 토큰을 추가합니다.
-				}
+			style: {
+				definitions: [
+					{ name: 'Article category', element: 'h3', classes: 'category' },
+					{ name: 'Title', element: 'h2', classes: 'document-title' },
+					{ name: 'Subtitle', element: 'h3', classes: 'document-subtitle' },
+					{ name: 'Info box', element: 'p', classes: 'info-box' },
+					{ name: 'Marker', element: 'span', classes: 'marker' },
+					{ name: 'Code (dark)', element: 'pre', classes: 'fancy-code-dark' }
+				]
 			},
 			image: {
-				toolbar: [
-					'toggleImageCaption',
-					'imageTextAlternative',
-					'|',
-					'imageStyle:inline',
-					'imageStyle:wrapText',
-					'imageStyle:breakText',
-					'|',
-					'resizeImage'
-				]
+				toolbar: ['toggleImageCaption', 'imageTextAlternative', '|', 'resizeImage']
 			},
-			htmlSupport: {
-				allow: [
-					{
-						name: /^.*$/,
-						styles: true,
-						attributes: true,
-						classes: true
-					}
-				]
-			},
-			heading: {
-				options: [
-					{ model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-					{ model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-					{ model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-					{ model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
-					{ model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
-					{ model: 'heading5', view: 'h5', title: 'Heading 5', class: 'ck-heading_heading5' },
-					{ model: 'heading6', view: 'h6', title: 'Heading 6', class: 'ck-heading_heading6' }
-				]
-			},
-			language: 'ko',
-			placeholder: '내용을 입력하세요...'
+			initialData: '',
+			language: 'ko'
 		};
-
 		this.isLayoutReady = true;
 	}
 };
 </script>
+
+<style>
+/* CKEditor 전체 컨테이너 */
+.main-container {
+	max-width: 99%;
+	margin: 0 auto;
+	padding: 20px;
+	border-radius: 8px;
+}
+
+/* 에디터 컨테이너 */
+.editor-container {
+	background-color: #ffffff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 16px;
+}
+
+/* 에디터 내부 */
+::v-deep .ck-editor__editable {
+	min-height: 400px;
+	padding: 16px;
+	font-size: 16px;
+	line-height: 1.6;
+	color: #333;
+	background-color: #fff;
+	border-radius: 4px;
+}
+
+/* 에디터 툴바 */
+::v-deep .ck-toolbar {
+	border-bottom: 1px solid #e0e0e0;
+	background-color: #f7f7f7;
+	border-radius: 8px 8px 0 0;
+}
+
+::v-deep .ck-toolbar .ck-button {
+	color: #333;
+}
+
+::v-deep .ck-toolbar .ck-button.ck-on {
+	background-color: #007acc;
+	color: white;
+}
+
+/* 스타일 정의 */
+::v-deep .ck-content .category {
+	font-size: 1.5em;
+	color: #007acc;
+}
+
+::v-deep .ck-content .document-title {
+	font-size: 2em;
+	font-weight: bold;
+	margin-top: 20px;
+}
+
+::v-deep .ck-content .document-subtitle {
+	font-size: 1.75em;
+	font-style: italic;
+	color: #555;
+}
+
+::v-deep .ck-content .info-box {
+	background-color: #f5f5f5;
+	padding: 10px;
+	border-left: 4px solid #007acc;
+}
+
+::v-deep .ck-content .marker {
+	background-color: #ffeb3b;
+	padding: 2px 4px;
+}
+
+::v-deep .ck-content pre.fancy-code-dark {
+	background-color: #282c34;
+	color: #61dafb;
+	padding: 16px;
+	border-radius: 4px;
+	overflow-x: auto;
+}
+</style>
+
 
 
 
