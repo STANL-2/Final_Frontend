@@ -9,7 +9,6 @@ import Button from 'primevue/button';
 import Tree from 'primevue/tree';
 import FullCalendar from '@fullcalendar/vue3';
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
-import SummernoteEditor from 'vue3-summernote-editor';
 
 // PrimeVue 및 기타 컴포넌트 설정
 import DataTable from 'primevue/datatable';
@@ -63,6 +62,5 @@ app.component('Divider', Divider);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('Dialog', Dialog);
-app.component('SummernoteEditor', SummernoteEditor);
 
 app.mount('#app');
