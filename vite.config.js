@@ -8,11 +8,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      jquery: 'jquery/dist/jquery.min.js',
+      '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  optimizeDeps: {
-    include: ['jquery', 'bootstrap']
   }
 });
