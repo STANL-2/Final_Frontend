@@ -31,6 +31,10 @@ const router = createRouter({
                 {
                     path: 'ckeditor',
                     component: () => import('@/views/sample/CKEditorTest.vue')
+                },
+                {
+                    path: 'f12',
+                    component: () => import('@/views/sample/F12.vue')
                 }
             ]
         },
