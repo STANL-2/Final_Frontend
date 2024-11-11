@@ -1,13 +1,8 @@
 <template>
     <div>
         <h2>개발자 도구</h2>
-        <textarea 
-            v-model="inputData" 
-            @keydown.enter.prevent="handleEnter"
-            placeholder="여러 줄 입력 후 엔터를 누르세요"
-            rows="10"
-            class="textarea"
-        ></textarea>
+        <textarea v-model="inputData" @keydown.enter.prevent="handleEnter" placeholder="여러 줄 입력 후 엔터를 누르세요" rows="10"
+            class="textarea"></textarea>
 
         <!-- 테이블 출력 -->
         <table class="table">
@@ -54,36 +49,33 @@ const handleEnter = () => {
     const lines = inputData.value.trim().split('\n');
     rows.value = []; // 이전 입력을 지우고 새로 추가
 
+    let currentColumn = '';
+
     lines.forEach(line => {
         const input = line.trim();
 
         if (input) {
             let tableName, entity, query;
 
-            // 입력이 대문자로 시작하면 Table로 간주
-            if (input[0] === input[0].toUpperCase()) {
-                tableName = input;
-                // 예외 필드 확인
-                if (exceptions[tableName]) {
-                    entity = exceptions[tableName].entity;
-                    query = exceptions[tableName].query;
-                } else {
-                    const underscoreIndex = tableName.indexOf('_');
-                    if (underscoreIndex !== -1) {
-                        entity = tableName.slice(underscoreIndex + 1).toLowerCase();
-                    } else {
-                        entity = tableName.toLowerCase();
-                    }
-                    query = `A.${tableName}`;
+            if (input.startsWith('@Column')) {
+                const columnNameMatch = input.match(/name = \"(\w+)"/);
+                if (columnNameMatch) {
+                    currentColumn = columnNameMatch[1];
                 }
-            } else {
-                // 입력이 소문자로 시작하면 Entity로 간주
-                entity = input;
-                tableName = convertToTableName(entity);
-                query = `A.${tableName}`;
+            } else if (input.startsWith('private')) {
+                const entityMatch = input.match(/private \w+ (\w+);/);
+                if (!entityMatch) {
+                    const entityWithDefaultMatch = input.match(/private \w+ (\w+) = .+;/);
+                    entity = entityWithDefaultMatch ? entityWithDefaultMatch[1] : null;
+                } else {
+                    entity = entityMatch[1];
+                }
+                if (entity) {
+                    tableName = currentColumn;
+                    query = `A.${tableName}`;
+                    rows.value.push([tableName, entity, query]);
+                }
             }
-
-            rows.value.push([tableName, entity, query]);
         }
     });
 
@@ -116,7 +108,7 @@ const generateQueryOutput = () => {
 const generateXmlOutput = () => {
     if (rows.value.length > 0) {
         const xmlFields = rows.value.map(row => {
-            if (row[0] === 'CENT_ID') {
+            if (row[0].includes("ID")) {
                 return `<id property="${row[1]}" column="${row[0]}"/>`;
             } else {
                 return `<result property="${row[1]}" column="${row[0]}"/>`;
