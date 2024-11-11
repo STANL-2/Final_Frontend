@@ -98,7 +98,7 @@ const convertToTableName = (entity) => {
 const generateQueryOutput = () => {
     if (rows.value.length > 0) {
         const selectFields = rows.value.map(row => `    ${row[2]}`);
-        generatedQuery.value = `SELECT\n${selectFields.join(',\n')}\nFROM CENTER A`;
+        generatedQuery.value = `SELECT\n   ${selectFields.join(',\n   ')}\n  FROM CENTER A`;
     } else {
         generatedQuery.value = '';
     }
