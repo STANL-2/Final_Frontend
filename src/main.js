@@ -6,6 +6,9 @@ import router from '@/router/routes';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
+// Toast Message 설정
+import ToastService from 'primevue/toastservice';
+
 // ckeditor 설정
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
@@ -52,6 +55,7 @@ app.use(pinia);
 app.use(router);
 app.use(CkeditorPlugin);
 app.use(PrimeVue);
+app.use(ToastService);
 app.component('Button', Button);
 app.component('Card', Card);
 app.component('Tree', Tree);

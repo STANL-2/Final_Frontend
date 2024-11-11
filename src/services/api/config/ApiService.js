@@ -35,10 +35,24 @@ export default class ApiService extends BaseApiService {
                 return responseData;
             } else {
                 console.error(`HTTP Error: ${response.status}`);
+
+                let errorMsg = '서버 요청 중 문제가 발생했습니다.';
+                try {
+                    const errorResponse = await response.json();
+                    errorMsg = errorResponse?.msg || errorMsg;
+                } catch (e) {
+                    console.error('JSON 파싱 실패', e);
+                }
+
+                DOMEventService.dispatchApiError(errorMsg);
+
                 return null;
             }
         } catch (err) {
-            console.log('서버 에러 발생!', err);
+            // 서버에서 보내주는 에러 메시지 뽑기
+            console.error('서버 에러 발생!', err);
+            DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
+            throw err;
         }
     }
 
@@ -54,6 +68,7 @@ export default class ApiService extends BaseApiService {
         }
 
         const responseData = await this.#callApi(url);
+        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         return responseData.result;
     }
 
@@ -75,7 +90,7 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
-
+        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         if (responseData) {
             return responseData;
         } else {
@@ -113,8 +128,6 @@ export default class ApiService extends BaseApiService {
         if (subUrl) {
             url += `?${subUrl}`;
         }
-
-        console.log(url);
 
         const options = {
             method: 'DELETE',

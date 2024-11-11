@@ -22,6 +22,8 @@
       </div>
     </div>
   </main>
+  
+  <Toast position="top-center" />
 </template>
 
 <script setup>
@@ -30,16 +32,39 @@ import { RouterView } from 'vue-router';
 import PageHeader from './components/PageHeader.vue';
 import PagePath from './components/common/PagePath.vue';
 import PageAside from './components/PageAside.vue';
+import useToastMessage from './hooks/useToastMessage';
+import DOMEventService from './services/DOMEventService';
+import Toast from 'primevue/toast';
+
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 
 const router = useRouter();
 const userStore = useUserStore();
+const { showError, showSuccess } = useToastMessage();
 const isSidebarCollapsed = ref(false);
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
+
+function handleApiError(customEvent) {
+  showError('오류 발생', customEvent.detail);
+}
+
+function handleApiSuccess(customEvent) {
+  showSuccess('성공', customEvent.detail);
+}
+
+onMounted(() => {
+  DOMEventService.subscribeApiError(handleApiError);
+  DOMEventService.subscribeApiSuccess(handleApiSuccess);
+});
+
+onUnmounted(() => {
+  DOMEventService.unsubscribeApiError(handleApiError);
+  DOMEventService.unsubscribeApiSuccess(handleApiSuccess);
+});
 </script>
 
 <style scoped>
