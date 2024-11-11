@@ -35,6 +35,10 @@ const router = createRouter({
                 {
                     path: 'f12',
                     component: () => import('@/views/sample/F12.vue')
+                },
+                {
+                    path: 'sample-api',
+                    component: () => import('@/views/sample/SampleApiTest.vue')
                 }
             ]
         },
