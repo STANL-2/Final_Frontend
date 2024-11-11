@@ -43,10 +43,12 @@ export default class ApiService extends BaseApiService {
     }
 
     async get(subUrl, queryParams) {
-        let url = `${this.baseUrl}`;
+        let url = `${this.baseUrl}/${this.resource}`;
+
         if (subUrl) {
             url += `/${subUrl}`;
         }
+
         if (queryParams) {
             url += `?${queryParams}`;
         }
@@ -109,8 +111,10 @@ export default class ApiService extends BaseApiService {
     async delete(data, subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
-            url += `/${subUrl}`;
+            url += `?${subUrl}`;
         }
+
+        console.log(url);
 
         const options = {
             method: 'DELETE',
