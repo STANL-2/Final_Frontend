@@ -129,7 +129,7 @@ export default class ApiService extends BaseApiService {
     async delete(data, subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
-            url += `?${subUrl}`;
+            url += `/${subUrl}`;
         }
 
         const options = {

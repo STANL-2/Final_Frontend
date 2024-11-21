@@ -100,7 +100,7 @@ const deleteRequest = async () => {
     try {
         const response = await $api.sample.delete(
             '',
-            'mem_id='+deleteMemId.value
+            deleteMemId.value
             
         );
 
