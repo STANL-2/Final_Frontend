@@ -107,6 +107,9 @@ const postRequest = async () => {
             ''
         );
 
+        console.log('POST 요청 응답 결과');
+        console.log(response);
+
     } catch (error) {
         console.error('POST 요청 실패: ', error);
     }
@@ -120,7 +123,10 @@ const putRequest = async () => {
                 name: putName.value,
             },
             putMemId.value    // 파라미터
-        )
+        );
+
+        console.log('PUT 요청 응답 결과');
+        console.log(response);
 
     }catch(error){
         console.error('PUT 요청 실패: ', error);
@@ -135,6 +141,9 @@ const deleteRequest = async () => {
             deleteMemId.value
             
         );
+
+        console.log('DELETE 요청 응답 결과');
+        console.log(response);
 
     } catch (error) {
         console.error('DELETE 요청 실패: ', error);
