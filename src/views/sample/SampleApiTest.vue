@@ -54,8 +54,8 @@ const getMemId = ref('');
 const getRequest = async () => {
     try {
         const response = await $api.sample.get(
-            '',
-            'id='+getMemId.value
+            
+            getMemId.value
             
         );
 

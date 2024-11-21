@@ -59,16 +59,10 @@ export default class ApiService extends BaseApiService {
         }
     }
 
-    async get(subUrl, queryParams) {
+    async get(subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
 
-        if (subUrl) {
-            url += `/${subUrl}`;
-        }
-
-        if (queryParams) {
-            url += `?${queryParams}`;
-        }
+        url += `/${subUrl}`;
 
         const responseData = await this.#callApi(url);
         DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
