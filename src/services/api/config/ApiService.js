@@ -59,10 +59,16 @@ export default class ApiService extends BaseApiService {
         }
     }
 
-    async get(subUrl) {
+    async get(subUrl, queryParams) {
         let url = `${this.baseUrl}/${this.resource}`;
 
-        url += `/${subUrl}`;
+        if (subUrl) {
+            url += `/${subUrl}`;
+        }
+
+        if (queryParams) {
+            url += `?${queryParams}`;
+        }
 
         const responseData = await this.#callApi(url);
         DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
@@ -120,15 +126,14 @@ export default class ApiService extends BaseApiService {
         return responseData.result;
     }
 
-    async delete(data, subUrl) {
+    async delete(subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
             url += `/${subUrl}`;
         }
 
         const options = {
-            method: 'DELETE',
-            body: JSON.stringify(data),
+            method: 'DELETE'
         };
 
         const responseData = await this.#callApi(url, options);
