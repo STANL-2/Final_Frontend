@@ -50,7 +50,7 @@ export default {
             this.calendar = new Calendar(calendarEl, {
                 plugins: [dayGridPlugin, interactionPlugin],
                 initialView: 'dayGridMonth',
-                locale: '',
+                locale: 'en',
                 headerToolbar: {
                     left: 'title',
                     center: '' ,
@@ -135,8 +135,8 @@ export default {
 }
 
 /* 네비게이션 버튼 */
-.fc-button {
-    background-color: #007bff;
+.fc-prev-button .fc-button .fc-button-primary{
+    background-color: #B0DDFF;
     color: #fff;
     border: none;
     padding: 0.5rem 1rem;
