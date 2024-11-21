@@ -62,6 +62,9 @@ const login = async () => {
             },
             'signin'
         );
+        console.log(userTokens);
+        console.log('accesstoken', userTokens.result.accessToken);
+        console.log('refreshToken', userTokens.result.refreshToken);
 
         userStore.saveTokens(userTokens.result);
         goHome();

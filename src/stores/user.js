@@ -6,38 +6,43 @@ export const useUserStore = defineStore(
     () => {
         const id = ref('');
         const name = ref('');
-        const jwtToken = ref('');
+        const accessToken = ref('');
+        const refreshToken = ref('');
         const role = ref('');
         const isLoggined = ref(false);
 
-        function loginBySalesRep() {
+        function loginByEMPLOYEE() {
             id.value = 0;
             name.value = '영업 사원';
-            jwtToken.value = 'faketoken';
+            accessToken.value = 'faketoken';
+            refreshToken.value = 'faketoken';
             role.value = 'SalesRep';
             isLoggined.value = true;
         }
 
-        function loginBySalesManager() {
+        function loginByADMIN() {
             id.value = 1;
             name.value = '영업 관리자';
-            jwtToken.value = 'faketoken';
+            accessToken.value = 'faketoken';
+            refreshToken.value = 'faketoken';
             role.value = 'SalesManager';
             isLoggined.value = true;
         }
 
-        function loginBySalesAdmin() {
+        function loginByDIRECTOR() {
             id.value = 2;
             name.value = '영업 담당자';
-            jwtToken.value = 'faketoken';
+            accessToken.value = 'faketoken';
+            refreshToken.value = 'faketoken';
             role.value = 'SalesAdmin';
             isLoggined.value = true;
         }
 
-        function loginBySystemAdmin() {
+        function loginByGOD() {
             id.value = 3;
             name.value = '시스템 관리자';
-            jwtToken.value = 'faketoken';
+            accessToken.value = 'faketoken';
+            refreshToken.value = 'faketoken';
             role.value = 'SystemAdmin';
             isLoggined.value = true;
         }
@@ -45,13 +50,15 @@ export const useUserStore = defineStore(
         function logout() {
             id.value = 0;
             name.value = '';
-            jwtToken.value = '';
+            accessToken.value = '';
+            refreshToken.value = '';
             role.value = '';
             isLoggined.value = false;
         }
 
         function saveTokens(userToken) {
-            jwtToken.value = userToken;
+            accessToken.value = userToken.accessToken;
+            refreshToken.value = userToken.refreshToken;
             isLoggined.value = true;
         }
 
@@ -64,13 +71,14 @@ export const useUserStore = defineStore(
         return {
             id,
             name,
-            jwtToken,
+            accessToken,
+            refreshToken,
             role,
             isLoggined,
-            loginBySalesRep,
-            loginBySalesManager,
-            loginBySalesAdmin,
-            loginBySystemAdmin,
+            loginByEMPLOYEE,
+            loginByADMIN,
+            loginByDIRECTOR,
+            loginByGOD,
             logout,
             saveTokens,
             saveUserInfo

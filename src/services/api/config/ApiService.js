@@ -24,8 +24,11 @@ export default class ApiService extends BaseApiService {
                 myHeaders.append('Content-Type', 'application/json');
             }
 
-            const fetchOptions = { ...options };
+            if (this.#userStore.isLoggined && this.#userStore.accessToken){
+                myHeaders.append('Authorization', `Bearer ${this.#userStore.accessToken}`);
+            }
 
+            const fetchOptions = { ...options };
             fetchOptions['headers'] = myHeaders;
 
             // 요청 시작
