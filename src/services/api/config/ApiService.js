@@ -24,8 +24,11 @@ export default class ApiService extends BaseApiService {
                 myHeaders.append('Content-Type', 'application/json');
             }
 
-            const fetchOptions = { ...options };
+            if (this.#userStore.isLoggined && this.#userStore.accessToken){
+                myHeaders.append('Authorization', `Bearer ${this.#userStore.accessToken}`);
+            }
 
+            const fetchOptions = { ...options };
             fetchOptions['headers'] = myHeaders;
 
             // 요청 시작
@@ -123,15 +126,14 @@ export default class ApiService extends BaseApiService {
         return responseData.result;
     }
 
-    async delete(data, subUrl) {
+    async delete(subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
-            url += `?${subUrl}`;
+            url += `/${subUrl}`;
         }
 
         const options = {
-            method: 'DELETE',
-            body: JSON.stringify(data),
+            method: 'DELETE'
         };
 
         const responseData = await this.#callApi(url, options);

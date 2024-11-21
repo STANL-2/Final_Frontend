@@ -1,5 +1,7 @@
 <template>
     <div>
+        <h1>SAM_000000001</h1>
+        <br><br><br>
         <div>
             <h1>POST API</h1><br>
             name: <input v-model="postName" type="text" class="post-name"><br><br>
@@ -33,6 +35,13 @@
             <Button label="get 요청" class="btn-get" @click="getRequest">get 요청
             </Button>
         </div>
+        <br><br><br>
+        <div>
+            <h1>GET DETAIL API</h1><br>
+            mem_id: <input v-model="getDetailId" type="text" class="get-mem-id"><br><br>
+            <Button label="get 요청" class="btn-get-detail" @click="getDetailRequest">get detail 요청
+            </Button>
+        </div>
     </div>
 </template>
 
@@ -50,17 +59,40 @@ const deleteMemId = ref('');
 
 const getMemId = ref('');
 
+const getDetailId = ref('');
+
 // GET 요청 함수
 const getRequest = async () => {
     try {
         const response = await $api.sample.get(
-            '',
-            'id='+getMemId.value
+
+            getMemId.value,
+            ''
             
         );
 
+        console.log('GET 요청 응답 결과');
+        console.log(response);
+
     } catch (error) {
         console.error('GET 요청 실패: ', error);
+    }
+}
+
+// GET DETAIL 요청 함수
+const getDetailRequest = async () => {
+    try {
+        const response = await $api.sample.get(
+
+            getDetailId.value,
+            'detail'
+        );
+
+        console.log('GET DETAIL 요청 응답 결과');
+        console.log(response);
+
+    } catch (error) {
+        console.error('GET DETAIL 요청 실패: ', error);
     }
 }
 
@@ -75,6 +107,9 @@ const postRequest = async () => {
             ''
         );
 
+        console.log('POST 요청 응답 결과');
+        console.log(response);
+
     } catch (error) {
         console.error('POST 요청 실패: ', error);
     }
@@ -85,10 +120,13 @@ const putRequest = async () => {
     try {
         const response = await $api.sample.put(
             {
-                name: putName.value
+                name: putName.value,
             },
-            '?mem_id='+putMemId.value    // 파라미터
-        )
+            putMemId.value    // 파라미터
+        );
+
+        console.log('PUT 요청 응답 결과');
+        console.log(response);
 
     }catch(error){
         console.error('PUT 요청 실패: ', error);
@@ -99,10 +137,13 @@ const putRequest = async () => {
 const deleteRequest = async () => {
     try {
         const response = await $api.sample.delete(
-            '',
-            'mem_id='+deleteMemId.value
+            
+            deleteMemId.value
             
         );
+
+        console.log('DELETE 요청 응답 결과');
+        console.log(response);
 
     } catch (error) {
         console.error('DELETE 요청 실패: ', error);
