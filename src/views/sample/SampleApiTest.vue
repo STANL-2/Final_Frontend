@@ -87,7 +87,7 @@ const putRequest = async () => {
             {
                 name: putName.value
             },
-            '?mem_id='+putMemId.value    // 파라미터
+            putMemId.value    // 파라미터
         )
 
     }catch(error){
