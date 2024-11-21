@@ -64,7 +64,8 @@ export const asideMenu = [
             { key: '9-5', label: 'Login', url: '/login'},
             { key: '9-6', label: 'CKEditor', url: '/sample/ckeditor'},
             { key: '9-7', label: '개발자도구', url: '/sample/f12'},
-            { key: '9-8', label: '샘플 Api', url: '/sample/sample-api'}
+            { key: '9-8', label: '샘플 Api', url: '/sample/sample-api'},
+            { key: '9-9', label: '일정표', url: '/sample/scheduleTest'}
         ]
     }
 ];
