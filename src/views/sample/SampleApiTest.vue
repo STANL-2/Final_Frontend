@@ -66,8 +66,8 @@ const getRequest = async () => {
     try {
         const response = await $api.sample.get(
 
+            '',
             getMemId.value,
-            ''
             
         );
 
@@ -84,8 +84,9 @@ const getDetailRequest = async () => {
     try {
         const response = await $api.sample.get(
 
-            getDetailId.value,
-            'detail'
+            'detail',
+            getDetailId.value
+
         );
 
         console.log('GET DETAIL 요청 응답 결과');
@@ -122,7 +123,7 @@ const putRequest = async () => {
             {
                 name: putName.value,
             },
-            putMemId.value    // 파라미터
+            putMemId.value
         );
 
         console.log('PUT 요청 응답 결과');

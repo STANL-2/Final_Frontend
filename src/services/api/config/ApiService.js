@@ -67,7 +67,7 @@ export default class ApiService extends BaseApiService {
         }
 
         if (queryParams) {
-            url += `?${queryParams}`;
+            url += `/${queryParams}`;
         }
 
         const responseData = await this.#callApi(url);
