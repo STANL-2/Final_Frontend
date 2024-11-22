@@ -41,7 +41,7 @@ const showError = ref(false);
 const serverError = ref('');
 
 const goHome = () => {
-    router.replace('/');
+    router.replace('/dashboard');
 };
 
 const login = async () => {
@@ -80,7 +80,7 @@ const login = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 80vh;
+    height: 100vh;
     overflow: hidden;
     background-color: #ffffff;
 }

@@ -2,7 +2,7 @@
     <header>
         <nav class="menu-bar">
             <div class="start">
-                <RouterLink to="/" class="nav-link" active-class="router-link-active"
+                <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
                     <text class="title-1">영업관리</text>
