@@ -36,12 +36,17 @@
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import DatePicker from 'vue3-datepicker';
 
 export default {
+    components: {
+        DatePicker,
+    },
     data() {
         return {
             showEventForm: false,
             showYearDropdown: false,
+            showDatePicker: false,
             newEvent: {
                 title: '',
                 start: '',
@@ -74,12 +79,25 @@ export default {
                     dayGridMonth: {
                         titleFormat: {
                             month: 'long',
-                        }
+                        },
+                        dayCellContent: (info) => {
+                            // 날짜 텍스트에서 '일' 제거
+                            const number = document.createElement('a');
+                            number.classList.add('fc-daygrid-day-number');
+                            number.innerHTML = info.dayNumberText.replace('일', '').replace('日', ''); // '일' 또는 '日' 제거
+
+                            if (info.view.type === 'dayGridMonth') {
+                                return {
+                                    html: number.outerHTML,
+                                };
+                            }
+                            return { domNodes: [] };
+                        },
                     }
                 },
                 customButtons: {
                     customYearDropdown: {
-                        text: `${new Date().getFullYear()}년 ▼`, // 초기 연도 설정
+                        text: `${new Date().getFullYear()}년 v`, // 초기 연도 설정
                         click: (event) => {
                             this.toggleYearDropdown(event);
                         },
@@ -98,28 +116,21 @@ export default {
                 ],
                 editable: true,
                 datesSet: (info) => {
-                    const startDate = new Date(info.start); // 캘린더 시작 날짜
-                    const endDate = new Date(info.end); // 캘린더 끝 날짜
-                    const currentYear = new Date().getFullYear(); // 현재 기준 연도
-
-                    // 달력의 시작 날짜와 끝 날짜가 다른 연도인지 확인
-                    if (startDate.getFullYear() !== endDate.getFullYear()) {
-                        const year = startDate.getMonth() === 11 ? endDate.getFullYear() : startDate.getFullYear();
-                        this.updateYearDropdownText(year);
-                    } else {
-                        this.updateYearDropdownText(startDate.getFullYear());
-                    }
+                    // 현재 캘린더 중앙 날짜 기준으로 연도를 가져옴
+                    const currentDate = this.calendar.getDate();
+                    const currentYear = currentDate.getFullYear();
+                    // 버튼 텍스트를 업데이트
+                    this.updateYearDropdownText(currentYear);
                 },
             });
 
             this.calendar.render();
         },
-
         updateYearDropdownText(year) {
             // 버튼 텍스트를 동적으로 변경
             const toolbarEl = document.querySelector('.fc-customYearDropdown-button');
             if (toolbarEl) {
-                toolbarEl.textContent = `${year} ▼`;
+                toolbarEl.textContent = `${year}년 v`;
             }
         },
         toggleYearDropdown(event) {
@@ -138,11 +149,10 @@ export default {
             date.setFullYear(year);
             this.calendar.gotoDate(date); // 캘린더 연도 변경
             this.showYearDropdown = false; // 드롭다운 숨김
-
             // 버튼 텍스트를 동적으로 변경
             const toolbarEl = document.querySelector('.fc-customYearDropdown-button');
             if (toolbarEl) {
-                toolbarEl.textContent = `${year}년 ▼`;
+                toolbarEl.textContent = `${year}년 v`;
             }
         },
         addMoreYears() {
@@ -158,6 +168,20 @@ export default {
             if (scrollTop + clientHeight >= scrollHeight - 10) {
                 this.addMoreYears();
             }
+        },
+        openDatePicker(event) {
+            const rect = event.target.getBoundingClientRect();
+            this.dropdownTop = rect.bottom + window.scrollY;
+            this.dropdownLeft = rect.left + window.scrollX;
+            this.showDatePicker = true;
+        },
+        closeDatePicker() {
+            this.showDatePicker = false;
+        },
+        handleDateSelect(date) {
+            this.selectedDate = date;
+            this.newEvent.start = date.toISOString().slice(0, 10); // 선택된 날짜를 일정 시작 날짜에 설정
+            this.closeDatePicker();
         },
         openEventForm() {
             this.showEventForm = true;
@@ -197,13 +221,20 @@ export default {
     border-bottom: 1px solid #e0e0e0;
     padding: 1rem;
     padding-top: 0.8rem;
-    padding-bottom: 0.2rem;
+    padding-bottom: 0.4rem;
 }
 
-::v-deep(.fc-toolbar-title) {
+::v-deep(.fc .fc-toolbar-title) {
     font-size: 2rem;
     display: inline-block;
+    padding-bottom: 0.5rem;
 }
+
+::v-deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)) {
+    margin-left: 0rem;
+    /* 버튼 간 간격 설정 */
+}
+
 
 ::v-deep(.fc-next-button),
 ::v-deep(.fc-prev-button) {
@@ -213,12 +244,53 @@ export default {
 }
 
 ::v-deep(.fc-icon) {
+    line-height: 0.5;
+}
+
+::v-deep(.fc-button) {
+    border: none !important;
+    color: #333 !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: none !important;
+    font-size: 1.2rem;
+}
+
+::v-deep(.fc-button:hover) {
+    background-color: inherit !important;
+    color: inherit !important;
+}
+
+::v-deep(.fc-button.fc-button-active) {
+    border: none !important;
+}
+
+::v-deep(.fc-button.fc-button-disabled) {
+    cursor: not-allowed;
+}
+
+
+::v-deep(.fc-icon .fc-icon-chevron-left::before)::v-deep(.fc-icon .fc-icon-chevron-right) {
+    color: #333;
+    size: 2rem;
+}
+
+::v-deep(.fc-button-primary) {
+    background-color: #fff;
+    border: none;
     color: #333;
 }
 
 ::v-deep(.fc-customAddEvent-button) {
-    background-color: #B0DDFF;
-    border: none;
+    background-color: #6360AB !important;
+    color: #fff !important;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+::v-deep(.fc-customAddEvent-button:hover) {
+    background-color: #6360AB !important;
+    color: #fff !important;
+    transform: scale(1.03);
 }
 
 .event-form {
