@@ -41,7 +41,7 @@ const showError = ref(false);
 const serverError = ref('');
 
 const goHome = () => {
-    router.replace('/');
+    router.replace('/dashboard');
 };
 
 const login = async () => {
@@ -62,11 +62,9 @@ const login = async () => {
             },
             'signin'
         );
-        console.log(userTokens);
-        console.log('accesstoken', userTokens.result.accessToken);
-        console.log('refreshToken', userTokens.result.refreshToken);
 
         userStore.saveTokens(userTokens.result);
+        userStore.saveUserInfo(userTokens.result);
         goHome();
     } catch (error) {
         // 서버에서 오류가 발생했을 때 메시지 표시
@@ -80,7 +78,7 @@ const login = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 80vh;
+    height: 100vh;
     overflow: hidden;
     background-color: #ffffff;
 }

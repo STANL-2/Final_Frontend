@@ -6,7 +6,24 @@
             <h1>POST API</h1><br>
             name: <input v-model="postName" type="text" class="post-name"><br><br>
             num: <input v-model="postNum" type="text" class="post-num"><br><br>
-            <Button label="post 요청" class="btn-post" @click="postRequest">post 요청
+            <Button label="put 요청" class="btn-put" @click="postRequest">put 요청
+            </Button>
+        </div>
+        <br><br><br>
+
+        <div>
+            <h1>POST IMAGE API</h1><br>
+            name: <input v-model="postImageName" type="text" class="post-name"><br><br>
+            num: <input v-model="postImageNum" type="text" class="post-num"><br><br>
+            image: <input 
+                        type="file" 
+                        ref="fileInput" 
+                        accept="image/*" 
+                        @change="handleImageUpload"
+                    />
+
+            <br><br>
+            <Button label="post 요청" class="btn-post" @click="postImageRequest">post 이미지 요청
             </Button>
         </div>
         <br><br><br>
@@ -49,16 +66,28 @@
 import { ref } from 'vue';
 import { $api } from '@/services/api/api'
 
+// POST API 데이터
 const postName = ref('');
 const postNum = ref('');
 
+// POST IMAGE API 데이터
+const postImageName = ref('');
+const postImageNum = ref('');
+const image = ref('');
+
+
+
+// PUT API 데이터
 const putMemId = ref('');
 const putName = ref('');
 
+// DELETE API 데이터
 const deleteMemId = ref('');
 
+// GET API 데이터
 const getMemId = ref('');
 
+// GET DETAIL API 데이터
 const getDetailId = ref('');
 
 // GET 요청 함수
@@ -66,8 +95,8 @@ const getRequest = async () => {
     try {
         const response = await $api.sample.get(
 
+            '',
             getMemId.value,
-            ''
             
         );
 
@@ -84,8 +113,9 @@ const getDetailRequest = async () => {
     try {
         const response = await $api.sample.get(
 
-            getDetailId.value,
-            'detail'
+            'detail',
+            getDetailId.value
+
         );
 
         console.log('GET DETAIL 요청 응답 결과');
@@ -96,15 +126,27 @@ const getDetailRequest = async () => {
     }
 }
 
+// 파일 업로드 핸들러
+const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+
+    if(file) {
+        image.value = file;
+        const reader = new FileReader();
+    }
+    console.log('파일파일: ', file);
+}
+
 // POST 요청 함수
 const postRequest = async () => {
     try {
         const response = await $api.sample.post(
             {
-                name: postName.value,
+                name: postName.value,       // data
                 num: postNum.value
             },
-            ''
+            '',     // suburl
+            ''      // 이미지
         );
 
         console.log('POST 요청 응답 결과');
@@ -115,6 +157,30 @@ const postRequest = async () => {
     }
 };
 
+// POST IMGAE 요청 함수
+const postImageRequest = async () => {
+    try {
+        console.log('Starting POST IMAGE request');
+        console.log('Image:', image.value);
+        console.log('Data:', { name: postName.value, num: postNum.value });
+
+        const response = await $api.sample.post(
+            {
+                name: postImageName.value,
+                num: postImageNum.value
+            },
+            'file',
+            image.value
+        );
+
+        console.log('POST IMAGE 요청 응답 결과');
+        console.log(response);
+
+    } catch (error) {
+        console.error('POST IMAGE 요청 실패: ', error);
+    }
+};
+
 // PUT 요청 함수
 const putRequest = async () => {
     try {
@@ -122,7 +188,7 @@ const putRequest = async () => {
             {
                 name: putName.value,
             },
-            putMemId.value    // 파라미터
+            putMemId.value
         );
 
         console.log('PUT 요청 응답 결과');

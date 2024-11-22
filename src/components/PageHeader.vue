@@ -2,7 +2,7 @@
     <header>
         <nav class="menu-bar">
             <div class="start">
-                <RouterLink to="/" class="nav-link" active-class="router-link-active"
+                <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
                     <text class="title-1">영업관리</text>
@@ -11,7 +11,7 @@
 
             <div class="end">
                 <!-- 로그인 유저 -->
-                <div class="name">반갑습니다. {{ userStore.name }} 사원님</div>
+                <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
                     <img src="../assets/header/alarm.png" class="alarm" />
                     <img src="../assets/header/organization-logo.png" class="organization-logo" />

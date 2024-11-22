@@ -33,6 +33,7 @@ export default class ApiService extends BaseApiService {
 
             // 요청 시작
             const response = await fetch(url, fetchOptions);
+
             if (response.ok) {
                 const responseData = await response.json(); // JSON 데이터 추출
                 return responseData;
@@ -67,29 +68,44 @@ export default class ApiService extends BaseApiService {
         }
 
         if (queryParams) {
-            url += `?${queryParams}`;
+            url += `/${queryParams}`;
         }
 
         const responseData = await this.#callApi(url);
         DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
-        return responseData.result;
+        return responseData;
     }
 
 
-    async post(data = {}, subUrl) {
+    async post(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
             url += `/${subUrl}`;
         }
-        let requestBody = JSON.stringify(data);
-        // formData 자체로 넘어올 예정
-        if (data instanceof FormData) {
-            requestBody = data;
-        }
+
+        let requestBody;
+
+        console.log('file', file);
+
+        // JSON 요청 생성
+        if(file) {
+            requestBody = new FormData();        
+
+            requestBody.append('file', file);
+            requestBody.append('dto', 
+                new Blob([JSON.stringify(data)], 
+                { type: 'application/json'})
+            );
+
+            console.log('2');
+            console.log(requestBody);
+        } else {
+            requestBody = JSON.stringify(data);
+        }   
 
         const options = {
             method: 'POST',
-            body: requestBody,
+            body: requestBody
         };
 
         const responseData = await this.#callApi(url, options);
@@ -110,11 +126,6 @@ export default class ApiService extends BaseApiService {
 
         let requestBody = JSON.stringify(data);
 
-        // formData 자체로 넘어올 예정
-        if (data instanceof FormData) {
-            requestBody = data;
-        }
-
         const options = {
             method: 'PUT',
             body: requestBody,
@@ -123,7 +134,7 @@ export default class ApiService extends BaseApiService {
         const responseData = await this.#callApi(url, options);
         DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
 
-        return responseData.result;
+        return responseData;
     }
 
     async delete(subUrl) {
@@ -138,7 +149,6 @@ export default class ApiService extends BaseApiService {
 
         const responseData = await this.#callApi(url, options);
         DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
-
-        return responseData.result;
+        return responseData;
     }
 }
