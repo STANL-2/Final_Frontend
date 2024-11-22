@@ -1,6 +1,15 @@
 <template>
     <div class="calendar-container">
         <div ref="calendarEl"></div>
+        <div v-if="showYearDropdown" class="year-dropdown"
+            :style="{ top: dropdownTop + 'px', left: dropdownLeft + 'px' }" @scroll="handleScroll">
+            <ul>
+                <li v-for="year in years" :key="year" @click="changeYear(year)">
+                    {{ year }}년
+                </li>
+            </ul>
+        </div>
+
         <div v-if="showEventForm" class="event-form">
             <h3>일정 등록</h3>
             <form @submit.prevent="addEvent">
@@ -31,13 +40,18 @@ import interactionPlugin from '@fullcalendar/interaction';
 export default {
     data() {
         return {
-            showEventForm: false, // 일정 등록 폼 표시 여부
+            showEventForm: false,
+            showYearDropdown: false,
             newEvent: {
                 title: '',
                 start: '',
                 end: '',
             },
-            calendar: null, // 캘린더 인스턴스
+            calendar: null,
+            years: Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i),
+            scrolling: false,
+            dropdownTop: 0,
+            dropdownLeft: 0
         };
     },
     mounted() {
@@ -50,11 +64,11 @@ export default {
             this.calendar = new Calendar(calendarEl, {
                 plugins: [dayGridPlugin, interactionPlugin],
                 initialView: 'dayGridMonth',
-                locale: 'en',
+                locale: 'ko',
                 headerToolbar: {
-                    left: 'title',
-                    center: '' ,
-                    right: 'customAddEvent prev,next',
+                    left: 'customYearDropdown',
+                    center: 'prev title next',
+                    right: 'customAddEvent',
                 },
                 views: {
                     dayGridMonth: {
@@ -64,6 +78,12 @@ export default {
                     }
                 },
                 customButtons: {
+                    customYearDropdown: {
+                        text: `${new Date().getFullYear()}년 ▼`, // 초기 연도 설정
+                        click: (event) => {
+                            this.toggleYearDropdown(event);
+                        },
+                    },
                     customAddEvent: {
                         text: '일정 등록',
                         click: () => {
@@ -77,9 +97,67 @@ export default {
                     { title: 'Conference', start: '2024-11-10', end: '2024-11-12', color: '#3357FF' },
                 ],
                 editable: true,
+                datesSet: (info) => {
+                    const startDate = new Date(info.start); // 캘린더 시작 날짜
+                    const endDate = new Date(info.end); // 캘린더 끝 날짜
+                    const currentYear = new Date().getFullYear(); // 현재 기준 연도
+
+                    // 달력의 시작 날짜와 끝 날짜가 다른 연도인지 확인
+                    if (startDate.getFullYear() !== endDate.getFullYear()) {
+                        const year = startDate.getMonth() === 11 ? endDate.getFullYear() : startDate.getFullYear();
+                        this.updateYearDropdownText(year);
+                    } else {
+                        this.updateYearDropdownText(startDate.getFullYear());
+                    }
+                },
             });
 
             this.calendar.render();
+        },
+
+        updateYearDropdownText(year) {
+            // 버튼 텍스트를 동적으로 변경
+            const toolbarEl = document.querySelector('.fc-customYearDropdown-button');
+            if (toolbarEl) {
+                toolbarEl.textContent = `${year} ▼`;
+            }
+        },
+        toggleYearDropdown(event) {
+            if (this.showYearDropdown) {
+                this.showYearDropdown = false;
+                return;
+            }
+            const button = event.currentTarget;
+            const rect = button.getBoundingClientRect();
+            this.dropdownTop = rect.bottom + window.scrollY;
+            this.dropdownLeft = rect.left + window.scrollX;
+            this.showYearDropdown = true;
+        },
+        changeYear(year) {
+            const date = new Date(this.calendar.getDate());
+            date.setFullYear(year);
+            this.calendar.gotoDate(date); // 캘린더 연도 변경
+            this.showYearDropdown = false; // 드롭다운 숨김
+
+            // 버튼 텍스트를 동적으로 변경
+            const toolbarEl = document.querySelector('.fc-customYearDropdown-button');
+            if (toolbarEl) {
+                toolbarEl.textContent = `${year}년 ▼`;
+            }
+        },
+        addMoreYears() {
+            if (this.scrolling) return;
+            this.scrolling = true;
+            const lastYear = this.years[this.years.length - 1];
+            const newYears = Array.from({ length: 5 }, (_, i) => lastYear - (i + 1));
+            this.years = [...this.years, ...newYears];
+            this.scrolling = false;
+        },
+        handleScroll(event) {
+            const { scrollTop, scrollHeight, clientHeight } = event.target;
+            if (scrollTop + clientHeight >= scrollHeight - 10) {
+                this.addMoreYears();
+            }
         },
         openEventForm() {
             this.showEventForm = true;
@@ -93,7 +171,6 @@ export default {
             };
         },
         addEvent() {
-            // 캘린더에 새 일정 추가
             this.calendar.addEvent(this.newEvent);
             this.closeEventForm();
         },
@@ -102,129 +179,139 @@ export default {
 </script>
 
 <style scoped>
-/* 캘린더 컨테이너 크기 및 중앙 정렬 */
 .calendar-container {
-    max-width: 1300px;
+    max-width: 1330px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
+    padding-right: 1.3rem;
+    padding-left: 0rem;
+    padding-top: 0rem;
 }
 
-/* 캘린더 기본 스타일 */
 .fc {
-    font-family: Arial, sans-serif;
-    font-size: 1rem;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #333;
 }
 
-.fc-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+::v-deep(.fc-header-toolbar) {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.2rem;
 }
 
-.fc-toolbar-chunk {
-    display: flex; /* 가로로 정렬 */
-    align-items: center; /* 세로 중앙 정렬 */
-    gap: 1rem; /* 요소 간 간격 추가 */
+::v-deep(.fc-toolbar-title) {
+    font-size: 2rem;
+    display: inline-block;
 }
 
-.fc-toolbar-title {
-    font-size: 2rem; /* 타이틀 크기 */
-    font-weight: bold;
-    margin: 0;
-    text-align: center;
+::v-deep(.fc-next-button),
+::v-deep(.fc-prev-button) {
+    background-color: #fff;
+    border: none;
+    padding: 0rem;
 }
 
-/* 네비게이션 버튼 */
-.fc-prev-button .fc-button .fc-button-primary{
+::v-deep(.fc-icon) {
+    color: #333;
+}
+
+::v-deep(.fc-customAddEvent-button) {
     background-color: #B0DDFF;
-    color: #fff;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
 }
 
-.fc-button:hover {
-    background-color: #0056b3;
-}
-
-/* 이벤트 스타일 */
-.fc-event {
-    border: none;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    color: #fff;
-    font-size: 0.9rem;
-}
-
-/* 주말 배경 색상 */
-.fc-day-sat,
-.fc-day-sun {
-    background-color: #f9f9f9;
-}
-
-/* 오늘 날짜 강조 */
-.fc-day-today {
-    background-color: #e6f7ff;
-    border: 1px solid #007bff;
-}
-
-/* 캘린더 셀 테두리 */
-.fc-daygrid-day {
-    border: 1px solid #ddd;
-}
-
-/* 일정 등록 폼 스타일 */
 .event-form {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
+    width: 400px;
+    padding: 20px;
+    background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .event-form h3 {
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
 }
 
 .event-form form div {
-    margin-bottom: 1rem;
+    margin-bottom: 15px;
 }
 
 .event-form label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #666;
 }
 
 .event-form input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 8px;
     border: 1px solid #ddd;
-    border-radius: 0.25rem;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
 }
 
 .event-form button {
-    margin-right: 0.5rem;
-    padding: 0.5rem 1rem;
+    width: calc(50% - 5px);
+    padding: 8px 10px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #007bff;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.event-form button[type="submit"] {
-    background-color: #007bff;
-    color: white;
+.event-form button:hover {
+    background-color: #0056b3;
 }
 
 .event-form button[type="button"] {
-    background-color: #ccc;
-    color: black;
+    background-color: #6c757d;
+    margin-left: 10px;
+}
+
+.event-form button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+.year-dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.year-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.year-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.year-dropdown li:hover {
+    background-color: #f0f0f0;
 }
 </style>
