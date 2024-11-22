@@ -36,6 +36,7 @@
     </PageLayout>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
@@ -53,76 +54,72 @@ const tableData = [
 
 // SearchForm.vue 검색조건 값
 const formFields = [
-    [
-        {
-            label: '사원 검색',
-            type: 'inputWithButton',
-            model: 'employeeSearch',
-            showDivider: false
-        },
-        {
-            label: '매장 검색',
-            type: 'inputWithButton',
-            model: 'storeSearch',
-            showDivider: false
-        },
-        {
-            label: '계약서 명',
-            type: 'input',
-            model: 'contractName',
-            showDivider: true
-        },
-        {
-            label: '계약일',
-            type: 'calendar', // 쌍으로 처리
-            model: 'contractDate', // 시작과 종료를 모두 포함
-            showIcon: true,
-            manualInput: false,
-        }
-    ],
-    [
-        {
-            label: '고객 명',
-            type: 'input',
-            model: 'customerName',
-            showDivider: true
-        },
-        {
-            label: '고객 구분',
-            type: 'radio',
-            model: 'customerType',
-            options: ['개인', '법인'],
-            showDivider: false
-        },
-        {
-            label: '고객 구매 조건',
-            type: 'radio',
-            model: 'purchaseCondition',
-            options: ['일시불', '할부', '리스'],
-            showDivider: false
-        },
-        {
-            label: '고객 상호',
-            type: 'input',
-            model: 'customerBusinessName',
-            showDivider: false
-        }
-    ],
-    [
-
-        {
-            label: '제품 명',
-            type: 'input',
-            model: 'productName',
-            showDivider: false
-        },
-        {
-            type: 'select',
-            label: '승인여부',
-            model: 'approvalStatus',
-            options: ['대기', '승인', '취소']
-        }
-    ]
+    {
+        label: '사원 검색',
+        type: 'inputWithButton',
+        model: 'validFrom',
+        showDivider: false
+    },
+    {
+        label: '매장 검색',
+        type: 'inputWithButton',
+        model: 'validFrom',
+        showDivider: false
+    },
+    {
+        label: '계약서 명',
+        type: 'input',
+        model: 'customerBoarding',
+        showDivider: true
+    },
+    {
+        label: '계약 일시',
+        type: 'calendar',
+        model: 'issueDate',
+        showIcon: true,
+        iconDisplay: 'input',
+        selectionMode: 'multiple',
+        manualInput: false,
+        showDivider: true
+    },
+    {
+        label: '고객 명',
+        type: 'input',
+        model: 'customerBoarding',
+        showDivider: true
+    },
+    {
+        label: '고객 구분',
+        type: 'radio',
+        model: 'driverLicenseType',
+        options: ['개인', '법인'],
+        showDivider: false
+    },
+    {
+        label: '고객 구매 조건',
+        type: 'radio',
+        model: 'driverLicenseType',
+        options: ['일시불', '할부', '리스'],
+        showDivider: false
+    },
+    {
+        label: '고객 상호',
+        type: 'input',
+        model: 'validFrom',
+        showDivider: false
+    },
+    {
+        label: '제품 명',
+        type: 'input',
+        model: 'validFrom',
+        showDivider: false
+    },
+    {
+        type: 'select',
+        label: '승인여부',
+        model: 'subscription',
+        options: ['대기', '승인', '취소']
+    }
 ];
 
 // 모달에서 쓰이는 값들
@@ -133,9 +130,8 @@ const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
 
-function handleOpenModal(fieldIndex) {
-    console.log(`Opening modal for field: ${fieldIndex}`);
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
+function handleOpenModal(index) {
+    selectedFieldIndex.value = index;
     showModal.value = true;
 }
 
