@@ -62,11 +62,9 @@ const login = async () => {
             },
             'signin'
         );
-        console.log(userTokens);
-        console.log('accesstoken', userTokens.result.accessToken);
-        console.log('refreshToken', userTokens.result.refreshToken);
 
         userStore.saveTokens(userTokens.result);
+        userStore.saveUserInfo(userTokens.result);
         goHome();
     } catch (error) {
         // 서버에서 오류가 발생했을 때 메시지 표시
