@@ -28,7 +28,23 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/center/CenterList.vue')
-            }
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/center/CenterDetail.vue')
+            },
+            {
+                path: 'Edetail',
+                component: () => import('@/views/center/edit/ECenterDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/center/edit/ECenterModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/center/edit/ECenterRegister.vue')
+            },
         ]
     },
     {
@@ -38,6 +54,22 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/contract/ContractList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/contract/ContractDetail.vue')
+            },
+            {
+                path: 'Edetail',
+                component: () => import('@/views/contract/edit/EContractDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/contract/edit/EContractModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/contract/edit/EContractRegister.vue')
             }
         ]
     },
@@ -48,6 +80,18 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/customer/CustomerList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/customer/CustomerDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/customer/CustomerModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/customer/CustomerRegister.vue')
             }
         ]
     },
@@ -58,6 +102,10 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/employee/EmployeeList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/employee/EmployeeDetail.vue')
             }
         ]
     },
@@ -68,6 +116,18 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/evaluation/EvaluationList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/evaluation/EvaluationDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/evaluation/EvaluationModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/evaluation/EvaluationRegister.vue')
             }
         ]
     },
@@ -78,6 +138,22 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/notice/NoticeList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/notice/NoticeDetail.vue')
+            },
+            {
+                path: 'Edetail',
+                component: () => import('@/views/notice/edit/ENoticeDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/notice/edit/ENoticeModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/notice/edit/ENoticeRegister.vue')
             }
         ]
     },
@@ -88,6 +164,18 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/order/OrderList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/order/OrderDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/order/OrderModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/order/OrderRegister.vue')
             }
         ]
     },
@@ -98,6 +186,18 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/problem/ProblemList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/problem/ProblemDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/problem/ProblemModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/problem/ProblemRegister.vue')
             }
         ]
     },
@@ -108,6 +208,10 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/product/ProductList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/product/ProductDetail.vue')
             }
         ]
     },
@@ -118,6 +222,22 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/promotion/PromotionList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/promotion/PromotionDetail.vue')
+            },
+            {
+                path: 'Edetail',
+                component: () => import('@/views/promotion/edit/EPromotionDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/promotion/edit/EPromotionModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/promotion/edit/EPromotionRegister.vue')
             }
         ]
     },
@@ -128,6 +248,18 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/purchase-order/PuchaseOrderList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/purchase-order/PuchaseOrderDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/purchase-order/PuchaseOrderModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/purchase-order/PuchaseOrderRegister.vue')
             }
         ]
     },
@@ -138,6 +270,10 @@ const routes = [
             {
                 path: 'list',
                 component: () => import('@/views/sales-history/SalesHistoryList.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/sales-history/SalesHistoryDetail.vue')
             }
         ]
     },
@@ -148,12 +284,23 @@ const routes = [
             {
                 path: '',
                 component: () => import('@/views/schedule/Schedule.vue')
+            },
+            {
+                path: 'detail',
+                component: () => import('@/views/schedule/ScheduleDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/schedule/ScheduleModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/schedule/ScheduleRegister.vue')
             }
         ]
     },
     {
         path: '/sample',
-        // component: () => import('@/layouts/MainLayout.vue'), // 메인 레이아웃
         children: [
             {
                 path: 'searchform',
@@ -187,6 +334,10 @@ const routes = [
                 path: 'sample-api',
                 component: () => import('@/views/sample/SampleApiTest.vue')
             },
+            {
+                path: '',
+                component: () => import('@/views/sample/Confort.vue')
+            }
         ]
     }
 ];

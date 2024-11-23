@@ -1,6 +1,6 @@
 <template>
     <div>
-        Purchase-Order(발주서) 페이지 입니다.
+        Edit 가능한 Purchase-Order(발주서) 조회 페이지 입니다.
     </div>
 </template>
 

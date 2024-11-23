@@ -1,6 +1,6 @@
 <template>
     <div>
-        Edit 가능한 Problem(문제사항) 조회 페이지 입니다.
+        Edit 가능한 Center(매장) 등록 페이지 입니다.
     </div>
 </template>
 
