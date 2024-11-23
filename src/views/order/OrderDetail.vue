@@ -1,6 +1,6 @@
 <template>
     <div>
-        Order(수주서) 상세 조회 페이지 입니다.
+        Edit 가능한 Order(수주서) 상세 조회 페이지 입니다.
     </div>
 </template>
 

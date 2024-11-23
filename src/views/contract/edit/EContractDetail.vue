@@ -1,6 +1,6 @@
 <template>
     <div>
-        Center(매장) 등록 페이지 입니다.
+        Edit 가능한 Contract(계약서) 상세 조회 페이지 입니다.
     </div>
 </template>
 

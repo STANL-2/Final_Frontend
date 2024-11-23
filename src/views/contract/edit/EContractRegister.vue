@@ -1,6 +1,6 @@
 <template>
     <div>
-        Product(제품) 등록 페이지 입니다.
+        Edit 가능한 Contract(계약서) 등록 페이지 입니다.
     </div>
 </template>
 

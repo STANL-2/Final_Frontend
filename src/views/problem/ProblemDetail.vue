@@ -1,6 +1,6 @@
 <template>
     <div>
-        Problem(문제사항) 상세 조회 페이지 입니다.
+        Edit 가능한 Problem(문제사항) 상세 조회 페이지 입니다.
     </div>
 </template>
 

@@ -13,7 +13,7 @@
             v-model:expandedKeys="expandedKeys" 
             :value="nodes" :filter="true" 
             filterMode="lenient"
-            filterPlaceholder="필터메뉴검색" 
+            filterPlaceholder="메뉴 검색" 
             selectionMode="single" 
             @node-expand="onNodeExpand" 
             @node-collapse="onNodeCollapse" 

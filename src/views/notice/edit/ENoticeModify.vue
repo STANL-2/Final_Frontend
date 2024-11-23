@@ -1,6 +1,6 @@
 <template>
     <div>
-        Contract(계약서) 수정 페이지 입니다.
+        Edit 가능한 Notice(공지사항) 수정 페이지 입니다.
     </div>
 </template>
 

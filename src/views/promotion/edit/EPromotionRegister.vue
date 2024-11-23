@@ -1,6 +1,6 @@
 <template>
     <div>
-        Notice(공지사항) 수정 페이지 입니다.
+        Edit 가능한 Promotion(프로모션) 등록 페이지 입니다.
     </div>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
     <div>
-        Evaluation(통계) 등록 페이지 입니다.
+        Edit 가능한 Evaluation(통계) 등록 페이지 입니다.
     </div>
 </template>
 
