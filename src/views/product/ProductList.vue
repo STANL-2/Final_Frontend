@@ -1,6 +1,6 @@
 <template>
     <div>
-        Product(제품) 페이지 입니다.
+        ReadOnly Product(제품) 조회 페이지 입니다.
     </div>
 </template>
 

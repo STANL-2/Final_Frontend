@@ -1,6 +1,6 @@
 <template>
     <div>
-        Edit 가능한 Problem(문제사항) 조회 페이지 입니다.
+        ReadOnly Product(제품) 상세 조회 페이지 입니다.
     </div>
 </template>
 

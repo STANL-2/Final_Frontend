@@ -1,6 +1,6 @@
 <template>
     <div>
-        Customer(고객) 페이지 입니다.
+        Customer(고객) 조회 페이지 입니다.
     </div>
 </template>
 
