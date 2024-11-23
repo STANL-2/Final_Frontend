@@ -22,6 +22,136 @@ const routes = [
         ]
     },
     {
+        path: '/center',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/center/CenterList.vue')
+            }
+        ]
+    },
+    {
+        path: '/contract',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/contract/ContractList.vue')
+            }
+        ]
+    },
+    {
+        path: '/customer',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/customer/CustomerList.vue')
+            }
+        ]
+    },
+    {
+        path: '/employee',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/employee/EmployeeList.vue')
+            }
+        ]
+    },
+    {
+        path: '/evaluation',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/evaluation/EvaluationList.vue')
+            }
+        ]
+    },
+    {
+        path: '/notice',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/notice/NoticeList.vue')
+            }
+        ]
+    },
+    {
+        path: '/order',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/order/OrderList.vue')
+            }
+        ]
+    },
+    {
+        path: '/problem',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/problem/ProblemList.vue')
+            }
+        ]
+    },
+    {
+        path: '/product',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/product/ProductList.vue')
+            }
+        ]
+    },
+    {
+        path: '/promotion',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/promotion/PromotionList.vue')
+            }
+        ]
+    },
+    {
+        path: '/purchase-order',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/purchase-order/PuchaseOrderList.vue')
+            }
+        ]
+    },
+    {
+        path: '/sales-history',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: 'list',
+                component: () => import('@/views/sales-history/SalesHistoryList.vue')
+            }
+        ]
+    },
+    {
+        path: '/schedule',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
+                path: '',
+                component: () => import('@/views/schedule/Schedule.vue')
+            }
+        ]
+    },
+    {
         path: '/sample',
         // component: () => import('@/layouts/MainLayout.vue'), // 메인 레이아웃
         children: [
