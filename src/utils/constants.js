@@ -1,6 +1,6 @@
 export const asideMenu = [
     { 
-        key: '0', label: '고객 관리', url: '/customer',
+        key: '0', label: '고객 관리',
         children: [
             { key: '0-0', label: '고객정보', url: '/customer/list' },
             { key: '0-1', label: '문제사항', url: '/problem/list' },
@@ -20,7 +20,7 @@ export const asideMenu = [
         ]
     },
     { 
-        key: '1', label: '사원 관리', url: '/employee',
+        key: '1', label: '사원 관리',
         children: [
             { key: '1-0', label: '사원 정보', url: '/member/list' },
             { key: '1-1', label: '판매내역', url: '/salesHistory/list' },
@@ -47,7 +47,7 @@ export const asideMenu = [
         ]
     },
     { 
-        key: '2', label: '계약서 및 수주 관리', url: '/contract',
+        key: '2', label: '계약서 및 수주 관리',
         children: [
             { key: '2-0', label: '계약서', url: '/contract/list' },
             { key: '2-1', label: '수주서', url: '/order/list' },
@@ -67,7 +67,7 @@ export const asideMenu = [
         ]
     },
     { 
-        key: '3', label: '매장 관리', url: '/store',
+        key: '3', label: '매장 관리',
         children: [
             { key: '3-0', label: '영업매장', url: '/center/list' },
             { key: '3-1', label: '제품', url: '/product/list' },
@@ -101,7 +101,7 @@ export const asideMenu = [
         ]
     },
     { 
-        key: '4', label: '공지 및 프로모션', url: '/notice',
+        key: '4', label: '공지 및 프로모션',
         children: [
             { key: '4-0', label: '공지사항', url: '/notice/list' },
             { key: '4-1', label: '프로모션', url: '/promotion/list' },
@@ -120,18 +120,24 @@ export const asideMenu = [
             { key: '4-9', label: '프로모션 삭제', url: '/promotion/delete' }
         ]
     },
-    {
-        key: '5', label: '샘플', url: '/sample',
+    { 
+        key: '5', label: '일정 관리',
         children: [
-            { key: '5-0', label: 'SearchForm', url: '/sample/searchform' },
-            { key: '5-1', label: 'ListTable', url: '/sample/tabledata' },
-            { key: '5-2', label: 'ViewForm', url: '/sample/tableform' },
-            { key: '5-3', label: 'ViewTable', url: '/sample/tableview' },
-            { key: '5-4', label: 'DashBoard', url: '/sample/dashboard' },
-            { key: '5-5', label: 'Login', url: '/'},
-            { key: '5-6', label: 'CKEditor', url: '/sample/ckeditor'},
-            { key: '5-7', label: '개발자도구', url: '/sample/f12'},
-            { key: '5-8', label: '샘플 Api', url: '/sample/sample-api'}
+            { key: '5-0', label: '일정', url: '/schedule' },            
+        ]
+    },
+    {
+        key: '6', label: '샘플',
+        children: [
+            { key: '6-0', label: 'SearchForm', url: '/sample/searchform' },
+            { key: '6-1', label: 'ListTable', url: '/sample/tabledata' },
+            { key: '6-2', label: 'ViewForm', url: '/sample/tableform' },
+            { key: '6-3', label: 'ViewTable', url: '/sample/tableview' },
+            { key: '6-4', label: 'DashBoard', url: '/sample/dashboard' },
+            { key: '6-5', label: 'Login', url: '/'},
+            { key: '6-6', label: 'CKEditor', url: '/sample/ckeditor'},
+            { key: '6-7', label: '개발자도구', url: '/sample/f12'},
+            { key: '6-8', label: '샘플 Api', url: '/sample/sample-api'}
         ]
     }
 ];
