@@ -1,6 +1,6 @@
 <template>
     <div>
-        Schedule(일정) 조회 페이지 입니다.
+        Product(제품) 상세 조회 페이지 입니다.
     </div>
 </template>
 

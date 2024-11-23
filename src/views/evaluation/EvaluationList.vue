@@ -1,6 +1,6 @@
 <template>
     <div>
-        Evaluation(통계) 페이지 입니다.
+        Evaluation(통계) 조회 페이지 입니다.
     </div>
 </template>
 

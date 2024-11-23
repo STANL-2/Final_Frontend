@@ -1,6 +1,6 @@
 <template>
     <div>
-        Schedule(일정) 조회 페이지 입니다.
+        Problem(문제사항) 수정 페이지 입니다.
     </div>
 </template>
 

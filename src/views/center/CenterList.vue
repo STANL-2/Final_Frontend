@@ -1,6 +1,6 @@
 <template>
     <div>
-        Center(매장) 페이지 입니다.
+        Center(매장) 조회 페이지 입니다.
     </div>
 </template>
 

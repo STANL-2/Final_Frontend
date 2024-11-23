@@ -1,6 +1,6 @@
 <template>
     <div>
-        Schedule(일정) 조회 페이지 입니다.
+        Customer(고객) 수정 페이지 입니다.
     </div>
 </template>
 

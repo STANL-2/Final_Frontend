@@ -1,6 +1,6 @@
 <template>
     <div>
-        Schedule(일정) 조회 페이지 입니다.
+        Promotion(프로모션) 수정 페이지 입니다.
     </div>
 </template>
 
