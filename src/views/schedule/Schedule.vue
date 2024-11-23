@@ -2,21 +2,27 @@
     <div class="calendar-container">
         <div ref="calendarEl"></div>
 
-        <div v-if="showSmallCalendar" class="small-calendar-dropdown" ref="smallCalendarDropdown">
+        <div v-if="showSmallCalendar" class="small-calendar-dropdown" :style="smallCalendarPosition">
             <input type="date" v-model="selectedDate" @change="goToSelectedDate" class="small-calendar-input" />
         </div>
 
-        <!-- Tag Dropdown -->
-        <div v-if="showTagDropdown" class="tag-dropdown" ref="tagDropdown">
+        <div v-if="showTagDropdown" class="tag-dropdown" :style="tagDropdownPosition">
             <ul>
-                <li v-for="tag in tags" :key="tag" @click="selectTag(tag)" class="tag-item">
-                    <input type="checkbox" :id="tag" :value="tag" v-model="selectedTags" />
-                    <label :for="tag">{{ tag }}</label>
+                <li v-for="tag in tags" :key="tag.name" @click="selectTag(tag)" class="tag-item">
+                    <input 
+                        type="checkbox" 
+                        :id="tag.name" 
+                        :value="tag.name" 
+                        v-model="selectedTags" 
+                    />
+                    <span 
+                        class="color-dot"
+                        :style="{ backgroundColor: tag.color }"
+                    ></span>
+                    <label :for="tag.name">{{ tag.name }}</label>
                 </li>
             </ul>
         </div>
-
-        <!-- Event Modal -->
         <div v-if="showEventModal" class="event-modal">
             <div class="modal-content">
                 <h3>일정 등록</h3>
@@ -28,6 +34,19 @@
                     <div>
                         <label for="date">날짜</label>
                         <input type="date" id="date" v-model="newEvent.date" required />
+                    </div>
+                    <div>
+                        <label for="tag">태그</label>
+                        <select id="tag" v-model="newEvent.tag" required>
+                            <option value="">태그 선택</option>
+                            <option 
+                                v-for="tag in tags" 
+                                :key="tag.name" 
+                                :value="tag.name"
+                            >
+                                {{ tag.name }}
+                            </option>
+                        </select>
                     </div>
                     <button type="submit">등록</button>
                     <button type="button" @click="closeEventModal">취소</button>
@@ -48,7 +67,17 @@ export default {
     data() {
         return {
             calendar: null,
-            tags: ['Work', 'Personal', 'Important', 'Family', 'Projects'],
+            tags: [
+                { name: '국내', color: '#E8F5E9' },
+                { name: '공장', color: '#FFF3E0' },
+                { name: '내부', color: '#E3F2FD' },
+                { name: '대외', color: '#FFEBEE' },
+                { name: '세미나', color: '#F3E5F5' },
+                { name: '일정', color: '#FFFFFF' },
+                { name: '프로젝트', color: '#E0F2F1' },
+                { name: '필독', color: '#FFF8E1' },
+                { name: 'To-do', color: '#FFEBEE' }
+            ],
             selectedTags: [],
             showTagDropdown: false,
             showEventModal: false,
@@ -62,6 +91,12 @@ export default {
     },
     mounted() {
         this.initCalendar();
+        // 전역 클릭 이벤트 리스너 추가
+        document.addEventListener('click', this.handleClickOutside);
+    },
+    beforeDestroy() {
+        // 컴포넌트가 제거되기 전에 이벤트 리스너 제거
+        document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
         initCalendar() {
@@ -72,9 +107,12 @@ export default {
                 initialView: 'dayGridMonth',
                 locale: 'ko',
                 headerToolbar: {
-                    left: ' today  prev next title',
+                    left: ' today prev,next title',
                     center: '',
                     right: 'customCalendarButton customTagsButton customAddEventButton',
+                },
+                buttonText: {
+                    today: '오늘'
                 },
                 views: {
                     dayGridMonth: {
@@ -89,14 +127,24 @@ export default {
                 customButtons: {
                     customCalendarButton: {
                         text: '',
-                        click: () => {
+                        click: (e) => {
+                            e.stopPropagation(); // 이벤트 전파 중지
                             this.toggleSmallCalendar();
+                            // Tag 드롭다운이 열려있다면 닫기
+                            if (this.showTagDropdown) {
+                                this.showTagDropdown = false;
+                            }
                         },
                     },
                     customTagsButton: {
                         text: '',
-                        click: () => {
+                        click: (e) => {
+                            e.stopPropagation(); // 이벤트 전파 중지
                             this.toggleTagDropdown();
+                            // Calendar 드롭다운이 열려있다면 닫기
+                            if (this.showSmallCalendar) {
+                                this.showSmallCalendar = false;
+                            }
                         },
                     },
                     customAddEventButton: {
@@ -119,24 +167,58 @@ export default {
             const customCalendarButton = calendarEl.querySelector('.fc-customCalendarButton-button');
             if (customCalendarButton) {
                 const svgContainer = document.createElement('img');
-                svgContainer.src = calendarSvg; // Calendar SVG 파일 경로를 이미지 src로 설정
+                svgContainer.src = calendarSvg;
                 svgContainer.style.width = '1.2rem';
                 svgContainer.style.height = '1.2rem';
-                customCalendarButton.innerHTML = ''; // 기존 내용을 초기화
-                customCalendarButton.appendChild(svgContainer); // SVG 추가
+                customCalendarButton.innerHTML = '';
+                customCalendarButton.appendChild(svgContainer);
             }
 
             const customTagsButton = calendarEl.querySelector('.fc-customTagsButton-button');
             if (customTagsButton) {
                 const svgContainer = document.createElement('img');
-                svgContainer.src = tagSvg; // SVG 파일 경로를 이미지 src로 설정
+                svgContainer.src = tagSvg;
                 svgContainer.style.width = '1.2rem';
                 svgContainer.style.height = '1.2rem';
-                customTagsButton.innerHTML = ''; // 기존 내용을 초기화
-                customTagsButton.appendChild(svgContainer); // SVG 추가
+                customTagsButton.innerHTML = '';
+                customTagsButton.appendChild(svgContainer);
+            }
+        },
+        handleClickOutside(event) {
+            // small calendar 드롭다운 처리
+            const calendarDropdown = this.$el.querySelector('.small-calendar-dropdown');
+            const calendarButton = this.$el.querySelector('.fc-customCalendarButton-button');
+            if (this.showSmallCalendar &&
+                calendarDropdown &&
+                !calendarDropdown.contains(event.target) &&
+                !calendarButton.contains(event.target)) {
+                this.showSmallCalendar = false;
+            }
+
+            // tag 드롭다운 처리
+            const tagDropdown = this.$el.querySelector('.tag-dropdown');
+            const tagButton = this.$el.querySelector('.fc-customTagsButton-button');
+            if (this.showTagDropdown &&
+                tagDropdown &&
+                !tagDropdown.contains(event.target) &&
+                !tagButton.contains(event.target)) {
+                this.showTagDropdown = false;
             }
         },
         toggleSmallCalendar() {
+            if (!this.showSmallCalendar) {
+                const calendarButton = this.$el.querySelector('.fc-customCalendarButton-button');
+                if (calendarButton) {
+                    const rect = calendarButton.getBoundingClientRect();
+                    const containerRect = this.$el.getBoundingClientRect();
+                    const dropdownWidth = 150; // 달력 드롭다운의 예상 너비
+
+                    this.smallCalendarPosition = {
+                        top: `${rect.bottom - containerRect.top}px`,
+                        left: `${rect.left - containerRect.left + (rect.width / 2) - (dropdownWidth / 2)}px`
+                    };
+                }
+            }
             this.showSmallCalendar = !this.showSmallCalendar;
         },
         goToSelectedDate() {
@@ -146,6 +228,19 @@ export default {
             }
         },
         toggleTagDropdown() {
+            if (!this.showTagDropdown) {
+                const tagButton = this.$el.querySelector('.fc-customTagsButton-button');
+                if (tagButton) {
+                    const rect = tagButton.getBoundingClientRect();
+                    const containerRect = this.$el.getBoundingClientRect();
+                    const dropdownWidth = 150; // tag 드롭다운의 너비 (CSS에서 설정한 값)
+
+                    this.tagDropdownPosition = {
+                        top: `${rect.bottom - containerRect.top}px`,
+                        left: `${rect.left - containerRect.left + (rect.width / 2) - (dropdownWidth / 2)}px`
+                    };
+                }
+            }
             this.showTagDropdown = !this.showTagDropdown;
         },
         selectTag(tag) {
@@ -163,16 +258,19 @@ export default {
             this.newEvent = { title: '', date: '' };
         },
         addNewEvent() {
-            if (this.newEvent.title && this.newEvent.date) {
+            if (this.newEvent.title && this.newEvent.date && this.newEvent.tag) {
+                const selectedTag = this.tags.find(tag => tag.name === this.newEvent.tag);
                 this.calendar.addEvent({
                     title: this.newEvent.title,
                     start: this.newEvent.date,
-                    color: '#FFC107',
+                    color: selectedTag.color,
+                    textColor: '#333', // 파스텔 색상이므로 텍스트는 어두운 색으로
+                    tag: this.newEvent.tag
                 });
                 alert('일정이 등록되었습니다.');
                 this.closeEventModal();
             } else {
-                alert('제목과 날짜를 모두 입력해주세요.');
+                alert('모든 필드를 입력해주세요.');
             }
         },
     },
@@ -193,9 +291,18 @@ export default {
     color: #333;
 }
 
+::v-deep(.fc .fc-toolbar.fc-header-toolbar){
+    margin-bottom: 1rem;
+}
+
+::v-deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)){
+    margin-left: 0;
+}
+
 ::v-deep(.fc-toolbar-title) {
     display: inline-block;
     font-size: 1.4rem;
+    margin-top: 0.3rem;
 }
 
 ::v-deep(.fc-button-primary) {
@@ -212,6 +319,14 @@ export default {
     cursor: pointer;
     transition: none !important;
     font-size: 1.2rem;
+}
+
+::v-deep(.fc-today-button) {
+    border: 1px solid #333 !important;
+    padding: 0.2rem 0.6rem !important;
+    border-radius: 4px;
+    margin-top: 0.2rem;
+
 }
 
 ::v-deep(.fc-button:hover) {
@@ -232,10 +347,6 @@ export default {
     cursor: not-allowed;
 }
 
-::v-deep(.fc-today-button .fc-button .fc-button-primary) {
-    border: #333;
-}
-
 ::v-deep(.fc-daygrid-day-frame) {
     height: 8rem;
     box-sizing: border-box;
@@ -243,14 +354,13 @@ export default {
 
 .small-calendar-dropdown {
     position: absolute;
-    top: 50px;
-    left: 120px;
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     padding: 10px;
+    margin-top: 5px;
 }
 
 .small-calendar-input {
@@ -259,82 +369,74 @@ export default {
     padding: 5px;
 }
 
-::v-deep(.fc-customCalendarButton-button),
-::v-deep(.fc-customTagsButton-button),
-::v-deep(.fc-customAddEventButton-button) {
-    background-color: #6360AB !important;
-    color: white !important;
-    font-size: 1rem !important;
-    border-radius: 4px;
-    padding: 0.4rem;
-    margin-left: 0.5rem;
-    transition: background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-::v-deep(.fc-customCalendarButton-button:hover),
-::v-deep(.fc-customTagsButton-button:hover),
-::v-deep(.fc-customAddEventButton-button:hover) {
-    background-color: #4c4a96 !important;
-}
-
 ::v-deep(.fc-toolbar-chunk) {
     display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    /* 버튼 간 간격 추가 */
-    align-items: center;
-    justify-content: flex-start;
+    gap: 1rem;
 }
 
 ::v-deep(.fc-customTagsButton-button),
 ::v-deep(.fc-customCalendarButton-button) {
     background-color: white !important;
     border-radius: 4px;
-    transition: background-color 0.3s ease;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem !important;
+    height: 3rem !important;
+    padding: 0.6rem !important;
 }
 
 ::v-deep(.fc-customCalendarButton-button img),
 ::v-deep(.fc-customTagsButton-button img) {
-    width: 3rem;
-    height: 3rem;
+    width: 1.8rem !important;
+    height: 1.8rem !important;
+    filter: brightness(0) !important;
+    transition: filter 0.2s ease;
 }
 
-::v-deep(.fc-customAddEventButton-button){
-    background-color: #6360AB !important;
-    color: white !important;
+::v-deep(.fc-customTagsButton-button:hover img),
+::v-deep(.fc-customCalendarButton-button:hover img) {
+    filter: brightness(0.4) !important;
 }
 
-::v-deep(.fc-customTagsButton-button:hover),
-::v-deep(.fc-customAddEventButton-button:hover),
-::v-deep(.fc-customCalendarButton-button:hover) {
-    background-color: #4c4a96 !important;
+::v-deep(.fc-customAddEventButton-button) {
+    background-color: white !important;
+    color: #333 !important;
+    font-size: 0.875rem !important;
+    border-radius: 20px !important;
+    padding: 0.5rem 1rem !important;
+    margin-left: 0.5rem;
+    border: 1px solid #dadce0 !important;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+                0 1px 3px 1px rgba(60, 64, 67, 0.15) !important;
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    height: 36px;
+    margin-top:0.32rem;
 }
 
-::v-deep(.fc-customTagsButton-button) {
-    padding: 0.4rem !important;
-    width: 2.5rem;
-    height: 2.5rem;
+::v-deep(.fc-customAddEventButton-button)::before {
+    content: '+';
+    font-size: 1.25rem;
+    margin-right: 4px;
+    font-weight: 400;
 }
 
-::v-deep(.fc-customTagsButton-button svg) {
-    width: 1.2rem;
-    height: 1.2rem;
-    stroke: white;
-}
-
-::v-deep(.fc-customTagsButton-button:hover),
 ::v-deep(.fc-customAddEventButton-button:hover) {
-    background-color: #4c4a96 !important;
+    background-color: #f8f9fa !important;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+                0 2px 6px 2px rgba(60, 64, 67, 0.15) !important;
+}
+
+::v-deep(.fc-customAddEventButton-button:active) {
+    background-color: #f1f3f4 !important;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3) !important;
 }
 
 .tag-dropdown {
     position: absolute;
-    right: 120px;
-    top: 50px;
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -342,6 +444,7 @@ export default {
     z-index: 1000;
     width: 150px;
     padding: 10px;
+    margin-top: 5px;
 }
 
 .tag-dropdown ul {
@@ -355,6 +458,30 @@ export default {
     align-items: center;
     padding: 8px 12px;
     cursor: pointer;
+}
+
+.color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-content select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.tag-dropdown .tag-item input {
+    margin-right: 8px;
+}
+
+.tag-dropdown .tag-item label {
+    flex-grow: 1;
 }
 
 .tag-dropdown .tag-item:hover {
