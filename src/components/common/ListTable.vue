@@ -1,46 +1,52 @@
 <template>
     <div class="card custom-datatable">
-        <DataTable
-            :value="data"
-            tableStyle="min-width: 100%"
-            showGridlines
+        <DataTable 
+            lazy 
+            paginator 
+            :value="data" 
+            :rows="rows" 
+            :rowsPerPageOptions="rowsPerPageOptions"
+            :loading="loading" 
+            tableStyle="min-width: 100%" 
+            showGridlines 
             :selection="selectedItems"
-            @update:selection="selectedItems = $event"
-        >
+            :totalRecords="totalRecords"
+            @update:selection="selectedItems = $event" 
+            @page="onPage" 
+            @sort="onSort" 
+            @filter="onFilter">
+
             <!-- 첫 번째 체크박스 컬럼 조건부 추가 -->
             <Column 
                 v-if="selectable" 
                 selectionMode="multiple" 
                 headerStyle="width: 3rem; text-align: center" 
                 bodyStyle="text-align: center; vertical-align: middle" 
-                class="checkbox-cell" 
-            ></Column>
-            
+                class="checkbox-cell">
+            </Column>
+
             <!-- 동적 컬럼 생성 -->
-            <Column
-                v-for="(header, index) in headers"
-                :key="index"
-                :field="header.field"
-                :header="header.label"
-                sortable
+            <Column 
+                v-for="(header, index) in headers" 
+                :key="index" 
+                :field="header.field" 
+                :header="header.label" 
+                sortable 
                 :style="{ width: header.width || 'auto' }"
                 :headerStyle="{ width: header.width || 'auto', textAlign: 'center' }"
-                :bodyStyle="{ width: header.width || 'auto', textAlign: 'center', verticalAlign: 'middle' }"
-            >
-                <!-- 각 컬럼에 데이터 표시 -->
+                :bodyStyle="{ width: header.width || 'auto', textAlign: 'center', verticalAlign: 'middle' }">
                 <template #body="{ data }">
                     {{ data[header.field] }}
                 </template>
             </Column>
 
             <!-- 버튼 컬럼 조건부 추가 -->
-            <Column
-                v-if="buttonLabel && buttonAction && buttonField"
-                :header="buttonHeader || buttonLabel"
-                :style="{ width: buttonColumnWidth || 'auto' }"
-                headerStyle="text-align: center"
-                bodyStyle="text-align: center; vertical-align: middle"
-            >
+            <Column 
+                v-if="buttonLabel && buttonAction && buttonField" 
+                :header="buttonHeader || buttonLabel" 
+                :style="{ width: buttonColumnWidth || 'auto' }" 
+                headerStyle="text-align: center" 
+                bodyStyle="text-align: center; vertical-align: middle">
                 <template #body="{ data }">
                     <div class="button-cell">
                         <button @click="buttonAction(data)" class="custom-button">{{ buttonLabel }}</button>
@@ -52,45 +58,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, defineEmits } from 'vue';
 
 const props = defineProps({
-    headers: {
-        type: Array,
-        default: () => []
-    },
-    data: {
-        type: Array,
-        default: () => []
-    },
+    headers: Array,
+    data: Array,
+    loading: Boolean,
     selectable: {
         type: Boolean,
         default: true
     },
-    buttonLabel: {
-        type: String,
-        default: null // 버튼 라벨 (버튼 텍스트)
+    totalRecords: Number,
+    rows: {
+        type: Number,
+        default: 5
     },
-    buttonHeader: {
-        type: String,
-        default: null // 버튼 컬럼 헤더
+    rowsPerPageOptions: {
+        type: Array,
+        default: () => [5, 10, 20, 50]
     },
-    buttonAction: {
-        type: Function,
-        default: null // 버튼 클릭 시 동작할 함수
-    },
-    buttonField: {
-        type: String,
-        default: '' // 버튼을 추가할 컬럼 필드명
-    },
-    buttonColumnWidth: {
-        type: String,
-        default: 'auto' // 버튼 컬럼 너비
-    }
+    buttonLabel: String,
+    buttonHeader: String,
+    buttonAction: Function,
+    buttonField: String,
+    buttonColumnWidth: String
 });
 
+const emits = defineEmits(['page', 'sort', 'filter']);
+
 const selectedItems = ref([]);
+
+function onPage(event) {
+    emits('page', event);
+}
+
+function onSort(event) {
+    emits('sort', event);
+}
+
+function onFilter(event) {
+    emits('filter', event);
+}
 </script>
+
+<style>
+/* 기존 스타일 유지 */
+</style>
+
 
 <style>
 /* 체크박스 컬럼에 패딩과 가운데 정렬 적용 */
@@ -120,15 +134,6 @@ const selectedItems = ref([]);
 
 .custom-button:hover {
     background-color: #F1F1FD;
-}
-
-/* 양쪽 테두리 제거 */
-.custom-datatable .p-datatable .p-datatable-thead>tr>th:first-child,
-.custom-datatable .p-datatable .p-datatable-tbody>tr>td:first-child,
-.custom-datatable .p-datatable .p-datatable-thead>tr>th:last-child,
-.custom-datatable .p-datatable .p-datatable-tbody>tr>td:last-child {
-    border-left: none !important;
-    border-right: none !important;
 }
 
 /* 모든 컬럼 헤더(th)와 셀(td)의 텍스트 가운데 정렬 */
@@ -194,9 +199,12 @@ const selectedItems = ref([]);
 
 /* 정렬 아이콘 크기 및 위치 */
 .custom-datatable .p-datatable .p-sortable-column .p-sortable-column-icon {
-    font-size: 12px !important; /* 아이콘 크기 */
-    width: 12px !important;     /* 아이콘 너비 */
-    height: 12px !important;    /* 아이콘 높이 */
+    font-size: 12px !important;
+    /* 아이콘 크기 */
+    width: 12px !important;
+    /* 아이콘 너비 */
+    height: 12px !important;
+    /* 아이콘 높이 */
     display: inline-block;
     line-height: 12px !important;
     vertical-align: middle;
