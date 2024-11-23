@@ -25,15 +25,15 @@ const router = useRouter();
 
 const sections = ref([
     {
-        label: "Authentication",
+        label: "로그인",
         routes: [{ path: "/", label: "Login" }],
     },
     {
-        label: "Dashboard",
+        label: "대시보드",
         routes: [{ path: "/dashboard", label: "Dashboard" }],
     },
     {
-        label: "Centers",
+        label: "영업매장",
         routes: [
             { path: "/center/list", label: "Center List" },
             { path: "/center/detail", label: "Center Detail" },
@@ -43,7 +43,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Contracts",
+        label: "계약서",
         routes: [
             { path: "/contract/list", label: "Contract List" },
             { path: "/contract/detail", label: "Contract Detail" },
@@ -53,7 +53,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Customers",
+        label: "고객",
         routes: [
             { path: "/customer/list", label: "Customer List" },
             { path: "/customer/detail", label: "Customer Detail" },
@@ -62,14 +62,14 @@ const sections = ref([
         ],
     },
     {
-        label: "Employees",
+        label: "사원",
         routes: [
             { path: "/employee/list", label: "Employee List" },
             { path: "/employee/detail", label: "Employee Detail" },
         ],
     },
     {
-        label: "Evaluations",
+        label: "평가서",
         routes: [
             { path: "/evaluation/list", label: "Evaluation List" },
             { path: "/evaluation/detail", label: "Evaluation Detail" },
@@ -78,7 +78,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Notices",
+        label: "공지사항",
         routes: [
             { path: "/notice/list", label: "Notice List" },
             { path: "/notice/detail", label: "Notice Detail" },
@@ -88,7 +88,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Orders",
+        label: "수주서",
         routes: [
             { path: "/order/list", label: "Order List" },
             { path: "/order/detail", label: "Order Detail" },
@@ -97,7 +97,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Problems",
+        label: "문제사항",
         routes: [
             { path: "/problem/list", label: "Problem List" },
             { path: "/problem/detail", label: "Problem Detail" },
@@ -106,14 +106,14 @@ const sections = ref([
         ],
     },
     {
-        label: "Products",
+        label: "제품",
         routes: [
             { path: "/product/list", label: "Product List" },
             { path: "/product/detail", label: "Product Detail" },
         ],
     },
     {
-        label: "Promotions",
+        label: "프로모션",
         routes: [
             { path: "/promotion/list", label: "Promotion List" },
             { path: "/promotion/detail", label: "Promotion Detail" },
@@ -123,7 +123,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Purchase Orders",
+        label: "발주서",
         routes: [
             { path: "/purchase-order/list", label: "Purchase Order List" },
             { path: "/purchase-order/detail", label: "Purchase Order Detail" },
@@ -132,14 +132,14 @@ const sections = ref([
         ],
     },
     {
-        label: "Sales Histories",
+        label: "통계",
         routes: [
             { path: "/sales-history/list", label: "Sales History List" },
             { path: "/sales-history/detail", label: "Sales History Detail" },
         ],
     },
     {
-        label: "Schedules",
+        label: "일정",
         routes: [
             { path: "/schedule", label: "Schedule" },
             { path: "/schedule/detail", label: "Schedule Detail" },
@@ -148,7 +148,7 @@ const sections = ref([
         ],
     },
     {
-        label: "Samples",
+        label: "샘플",
         routes: [
             { path: "/sample/searchform", label: "Sample Search Form" },
             { path: "/sample/tabledata", label: "Sample Table Data" },
