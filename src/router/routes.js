@@ -187,10 +187,6 @@ const routes = [
                 path: 'sample-api',
                 component: () => import('@/views/sample/SampleApiTest.vue')
             },
-            {
-                path: 'scheduleTest',
-                component: () => import('@/views/sample/scheduleTest.vue')
-            }
         ]
     }
 ];
