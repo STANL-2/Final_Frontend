@@ -8,7 +8,7 @@
         <div class="flex-row content-between">
             <div>전체목록</div>
             <div class="flex-row items-center mb-s">
-                <div><CommonButton label="등록" icon="pi pi-plus" /></div>
+                <div><CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal"/></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportToXLSX" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
@@ -43,6 +43,10 @@
             />
         </div>
 
+        <EContractRegister 
+            v-model:visible="showRegisterModal" 
+            @close="closeRegisterModal" 
+        />
         <!-- 모달 -->
         <Modal v-model="showModal" header="매장코드 검색" width="30rem" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
@@ -87,6 +91,7 @@ import Modal from '@/components/common/Modal.vue';
 import SearchForm from '@/components/common/SearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+import EContractRegister from './edit/EContractRegister.vue';
 
 // 모달 테이블 값
 const headers = ['매장코드', '매장명'];
@@ -169,6 +174,7 @@ const formFields = [
     ]
 ];
 
+// table 헤더 값
 const tableHeaders = [
     { field: 'contractId', label: '계약서 번호', width: '15%' },
     { field: 'title', label: '계약서명', width: '25%' },
@@ -269,6 +275,24 @@ function onFilter(event) {
     loadData(); // 데이터 다시 로드
 }
 
+// 등록 모달 상태 변수
+const showRegisterModal = ref(false);
+
+// 등록 버튼 클릭 시 모달 열기
+function openRegisterModal() {
+    showRegisterModal.value = true;
+}
+
+// 모달 닫기
+function closeRegisterModal() {
+    showRegisterModal.value = false;
+}
+
+watch(showRegisterModal, (newValue) => {
+    console.log('showRegisterModal 상태 변경:', newValue);
+});
+
+// 검색창 모달
 const showModal = ref(false);
 const selectedRow = ref(null);
 const selectedCode = ref('');
@@ -280,10 +304,6 @@ function handleOpenModal(fieldIndex) {
     selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
     showModal.value = true;
 }
-
-watch(selectedItems, (newSelection) => {
-    console.log('부모 컴포넌트에서 선택된 항목:', newSelection);
-});
 
 function selectStore(row, index) {
     selectedRow.value = index;
