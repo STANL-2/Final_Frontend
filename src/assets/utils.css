@@ -102,6 +102,12 @@
 .mt-xl {
     margin-top: 48px;
 }
+.mt-xxl {
+    margin-top: 56px;
+}
+.mt-xxxl {
+    margin-top: 64px;
+}
 
 .mr-xxs {
     margin-right: 4px;
@@ -139,4 +145,19 @@
 }
 .ml-xl {
     margin-left: 48px;
+}
+.width-full{
+    width: 100%;
+}
+.width-s{
+    width: 95%;
+}
+.width-xs{
+    width: 90%;
+}
+.width-xxs{
+    width: 85%;
+}
+.width-xxxs{
+    width: 80%;
 }
