@@ -15,20 +15,29 @@
                 <div class="right-logo">
                     <img src="../assets/header/profile.png" class="profile" @click="goMypage"/>
                     <img src="../assets/header/alarm.png" class="alarm" />
-                    <img src="../assets/header/organization-logo.png" class="organization-logo" @click="goOrganization" />
+                    <img src="../assets/header/organization-logo.png" class="organization-logo" @click="showOrganizationModal" />
                     <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
                 </div>
             </div>
         </nav>
     </header>
+
+    <Modal v-model="showOrganizationChart" header="상세 정보" width="40rem">
+            <p>여기에 모달 내용을 추가하세요. 원하는 정보를 표시할 수 있습니다.</p>
+        </Modal>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
+import Modal from '@/components/common/Modal.vue';
+
 
 const userStore = useUserStore();
 const router = useRouter();
+
+const showOrganizationChart = ref(false);
 
 const goMypage = () => {
     router.push('/mypage');
@@ -39,9 +48,10 @@ const logout = () => {
     router.replace('/');
 }
 
-// const goOrganization = () {
+const showOrganizationModal = () => {
+    showOrganizationChart.value = true;
+};
 
-// }
 </script>
 
 <style scoped>
