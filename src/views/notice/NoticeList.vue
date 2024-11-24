@@ -1,13 +1,13 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
+        <div class="component-wrapper width-s ml-l">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-
-        <div class="flex-row content-between">
-            <div class="list">전체목록</div>
-            <div class="flex-row items-center mb-s">
+        <div class="flex-row content-end mr-xl"><CommonButton label="조회"/></div>
+        <div class="flex-row content-between mt-l">
+            <div class="list ml-l">전체목록</div>
+            <div class="flex-row items-center mb-s mr-xl">
                 <div><CommonButton label="추가" icon="pi pi-plus" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
@@ -16,7 +16,7 @@
         </div>
 
         <!-- ViewTable -->
-        <div class="component-wrapper">
+        <div class="table-wrapper width-s ml-l">
             <ViewTable 
                 :headers="tableHeaders" 
                 :data="tableData" 
@@ -33,46 +33,7 @@
                 @sort="onSort" 
                 @filter="onFilter" 
             />
-
-            <ContractDetail
-            v-model="showDetailModal"
-            :showModal="showDetailModal"
-            :details="selectedDetail"
-            @close="showDetailModal = false"
-        />
         </div>
-
-        <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" @confirm="confirmSelection" @cancel="resetModalState">
-            <div class="flex-row content-center mb-m">
-                <label class="mr-m">매장명: </label>
-                <!-- Enter 키 입력 시 searchStore 함수 호출 -->
-                <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
-                <button class="search-button" @click="searchStore">
-                    <span class="search-icon pi pi-search"></span>
-                </button>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th v-for="header in headers" :key="header">{{ header }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
-                        :class="{ selected: selectedRow === index }">
-                        <td>{{ row.매장코드 }}</td>
-                        <td>{{ row.매장명 }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <template #footer>
-                <CommonButton label="확인" @click="confirmSelection" />
-                <CommonButton label="취소" color="#ffffff" textColor="#6360AB" borderColor="#6360AB"
-                    @click="resetModalState" />
-            </template>
-        </Modal>
     </PageLayout>
 </template>
 
@@ -80,20 +41,11 @@
 import { ref, onMounted } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ContractDetail from '@/views/contract/ContractDetail.vue'
-import Modal from '@/components/common/Modal.vue';
+import NoticeDetail from '@/views/notice/NoticeDetail.vue'
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 
-// 모달 테이블 값
-const headers = ['매장코드', '매장명'];
-const modalTableData = [
-    { 매장코드: 'A', '매장명': 50 },
-    { 매장코드: 'B', '매장명': 75 },
-];
-
-// SearchForm.vue 검색조건 값
 const formFields = [
     [
         // {
@@ -126,13 +78,13 @@ const formFields = [
             type: 'select',
             label: '태그',
             model: 'tag',
-            options: ['ALL','SERVICE','SALES','EVENT','HR']
+            options: ['ALL','ADMIN','DIRECTOR']
         },
         {
             type: 'select',
             label: '분류',
             model: 'classification',
-            options: ['IMPORTANT','NORMAL','WARNING','EVENT']
+            options: ['NORMAL','GOAL','STRATEGY']
         },
     ],
     [
@@ -159,14 +111,12 @@ const formFields = [
 ];
 
 const tableHeaders = [
-    { field: 'contractId', label: '계약서 번호', width: '15%' },
-    { field: 'title', label: '계약서명', width: '25%' },
-    { field: 'carName', label: '제품명', width: '13%' },
-    { field: 'customerName', label: '고객명', width: '13%' },
-    { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
-    { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'companyName', label: '고객 상호', width: '10%' },
-    { field: 'status', label: '승인 상태', width: '5%' }
+    { field: 'noticeId', label: '번호', width: '15%' },
+    { field: 'tag', label: '태그', width: '20%' },
+    { field: 'classification', label: '분류', width: '10%' },
+    { field: 'title', label: '제목', width: '20%' },
+    { field: 'createdAt', label: '작성 일자', width: '15%' },
+    { field: 'memberId', label: '작성자', width: '15%' }
 ];
 
 // 상태 변수

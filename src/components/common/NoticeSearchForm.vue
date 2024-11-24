@@ -134,7 +134,7 @@ body {
     overflow-x: hidden;
     border: 1.5px solid #EEEEEE;
     background-color: #F8F8F8;
-    margin-bottom: 3rem;
+    margin-bottom: 0.5rem;
 }
 
 .form-row {
