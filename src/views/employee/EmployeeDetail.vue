@@ -72,6 +72,23 @@
             </table>
         </div>
 
+        <!-- 가족 구성원 -->
+        <div>
+            <div>가족 구성원</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in familyHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in familyData" :key="index">
+                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </PageLayout>
 </template>
 
@@ -93,6 +110,10 @@ const certificationData = ref([]);
 // 경력 정보
 const careerHeaders = ['입사일', '퇴사일', '경력 정보', '비고'];
 const careerData = ref([]);
+
+// 가족 구성원
+const familyHeaders = ['관계', '이름', '생년월일', '주민등록번호', '연락처', '성별', '장애인 여부', '사망 여부', '비고'];
+const familyData = ref([]);
 
 // 기본 정보
 const getMemberInfo = async () => {
@@ -189,11 +210,33 @@ const getCareerData = async () => {
     }
 };
 
+const getFamilyData = async () => {
+    try {
+        const response = await $api.family.get('other', 'god'); // API 수정 필요
+        const result = response.result;
+
+        familyData.value = result.map((family) => ({
+            관계: family.relation,
+            이름: family.name,
+            생년월일: family.birth,
+            주민등록번호: family.identNo,
+            연락처: family.phone,
+            성별: family.sex === 'MALE' ? '남성' : '여성',
+            '장애인 여부': family.disability ? 'O' : 'X',
+            '사망 여부': family.die ? 'O' : 'X',
+            비고: family.note || '-',
+        }));
+    } catch (error) {
+        console.error('가족 구성원 정보 요청 실패:', error);
+    }
+};
+
 onMounted(() => {
     getMemberInfo();
     getEducationData();
     getCertificationData();
     getCareerData();
+    getFamilyData();
 });
 </script>
 
