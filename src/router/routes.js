@@ -1,13 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+import useToastMessage from '@/hooks/useToastMessage';
 
 const routes = [
     {
         path: '/',
-        component: () => import('@/layouts/NoneLayout.vue'), // 로그인 레이아웃
         children: [
             {
                 path: '',
-                component: () => import('@/views/Login.vue') // 로그인 페이지
+                component: () => import('@/views/Login.vue'),   // 로그인 페이지
+                meta: { requiresAuth: false }                   // 로그인은 인증 불필요
             }
         ]
     },
@@ -17,13 +19,15 @@ const routes = [
         children: [
             {
                 path: 'dashboard',
-                component: () => import ('@/views/DashBoard.vue')
+                component: () => import ('@/views/DashBoard.vue'),
+                meta: { requiresAuth: true }
             }
         ]
     },
     {
         path: '/center',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -54,6 +58,7 @@ const routes = [
     {
         path: '/contract',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -84,6 +89,7 @@ const routes = [
     {
         path: '/customer',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -106,6 +112,7 @@ const routes = [
     {
         path: '/employee',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -120,6 +127,7 @@ const routes = [
     {
         path: '/evaluation',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -142,6 +150,7 @@ const routes = [
     {
         path: '/notice',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -172,6 +181,7 @@ const routes = [
     {
         path: '/order',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -194,6 +204,7 @@ const routes = [
     {
         path: '/problem',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -216,6 +227,7 @@ const routes = [
     {
         path: '/product',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -230,6 +242,7 @@ const routes = [
     {
         path: '/promotion',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -260,6 +273,7 @@ const routes = [
     {
         path: '/purchase-order',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -282,6 +296,7 @@ const routes = [
     {
         path: '/sales-history',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -296,6 +311,7 @@ const routes = [
     {
         path: '/schedule',
         component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: '',
@@ -317,6 +333,8 @@ const routes = [
     },
     {
         path: '/sample',
+        component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'searchform',
@@ -361,6 +379,28 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
+});
+
+// 통합 네비게이션 가드 설정
+router.beforeEach((to, from, next) => {
+    const userStore = useUserStore();
+    const { isLoggined, auth } = userStore;
+    const { showError } = useToastMessage();
+
+
+    if (to.meta.requiresAuth) {
+        if (!isLoggined) {
+            showError('접근 차단', '로그인이 필요합니다.');
+            return next('/'); // 로그인 페이지로 이동
+        }
+
+        if (to.meta.auth && to.meta.auth !== auth) {
+            showError('접근 차단', `해당 페이지는 ${to.meta.auth} 권한이 필요합니다.`);
+            return next(from.fullPath || '/'); // 이전 페이지로 이동 또는 기본 경로
+        }
+    }
+
+    next(); // 정상 접근 허용
 });
 
 export default router;
