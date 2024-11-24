@@ -108,17 +108,6 @@ function initializeFormData() {
     console.log('Initialized formData:', formData.value); // formData 상태 출력
 }
 
-// function initializeFormData() {
-//     formData.value = {};
-//     props.fields.forEach((fieldGroup, rowIndex) => {
-//         fieldGroup.forEach((field, index) => {
-//             const key = `${field.model}_${rowIndex}_${index}`; // 키 생성
-//             formData.value[key] = ''; // 기본값 할당
-//         });
-//     });
-//     console.log('Initialized formData:', formData.value); // formData 확인
-// }
-
 // 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
     initializeFormData();
@@ -171,10 +160,11 @@ body {
 .form-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
     /* 항상 4열 고정 */
     gap: 1rem;
     margin: 10px 0;
-    padding: 0 50px 0 20px;
+    padding: 0 25px 0 0px;
 }
 
 .form-group {
@@ -183,18 +173,21 @@ body {
     width: 100%;
 }
 
+.form-group.placeholder {
+    visibility: hidden; /* 빈 칸 숨김 */
+}
+
 .label {
-    min-width: 120px;
+    min-width: 6rem;
     font-size: 13px;
     color: #333;
     text-align: left;
     padding-right: 8px;
-    padding-left: 30px;
+    padding-left: 1.5rem;
 }
 
 .form-input,
 .form-select {
-    flex: 1;
     height: 25px;
     border: 1px solid #ddd;
     padding: 0 8px;
@@ -204,14 +197,7 @@ body {
 }
 
 .form-input {
-    width: 250px;
-}
-
-.form-select {
-    background-color: white;
-    appearance: none;
-    background-repeat: no-repeat;
-    background-position: right 8px center;
+    width: 10.5rem;
 }
 
 .date-range {
@@ -225,7 +211,6 @@ body {
 }
 
 .search-input {
-    flex: 1;
     position: relative;
 }
 
@@ -256,11 +241,10 @@ body {
 .select-container {
     position: relative;
     display: inline-block;
-    width: 100%;
 }
 
 .form-select {
-    width: 100%;
+    width: 10.5rem;
     appearance: none;
     /* 기본 브라우저 화살표 제거 */
     padding-right: 2rem;
@@ -271,6 +255,9 @@ body {
     /* 기본 배경 제거 */
     height: 25px;
     font-size: 13px;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 8px center;
 }
 
 .select-icon {
@@ -295,7 +282,6 @@ body {
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
-        /* 작은 화면에서는 1열 */
     }
 }
 
