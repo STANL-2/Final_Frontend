@@ -1,6 +1,5 @@
 <template>
     <div class="none-layout">
-        <PageHeader />
         <div>
             <RouterView />
         </div>
