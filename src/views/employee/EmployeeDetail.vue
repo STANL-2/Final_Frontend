@@ -1,11 +1,12 @@
 <template>
     <PageLayout>
-
+        <!-- 기초 정보 -->
         <div>
-            <div>
-                기초 정보
+            <div class="section-title">
+                <div class="section-text">기초 정보</div>
             </div>
-            <div class="row" v-for="(item, index) in memberInfo" :key="index">
+            <div class="memberInfo">
+                <div class="row" v-for="(item, index) in memberInfo" :key="index">
                 <div class="label">{{ item.firstLabel }}</div>
                 <div class="value">{{ item.firstValue }}</div>
                 <div class="label">{{ item.secondLabel }}</div>
@@ -13,13 +14,17 @@
                 <div class="label">{{ item.thirdLabel }}</div>
                 <div class="value">{{ item.thirdValue }}</div>
             </div>
+            </div>
         </div>
 
 
         <!-- 학력 정보 -->
-        <div>
-            <div>
-                학력 사항
+        <div class="section">
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    학력 사항
+                </div>
             </div>
             <table>
                 <thead>
@@ -37,9 +42,12 @@
         </div>
 
         <!-- 외국어/자격증 정보 -->
-        <div>
-            <div>
-                외국어/자격증 정보
+        <div class="section">
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    외국어/자격증 정보
+                </div>
             </div>
             <table>
                 <thead>
@@ -56,8 +64,13 @@
         </div>
 
         <!-- 경력 정보 -->
-        <div>
-            <div>경력 정보</div>
+        <div class="section">
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    경력 정보
+                </div>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -73,8 +86,13 @@
         </div>
 
         <!-- 가족 구성원 -->
-        <div>
-            <div>가족 구성원</div>
+        <div class="section">
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    가족 구성원
+                </div>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -241,32 +259,52 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.info-card {
-    width: 100%;
+.section {
+    margin-bottom: 30px; /* 각 섹션 간 간격 */
+}
+
+.section-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.memberInfo{
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.subtitle {
     display: flex;
-    flex-direction: column;
-    gap: 0px;
-    /* 간격을 없앰 */
-    border: 1px solid #EEEEEE;
-    /* 외곽선 추가 */
+    align-items: center;    /* 수직 중앙 정렬 */
+}
+
+.line {
+    width: 5px;
+    height: 24px;
+    background-color: #333333;
+    margin-right: 10px;
+}
+
+.subtitle-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
 }
 
 .row {
-    /* position: relative; */
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 35px;
-    /* 각 행의 높이를 고정 */
-    border-bottom: 1px solid #EEEEEE;
-    /* 행 간의 구분선을 적용 */
+    height: 35px;   /* 각 행의 높이를 고정 */
+    border-bottom: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
+    border-top: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
 }
 
 .label,
 .value {
-    border-right: 1px solid #EEEEEE;
-    /* 좌우 구분선 추가 */
+    border-right: 1px solid #EEEEEE;    /* 좌우 구분선 추가 */
     font-family: 'Pretendard';
     font-size: 12px;
     line-height: 1.5;
@@ -296,6 +334,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
+    margin-top: 10px;
 }
 
 th,
