@@ -6,13 +6,20 @@
         @close="onClose">
         <div class="flex-row content-end mb-s">
 
-            <div><CommonButton label="인쇄" icon="pi pi-print" /></div>
+            <div>
+                <CommonButton 
+                    label="인쇄" 
+                    icon="pi pi-print" 
+                    @click="printIframeContent"
+                />
+            </div>
             <div class="ml-xs"><CommonButton label="수정" /></div>
             <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
         </div>
-        <div>
+        <div id="printMe">
             <!-- iFrame으로 HTML 파일 삽입 -->
             <iframe 
+                ref="iframeRef"
                 v-if="details?.createdUrl" 
                 :src="details.createdUrl" 
                 width="100%" 
@@ -34,8 +41,8 @@
     </Modal>
 </template>
 
-<script setup>
-import { ref, watch, defineProps, defineEmits, onMounted } from 'vue';
+<script lang="ts" setup>
+import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
@@ -47,10 +54,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-// `contractId`를 저장할 ref 변수
+// contractId를 저장할 ref 변수
 const getDetailId = ref(null);
 
-// `details` 값이 변경될 때마다 `contractId`를 업데이트
+// details 값이 변경될 때마다 contractId를 업데이트
 watch(
     () => props.details,
     (newDetails) => {
@@ -90,6 +97,34 @@ const getDetailRequest = async () => {
         console.error('GET DETAIL 요청 실패: ', error);
     }
 };
+
+// iFrame 내용 인쇄
+const iframeRef = ref<HTMLIFrameElement | null>(null);
+
+function printIframeContent() {
+    if (props.details?.createdUrl) {
+        // 새 창 열기
+        const printWindow = window.open(props.details.createdUrl, '_blank');
+
+        if (printWindow) {
+            // onload 이벤트 등록
+            printWindow.onload = () => {
+                try {
+                    printWindow.focus(); // 새 창에 포커스 설정
+                    printWindow.print(); // 바로 인쇄 창 띄우기
+                } catch (error) {
+                    console.error('인쇄 창 호출 중 오류 발생:', error);
+                }
+            };
+        } else {
+            console.error('새 창을 열 수 없습니다. 팝업 차단을 확인하세요.');
+        }
+    } else {
+        console.error('details.createdUrl이 설정되지 않았습니다.');
+    }
+}
+
+
 </script>
 
 <style scoped>

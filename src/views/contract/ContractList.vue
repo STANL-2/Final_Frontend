@@ -10,7 +10,7 @@
             <div class="flex-row items-center mb-s">
                 <div><CommonButton label="등록" icon="pi pi-plus" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportToXLSX" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
             </div>
         </div>
@@ -25,6 +25,7 @@
                 :rows="rows" 
                 :rowsPerPageOptions="[5, 10, 20, 50]"
                 :selectable="true" 
+                :selection.sync="selectedItems"
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
                 :buttonAction="handleView" 
@@ -35,11 +36,11 @@
             />
 
             <ContractDetail
-            v-model="showDetailModal"
-            :showModal="showDetailModal"
-            :details="selectedDetail"
-            @close="showDetailModal = false"
-        />
+                v-model="showDetailModal"
+                :showModal="showDetailModal"
+                :details="selectedDetail"
+                @close="showDetailModal = false"
+            />
         </div>
 
         <!-- 모달 -->
@@ -77,10 +78,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import * as XLSX from 'xlsx'; // XLSX 라이브러리 추가
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ContractDetail from '@/views/contract/ContractDetail.vue'
+import ContractDetail from '@/views/contract/ContractDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import SearchForm from '@/components/common/SearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
@@ -175,14 +177,14 @@ const tableHeaders = [
     { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
     { field: 'companyName', label: '고객 상호', width: '10%' },
-    { field: 'status', label: '승인 상태', width: '5%' }
+    { field: 'status', label: '승인 상태', width: '5%' },
 ];
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
+const selectedItems = ref([]);
 const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
-
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
 const rows = ref(5); // 페이지 당 행 수
@@ -190,6 +192,38 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+
+// 엑셀 다운로드 함수
+function exportToXLSX() {
+    // 선택된 데이터가 있으면 그 데이터를 사용, 없으면 전체 데이터를 사용
+    console.log("선택된 값: " + selectedItems.value);
+    const dataToExport = selectedItems.value.length > 0 ? selectedItems.value : tableData.value;
+
+    if (!dataToExport || dataToExport.length === 0) {
+        alert('엑셀로 내보낼 데이터가 없습니다.');
+        return;
+    }
+
+    try {
+        // JSON 데이터를 엑셀 워크시트로 변환
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+
+        // 엑셀 헤더 추가
+        XLSX.utils.sheet_add_aoa(worksheet, [tableHeaders.map((header) => header.label)], { origin: 'A1' });
+
+        // 엑셀 워크북 생성 및 워크시트 추가
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+        // 파일 다운로드
+        XLSX.writeFile(workbook, 'table-data.xlsx');
+        console.log('엑셀 다운로드 성공:', dataToExport);
+    } catch (error) {
+        console.error('엑셀 다운로드 중 오류 발생:', error);
+        alert('엑셀 내보내기 중 문제가 발생했습니다.');
+    }
+}
+
 
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
@@ -201,14 +235,8 @@ function handleView(rowData) {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
-        const response = await $api.contract.get(
-            '',
-            '',
-        );
-        console.log('GET 요청 응답 결과');
-        console.log(response);
-
-        tableData.value = response.result.content; // 테이블 데이터 업데이트
+        const response = await $api.contract.get('', ''); // API 요청
+        tableData.value = response.result.content; // 데이터 업데이트
         totalRecords.value = response.result.totalElements; // 전체 데이터 개수 업데이트
     } catch (error) {
         console.error('데이터 로드 실패:', error);
@@ -217,7 +245,6 @@ const loadData = async () => {
     }
 };
 
-// 페이지 로드 시 데이터 로드
 onMounted(() => {
     loadData();
 });
@@ -242,8 +269,6 @@ function onFilter(event) {
     loadData(); // 데이터 다시 로드
 }
 
-
-// 모달에서 쓰이는 값들
 const showModal = ref(false);
 const selectedRow = ref(null);
 const selectedCode = ref('');
@@ -252,10 +277,13 @@ const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
 
 function handleOpenModal(fieldIndex) {
-    console.log(`Opening modal for field: ${fieldIndex}`);
     selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
     showModal.value = true;
 }
+
+watch(selectedItems, (newSelection) => {
+    console.log('부모 컴포넌트에서 선택된 항목:', newSelection);
+});
 
 function selectStore(row, index) {
     selectedRow.value = index;
@@ -279,74 +307,16 @@ function closeModal() {
     selectedCode.value = '';
 }
 
-// 여기에 검색어 조회 API 로직 작성
 function searchStore() {
-    // 입력된 값 출력
-    console.log('검색어:', searchQuery.value);
-
-    // 추가적인 검색 로직을 여기에 추가할 수 있습니다.
     if (searchQuery.value) {
         alert(`검색어: ${searchQuery.value}`);
     }
-    // 검색어 초기화
     searchQuery.value = '';
 }
-
 </script>
 
 <style scoped>
 .component-wrapper {
     margin-bottom: 8rem;
-}
-/* 테이블 스타일 */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th,
-td {
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    text-align: center;
-}
-
-th {
-    background-color: #F8F8F8;
-    color: #777;
-}
-
-/* 선택된 행 스타일 */
-tr.selected {
-    background-color: #e0e0e0;
-    /* 선택된 행의 배경색 */
-}
-
-tr:hover {
-    cursor: pointer;
-    background-color: #f0f0f0;
-}
-
-.p-inputtext {
-    height: 27px !important;
-    border-radius: 0px;
-}
-
-.search-button {
-    right: 0;
-    top: 0;
-    width: 27px;
-    height: 27px;
-    background: #6360AB !important;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.search-icon {
-    color: white;
-    font-size: 14px;
 }
 </style>
