@@ -19,7 +19,7 @@
         <!-- 학력 정보 -->
         <div>
             <div>
-                학력 정보
+                학력 사항
             </div>
             <table>
                 <thead>
@@ -55,6 +55,23 @@
             </table>
         </div>
 
+        <!-- 경력 정보 -->
+        <div>
+            <div>경력 정보</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in careerHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in careerData" :key="index">
+                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </PageLayout>
 </template>
 
@@ -72,6 +89,10 @@ const educationData = ref([]);
 // 자격증/외국어 정보
 const certificationHeaders = ['취득 날짜', '시행기관', '자격증/외국어', '등급', '비고'];
 const certificationData = ref([]);
+
+// 경력 정보
+const careerHeaders = ['입사일', '퇴사일', '경력 정보', '비고'];
+const careerData = ref([]);
 
 // 기본 정보
 const getMemberInfo = async () => {
@@ -152,10 +173,27 @@ const getCertificationData = async () => {
     }
 };
 
+const getCareerData = async () => {
+    try {
+        const response = await $api.career.get('other', 'god'); // API 수정 필요
+        const result = response.result;
+
+        careerData.value = result.map((career) => ({
+            입사일: career.emplDate,
+            퇴사일: career.resignDate || '-',
+            '경력 정보': career.name,
+            비고: career.note || '-',
+        }));
+    } catch (error) {
+        console.error('경력 정보 요청 실패:', error);
+    }
+};
+
 onMounted(() => {
     getMemberInfo();
     getEducationData();
     getCertificationData();
+    getCareerData();
 });
 </script>
 
