@@ -18,6 +18,17 @@ const routes = [
         component: () => import('@/layouts/MainLayout.vue'),
         children: [
             {
+                path: 'mypage',
+                component: () => import('@/views/member/Mypage.vue'),
+                meta: { requiresAuth: true }                   
+            }
+        ]
+    },
+    {
+        path: '/',
+        component: () => import('@/layouts/MainLayout.vue'),
+        children: [
+            {
                 path: 'dashboard',
                 component: () => import ('@/views/DashBoard.vue'),
                 meta: { requiresAuth: true }
