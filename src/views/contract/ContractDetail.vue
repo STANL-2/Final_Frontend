@@ -13,7 +13,7 @@
                     @click="printIframeContent"
                 />
             </div>
-            <div class="ml-xs"><CommonButton label="수정" /></div>
+            <div class="ml-xs"><CommonButton label="수정" @click="openModifyModal"/></div>
             <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
         </div>
         <div id="printMe">
@@ -39,6 +39,11 @@
             <CommonButton label="닫기" @click="onClose" />
         </template>
     </Modal>
+
+    <EContractModify 
+        v-model:visible="showModifyModal" 
+        @close="closeModifyModal" 
+    />
 </template>
 
 <script lang="ts" setup>
@@ -46,6 +51,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+import EContractModify from './edit/EContractModify.vue';
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩될 값
@@ -122,6 +128,19 @@ function printIframeContent() {
     } else {
         console.error('details.createdUrl이 설정되지 않았습니다.');
     }
+}
+
+// 등록 모달 상태 변수
+const showModifyModal = ref(false);
+
+// 등록 버튼 클릭 시 모달 열기
+function openModifyModal() {
+    showModifyModal.value = true;
+}
+
+// 모달 닫기
+function closeModifyModal() {
+    showModifyModal.value = false;
 }
 
 
