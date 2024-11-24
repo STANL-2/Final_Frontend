@@ -16,24 +16,43 @@
         </div>
 
 
+        <!-- 학력 정보 -->
         <div>
             <div>
                 학력 정보
             </div>
-            <div class="row" v-for="(item, index) in educationInfo" :key="index">
-                <div class="label">{{ item.firstLabel }}</div>
-                <div class="value">{{ item.firstValue }}</div>
-                <div class="label">{{ item.secondLabel }}</div>
-                <div class="value">{{ item.secondValue }}</div>
-                <div class="label">{{ item.thirdLabel }}</div>
-                <div class="value">{{ item.thirdValue }}</div>
-                <div class="label">{{ item.fourthLabel }}</div>
-                <div class="value">{{ item.fourthValue }}</div>
-                <div class="label">{{ item.fifthLabel }}</div>
-                <div class="value">{{ item.fifthValue }}</div>
-                <div class="label">{{ item.sixthLabel }}</div>
-                <div class="value">{{ item.sixthValue }}</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in educationHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in educationData" :key="index">
+                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 외국어/자격증 정보 -->
+        <div>
+            <div>
+                외국어/자격증 정보
             </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in certificationHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in certificationData" :key="index">
+                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </PageLayout>
@@ -45,48 +64,47 @@ import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 
 const memberInfo = ref([]);
-const educationInfo = ref([]);
+
+// 학력 정보
+const educationHeaders = ['입학일', '졸업일', '학력', '전공', '점수', '비고'];
+const educationData = ref([]);
+
+// 자격증/외국어 정보
+const certificationHeaders = ['취득 날짜', '시행기관', '자격증/외국어', '등급', '비고'];
+const certificationData = ref([]);
 
 // 기본 정보
 const getMemberInfo = async () => {
     try {
         const response = await $api.member.get('', '');
-        console.log('GET 요청 응답 결과', response);
-
         const result = response.result;
 
-        // 데이터 매핑
         memberInfo.value = [
             {
                 firstLabel: '사원번호', firstValue: result.centerId,
                 secondLabel: '성명', secondValue: result.name,
                 thirdLabel: '주민등록번호', thirdValue: result.identNo
             },
-
             {
                 firstLabel: '이메일', firstValue: result.email,
                 secondLabel: '휴대전화', secondValue: result.phone,
                 thirdLabel: '성별', thirdValue: result.sex
             },
-
             {
                 firstLabel: '입사일', firstValue: '-', // 입사일 정보 없음
                 secondLabel: '발령일', secondValue: '-', // 발령일 정보 없음
                 thirdLabel: '병역구분', thirdValue: result.military
             },
-
             {
                 firstLabel: '비상연락처', firstValue: result.emergePhone || '-',
                 secondLabel: '직책', secondValue: result.position,
                 thirdLabel: '학력구분', thirdValue: result.grade
             },
-
             {
                 firstLabel: '은행명', firstValue: result.bankName,
                 secondLabel: '계좌번호', secondValue: result.account,
                 thirdLabel: '주소', thirdValue: result.address
             },
-
             {
                 firstLabel: '고용형태', firstValue: result.jobType,
                 secondLabel: '비고', secondValue: result.note || '-'
@@ -97,28 +115,47 @@ const getMemberInfo = async () => {
     }
 };
 
-// 학력 정보
-const getMemberEducation = async () => {
+// 학력 정보 API 호출
+const getEducationData = async () => {
     try {
-        const response = await $api.education.get('other', 'god'); // 수정해야함!!!!!!!!!!!!!!!!!!!1
+        const response = await $api.education.get('other', 'god'); // API 수정 필요
         const result = response.result;
 
-        educationInfo.value = result.map((edu) => ({
-            firstLabel: '입학일', firstValue: edu.entranceDate,
-            secondLabel: '졸업일', secondValue: edu.graduationDate,
-            thirdLabel: '학력', thirdValue: edu.name,
-            fourthLabel: '전공', fourthValue: edu.major || '-',
-            fifthLabel: '점수', fifthValue: edu.score || '-',
-            sixthLabel: '비고', sixthValue: edu.note || '-',
+        educationData.value = result.map((edu) => ({
+            입학일: edu.entranceDate,
+            졸업일: edu.graduationDate,
+            학력: edu.name,
+            전공: edu.major || '-',
+            점수: edu.score || '-',
+            비고: edu.note || '-',
         }));
     } catch (error) {
-        console.error('GET 요청 실패: ', error);
+        console.error('학력 정보 요청 실패: ', error);
+    }
+};
+
+// 자격증/외국어 정보 API 호출
+const getCertificationData = async () => {
+    try {
+        const response = await $api.certification.get('other', 'god'); // API 수정 필요
+        const result = response.result;
+
+        certificationData.value = result.map((cert) => ({
+            '취득 날짜': cert.acquisitionDate,
+            시행기관: cert.agency,
+            '자격증/외국어': cert.name,
+            등급: cert.score || '-',
+            비고: cert.note || '-',
+        }));
+    } catch (error) {
+        console.error('자격증/외국어 정보 요청 실패: ', error);
     }
 };
 
 onMounted(() => {
     getMemberInfo();
-    getMemberEducation();
+    getEducationData();
+    getCertificationData();
 });
 </script>
 
@@ -172,5 +209,24 @@ onMounted(() => {
 .value {
     width: 75%;
     color: #000000;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 13px;
+}
+
+th {
+    background-color: #F8F8F8;
+    color: #777777;
 }
 </style>
