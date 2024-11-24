@@ -5,7 +5,7 @@
                 <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
-                    <text class="title-1">영업관리</text>
+                    <text class="title">영업관리</text>
                 </RouterLink>
             </div>
 
@@ -13,8 +13,9 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
+                    <img src="../assets/header/profile.png" class="profile" @click="goMypage"/>
                     <img src="../assets/header/alarm.png" class="alarm" />
-                    <img src="../assets/header/organization-logo.png" class="organization-logo" />
+                    <img src="../assets/header/organization-logo.png" class="organization-logo" @click="goOrganization" />
                     <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
                 </div>
             </div>
@@ -25,15 +26,22 @@
 <script setup>
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import { ref } from 'vue';
 
 const userStore = useUserStore();
 const router = useRouter();
+
+const goMypage = () => {
+    router.push('/mypage');
+}
 
 const logout = () => {
     userStore.logout();
     router.replace('/');
 }
+
+// const goOrganization = () {
+
+// }
 </script>
 
 <style scoped>
@@ -66,7 +74,7 @@ const logout = () => {
     align-items: center;
 }
 
-.title-1 {
+.title {
     font-size: 20px;
     color: #6360AB;
     font-family: 'Pretendard';
@@ -91,6 +99,15 @@ const logout = () => {
     flex-direction: row;
 }
 
+.profile {
+    padding: 20px 0px 20px 20px;
+    border-left: 2px solid #CCCCCC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
 .alarm {
     padding: 20px 0px 20px 20px;
     border-left: 2px solid #CCCCCC;
@@ -105,6 +122,7 @@ const logout = () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .logout-logo {
@@ -113,5 +131,6 @@ const logout = () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 </style>
