@@ -37,6 +37,7 @@ const sections = ref([
         routes: [
             { path: "/center/list", label: "Center List" },
             { path: "/center/detail", label: "Center Detail" },
+            { path: "/center/Elist", label: "Edit Center List" },
             { path: "/center/Edetail", label: "Edit Center Detail" },
             { path: "/center/modify", label: "Modify Center" },
             { path: "/center/register", label: "Register Center" },
@@ -47,6 +48,7 @@ const sections = ref([
         routes: [
             { path: "/contract/list", label: "Contract List" },
             { path: "/contract/detail", label: "Contract Detail" },
+            { path: "/contract/Elist", label: "Edit Contract List" },
             { path: "/contract/Edetail", label: "Edit Contract Detail" },
             { path: "/contract/modify", label: "Modify Contract" },
             { path: "/contract/register", label: "Register Contract" },
@@ -82,6 +84,7 @@ const sections = ref([
         routes: [
             { path: "/notice/list", label: "Notice List" },
             { path: "/notice/detail", label: "Notice Detail" },
+            { path: "/notice/Elist", label: "Edit Notice List" },
             { path: "/notice/Edetail", label: "Edit Notice Detail" },
             { path: "/notice/modify", label: "Modify Notice" },
             { path: "/notice/register", label: "Register Notice" },
@@ -117,6 +120,7 @@ const sections = ref([
         routes: [
             { path: "/promotion/list", label: "Promotion List" },
             { path: "/promotion/detail", label: "Promotion Detail" },
+            { path: "/promotion/Elist", label: "Edit Promotion List" },
             { path: "/promotion/Edetail", label: "Edit Promotion Detail" },
             { path: "/promotion/modify", label: "Modify Promotion" },
             { path: "/promotion/register", label: "Register Promotion" },

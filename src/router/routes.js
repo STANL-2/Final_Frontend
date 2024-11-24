@@ -34,6 +34,10 @@ const routes = [
                 component: () => import('@/views/center/CenterDetail.vue')
             },
             {
+                path: 'Elist',
+                component: () => import('@/views/center/edit/ECenterList.vue')
+            },
+            {
                 path: 'Edetail',
                 component: () => import('@/views/center/edit/ECenterDetail.vue')
             },
@@ -58,6 +62,10 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/contract/ContractDetail.vue')
+            },
+            {
+                path: 'Elist',
+                component: () => import('@/views/contract/edit/EContractList.vue')
             },
             {
                 path: 'Edetail',
@@ -144,6 +152,10 @@ const routes = [
                 component: () => import('@/views/notice/NoticeDetail.vue')
             },
             {
+                path: 'Elist',
+                component: () => import('@/views/notice/edit/ENoticeList.vue')
+            },
+            {
                 path: 'Edetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue')
             },
@@ -226,6 +238,10 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/promotion/PromotionDetail.vue')
+            },
+            {
+                path: 'Elist',
+                component: () => import('@/views/promotion/edit/EPromotionList.vue')
             },
             {
                 path: 'Edetail',
