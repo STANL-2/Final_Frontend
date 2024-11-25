@@ -29,7 +29,8 @@
             <!-- Custom Modal -->
             <div v-if="showOrganizationChart" class="modal-overlay">
                     <div class="modal">
-                        <Tree 
+                        <div class="aside">
+                            <Tree 
                             :value="organization" 
                             :filter="true" 
                             filterMode="lenient"
@@ -38,9 +39,12 @@
                             class="tree-component"
                             @node-select="handleNodeSelect"
                             />
+                        </div>
+                        <div class="body">   
                             <OrganizationEmployee 
                             :organizationId="organizationId"
                             @closeModal="closeModal"/>
+                        </div>
                     </div>
                 </div>
         </Modal>
@@ -227,11 +231,29 @@ const handleNodeSelect = (event) => {
     flex-direction: row;
 }
 .modal > div:first-child {
-    flex: 2; /* First component takes 70% of the height */
+    flex: 2; 
 }
 
 .modal > div:nth-child(2) {
-    flex: 8; /* Second component takes 30% of the height */
+    flex: 8; 
+}
+
+.body {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.aside {
+    transition: width 0.3s ease;
+    width: 260px;
+    padding: 1.5rem;
+    
+}
+
+.aside.hidden {
+    width: 0;
+    overflow: hidden;
 }
 
 .tree-component{
