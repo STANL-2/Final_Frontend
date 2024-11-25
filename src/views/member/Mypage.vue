@@ -3,7 +3,7 @@
         <!-- 기초 정보 -->
         <div>
             <div class="section-title">
-                <div class="section-text">기초 정보</div>
+                <div class="section-text">마이페이지</div>
             </div>
             <div class="memberInfo">
                 <div class="row" v-for="(item, index) in memberInfo" :key="index">
@@ -113,11 +113,10 @@
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
 import { $api } from '@/services/api/api';
+import { useUserStore } from '@/stores/user';
 
-const route = useRoute();
-const employeeId = route.query.employeeId;
+const userStore = useUserStore();
 
 // 기본 정보
 const memberInfo = ref([]);
@@ -141,7 +140,7 @@ const familyData = ref([]);
 // 기본 정보
 const getMemberInfo = async () => {
     try {
-        const response = await $api.member.get('info', employeeId); 
+        const response = await $api.member.get('', '');
         const result = response.result;
 
         memberInfo.value = [
@@ -183,7 +182,7 @@ const getMemberInfo = async () => {
 // 학력 정보 API 호출
 const getEducationData = async () => {
     try {
-        const response = await $api.education.get('other', employeeId);
+        const response = await $api.education.get('', ''); 
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
@@ -202,7 +201,7 @@ const getEducationData = async () => {
 // 자격증/외국어 정보 API 호출
 const getCertificationData = async () => {
     try {
-        const response = await $api.certification.get('other', employeeId); 
+        const response = await $api.certification.get('', ''); 
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
@@ -219,7 +218,7 @@ const getCertificationData = async () => {
 
 const getCareerData = async () => {
     try {
-        const response = await $api.career.get('other', employeeId); 
+        const response = await $api.career.get('', ''); 
         const result = response.result;
 
         careerData.value = result.map((career) => ({
@@ -235,7 +234,7 @@ const getCareerData = async () => {
 
 const getFamilyData = async () => {
     try {
-        const response = await $api.family.get('other', employeeId);
+        const response = await $api.family.get('', ''); 
         const result = response.result;
 
         familyData.value = result.map((family) => ({
