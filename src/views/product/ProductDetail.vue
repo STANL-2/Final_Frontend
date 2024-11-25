@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch, onMounted } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
@@ -41,15 +41,16 @@ const emit = defineEmits(['update:modelValue']); // 부모에게 상태 전달
 // 로컬 상태로 데이터를 관리
 const productDetails = ref({ ...props.details }); // 초기 데이터를 복사
 
-// Watcher: props.details 변경 시 로컬 상태를 업데이트
+// Watch: props.details 업데이트 시 API 호출
 watch(
     () => props.details,
     (newDetails) => {
-        if (newDetails) {
-            productDetails.value = { ...newDetails }; // props.details를 로컬 상태에 복사
+        if (newDetails?.productId) {
+            console.log('props.details 업데이트 감지. API 호출:', newDetails.productId);
+            getDetailRequest(newDetails.productId);
         }
     },
-    { immediate: true }
+    { immediate: true } // 컴포넌트 마운트 시에도 실행
 );
 
 // 모달 닫기
@@ -63,32 +64,47 @@ const getDetailRequest = async (productId) => {
         const response = await $api.product.get('', productId);
         productDetails.value = response.result; // 로컬 상태에 API 결과를 업데이트
         console.log('상세 데이터 응답:', response);
+
+        productData.value = [
+        {
+            label: '제품 번호',
+            value: productDetails.value.productId,
+            secondLabel: '모델명',
+            secondValue: productDetails.value.name
+        },
+        {
+            label: '일련번호',
+            value: productDetails.value.serialNumber,
+            secondLabel: '차량가액',
+            secondValue: productDetails.value.cost
+        },
+        {
+            label: '재고 수',
+            value: productDetails.value.stock,
+            secondLabel: '차량 구분',
+            secondValue: productDetails.value.vehicleType
+        },
+        ]
+
+        tableData.value = [
+        {
+            배기량: mapValue('배기량', productDetails.value.engineCapacity),
+            '차체 형상': mapValue('차체_형상', productDetails.value.bodyType),
+            차대: mapValue('차대', productDetails.value.chassis),
+            '안전 장치': mapValue('안전_장치', productDetails.value.safetyDevice),
+            생산년도: mapValue('생산년도', productDetails.value.productYear),
+            '생산 공장': mapValue('생산공장', productDetails.value.productPlant),
+            '외장 색상': mapValue('외장색상', productDetails.value.externalColor),
+            '내장 색상': mapValue('내장색상', productDetails.value.internalColor),
+        },
+        ]
     } catch (error) {
         console.error('데이터 요청 실패:', error);
     }
 };
 
 // ViewForm에 전달할 데이터
-const productData = ref([
-    {
-        label: '제품 번호',
-        value: productDetails.value.productId,
-        secondLabel: '모델명',
-        secondValue: productDetails.value.name
-    },
-    {
-        label: '일련번호',
-        value: productDetails.value.serialNumber,
-        secondLabel: '차량가액',
-        secondValue: productDetails.value.cost
-    },
-    {
-        label: '재고 수',
-        value: productDetails.value.stock,
-        secondLabel: '차량 구분',
-        secondValue: productDetails.value.vehicleType
-    },
-]);
+const productData = ref([]);
 
 // 매핑 데이터 (사전 사용)
 const mappings = {
@@ -122,6 +138,17 @@ const mappings = {
         A: '2010',
         B: '2011',
         C: '2012',
+        D: '2013',
+        E: '2014',
+        F: '2015',
+        G: '2016',
+        H: '2017',
+        I: '2018',
+        J: '2019',
+        K: '2020',
+        L: '2021',
+        M: '2022',
+        N: '2023',
         O: '2024',
     },
     생산공장: {
@@ -142,6 +169,7 @@ const mappings = {
         G: 'Gray',
         B: 'Black',
         C: 'Cognac',
+        R: 'Red'
     },
 };
 
@@ -150,47 +178,13 @@ const mapValue = (category, key) => {
     return mappings[category]?.[key] || key; // 키가 없으면 원본 값을 반환
 }
 
-
 const headers = ['배기량','차체 형상', '차대', '안전 장치', '생산년도', '생산 공장', '외장 색상', '내장 색상', ];
 
-const tableData = ref([
-    {
-        배기량: mapValue('배기량', productDetails.value.capacity),
-        '차체 형상': mapValue('차체_형상', productDetails.value.bodyType),
-        차대: mapValue('차대', productDetails.value.chassis),
-        '안전 장치': mapValue('안전_장치', productDetails.value.safetyDevice),
-        생산년도: mapValue('생산년도', productDetails.value.productYear),
-        '생산 공장': mapValue('생산공장', productDetails.value.productPlant),
-        '외장 색상': mapValue('외장색상', productDetails.value.exteriorColor),
-        '내장 색상': mapValue('내장색상', productDetails.value.internalColor),
-    },
-]);
+const tableData = ref([]);
 
-watch(
-    () => productDetails.value,
-    (newDetails) => {
-        // productDetails가 업데이트되면 ViewForm 데이터도 업데이트
-        productData.value = [
-            {
-                label: '제품 번호',
-                value: newDetails.productId,
-                secondLabel: '모델명',
-                secondValue: newDetails.name
-            },
-            {
-                label: '일련번호',
-                value: newDetails.serialNumber,
-                secondLabel: '차량가액',
-                secondValue: newDetails.cost
-            },
-            {
-                label: '재고 수',
-                value: newDetails.stock
-            },
-        ];
-    },
-    { immediate: true }
-);
+onMounted(() => {
+    getDetailRequest(props.details?.productId);
+});
 </script>
 
 <style scoped>
