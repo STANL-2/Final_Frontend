@@ -146,6 +146,12 @@
 .ml-xl {
     margin-left: 48px;
 }
+.ml-xxl {
+    margin-left: 56px;
+}
+.ml-xxxl {
+    margin-left: 64px;
+}
 .width-full{
     width: 100%;
 }

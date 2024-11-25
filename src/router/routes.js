@@ -158,6 +158,7 @@ const routes = [
             },
             {
                 path: 'detail',
+                name: 'NoticeDetail',
                 component: () => import('@/views/notice/NoticeDetail.vue')
             },
             {

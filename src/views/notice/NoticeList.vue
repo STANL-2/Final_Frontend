@@ -41,11 +41,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+
+const router = useRouter(); 
 
 const formFields = [
     [
@@ -135,9 +138,17 @@ const sortOrder = ref(null); // 정렬 순서
 
 
 function handleView(rowData) {
-    // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     showDetailModal.value = true;
+    router.push({
+        name: 'NoticeDetail',
+        query: {
+            tag: rowData.tag, // 태그
+            classification: rowData.classification, // 분류
+            noticeTitle: rowData.title, 
+            noticeContent: rowData.content,
+        },
+    });
 }
 
 // 데이터 로드 함수
@@ -234,6 +245,7 @@ function searchStore() {
     // 검색어 초기화
     searchQuery.value = '';
 }
+
 </script>
 
 <style scoped>
