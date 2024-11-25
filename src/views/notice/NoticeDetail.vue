@@ -23,8 +23,8 @@ const { tag, classification, noticeTitle } = route.query;
 
 <template>
     <PageLayout>
-        <div class="header width-s ml-l mb-m mt-xl"> 
-            <h1>상세 페이지</h1> 
+        <div class="header width-s ml-l mb-m mt-xl">
+            <h1>상세 페이지</h1>
         </div>
         <div class="detail-container width-xxxs ml-xl">
             <h2 class="notice-title mb-m">{{ noticeTitle }}</h2>
@@ -33,8 +33,8 @@ const { tag, classification, noticeTitle } = route.query;
             </h3>
 
 
-            <div class="bottom-section flex-col items-center width-s ml-xxxl" >
-            <!-- 첨부 파일 -->
+            <div class="bottom-section flex-col items-center width-s ml-xxxl">
+                <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
                     <table class="file-table">
                         <thead>
@@ -49,12 +49,12 @@ const { tag, classification, noticeTitle } = route.query;
                         </tbody>
                     </table>
                 </div>
-            
-            <!-- 버튼 -->
+
+                <!-- 버튼 -->
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <button class="button delete-button">삭제</button>
+                        <button class="button delete-button" @click="deleteNotice">삭제</button>
                         <button class="button edit-button">수정</button>
                     </div>
                 </div>
@@ -64,10 +64,32 @@ const { tag, classification, noticeTitle } = route.query;
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { $api } from '@/services/api/api';
+
 const route = useRoute();
+const router = useRouter();
+
 const noticeTitle = route.query.noticeTitle || '';
 const noticeContent = route.query.noticeContent || '';
+const noticeId = route.query.noticeId || '';
+
+const goBack = () => {
+    router.back();
+};
+const deleteNotice = async () => {
+    try {
+        const response = await $api.notice.delete(
+            noticeId
+        );
+        console.log(response.status)
+        alert('공지사항이 삭제되었습니다.');
+        router.back(); 
+    } catch (error) {
+        console.error('삭제 중 오류 발생:', error);
+        alert('삭제에 실패했습니다.');
+    }
+};
 </script>
 
 <style scoped>
@@ -98,7 +120,7 @@ const noticeContent = route.query.noticeContent || '';
 }
 
 .file-table {
-    
+
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
@@ -139,11 +161,11 @@ const noticeContent = route.query.noticeContent || '';
 
 .back-button {
     position: relative;
-    left:50%;
+    left: 50%;
     right: 50%;
     background-color: #6360AB;
     color: #FFFFFF;
-    
+
 }
 
 .delete-button {

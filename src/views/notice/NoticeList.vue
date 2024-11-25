@@ -9,7 +9,7 @@
         </div>
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
-            <div class="flex-row items-center mb-s mr-xl">
+            <div class="flex-row items-center mb-s mr-m">
                 <div><CommonButton label="추가" icon="pi pi-plus" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
@@ -147,6 +147,7 @@ function handleView(rowData) {
             classification: rowData.classification, // 분류
             noticeTitle: rowData.title, 
             noticeContent: rowData.content,
+            noticeId: rowData.noticeId,
         },
     });
 }
