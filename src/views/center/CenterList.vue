@@ -34,7 +34,7 @@
                 @filter="onFilter" 
             />
 
-            <ProductDetail
+            <CenterDetail
             v-model="showDetailModal"
             :showModal="showDetailModal"
             :details="selectedDetail"
@@ -48,7 +48,7 @@
 import { ref, onMounted } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ProductDetail from '@/views/product/ProductDetail.vue';
+import CenterDetail from '@/views/center/CenterDetail.vue';
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
@@ -57,20 +57,20 @@ const formFields = [
     [
         {
             type: 'input',
-            label: '제품번호',
+            label: '매장번호',
             model: 'productId',
             showDivider: false
         },
         {
             type: 'input',
-            label: '모델명',
+            label: '지점 이름',
             model: 'name',
             showDivider: true
         },
         {
             type: 'input',
-            label: '일련번호',
-            model: 'serialNumber',
+            label: '주소',
+            model: 'address',
             showDivider: false
         }
     ]
@@ -135,7 +135,7 @@ const exportCSV = async () => {
         
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'productExcel.xlsx');
+        link.setAttribute('download', 'centerExcel.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
