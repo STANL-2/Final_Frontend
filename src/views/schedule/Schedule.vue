@@ -8,10 +8,9 @@
 
         <div v-if="showTagDropdown" class="tag-dropdown" :style="tagDropdownPosition">
             <ul>
-                <li v-for="tag in tags" :key="tag.name" @click="selectTag(tag)" class="tag-item">
-                    <input type="checkbox" :id="tag.name" :value="tag.name" v-model="selectedTags" />
+                <li v-for="tag in tags" :key="tag.name" class="tag-item">
                     <span class="color-dot" :style="{ backgroundColor: tag.color }"></span>
-                    <label :for="tag.name">{{ tag.name }}</label>
+                    <span>{{ tag.name }}</span>
                 </li>
             </ul>
             <button class="add-new-tag-button" @click.stop="openNewTagModal">새로운 태그 추가</button>
@@ -29,12 +28,16 @@
                         <textarea id="content" v-model="newEvent.content" rows="3" required></textarea>
                     </div>
                     <div>
-                        <label for="date">날짜</label>
-                        <input type="date" id="date" v-model="newEvent.date" required />
-                        <label for="start-time">시작 시간</label>
-                        <input type="time" id="start-time" v-model="newEvent.startTime" />
-                        <label for="end-time">종료 시간</label>
-                        <input type="time" id="end-time" v-model="newEvent.endTime" />
+                        <label for="startDate">시작 날짜</label>
+                        <input type="date" id="startDate" v-model="newEvent.startDate" required />
+                        <label for="startTime">시작 시간</label>
+                        <input type="time" id="startTime" v-model="newEvent.startTime" required />
+                    </div>
+                    <div>
+                        <label for="endDate">종료 날짜</label>
+                        <input type="date" id="endDate" v-model="newEvent.endDate" required />
+                        <label for="endTime">종료 시간</label>
+                        <input type="time" id="endTime" v-model="newEvent.endTime" required />
                     </div>
                     <div>
                         <label for="tag">태그</label>
@@ -104,6 +107,7 @@
                 <div class="modal-footer">
                     <template v-if="!isEditing">
                         <button @click="startEditing" class="edit-button">수정</button>
+                        <button @click="confirmDeleteSchedule" class="cancel-button">삭제</button>
                         <button @click="closeScheduleDetails" class="close-button">닫기</button>
                     </template>
                     <template v-else>
@@ -128,16 +132,11 @@ export default {
     data() {
         return {
             calendar: null,
+            currentViewDate: null,
             tags: [
                 { name: 'METTING', color: '#B0DDFF' },
                 { name: 'TRAINING', color: '#FFF3E0' },
-                { name: 'VACATION', color: '#E3F2FD' },
-                { name: '대외', color: '#FFEBEE' },
-                { name: '세미나', color: '#F3E5F5' },
-                { name: '일정', color: '#FFFFFF' },
-                { name: '프로젝트', color: '#E0F2F1' },
-                { name: '필독', color: '#FFF8E1' },
-                { name: 'To-do', color: '#FFEBEE' }
+                { name: 'VACATION', color: '#E3F2FD' }
             ],
             selectedTags: [],
             showTagDropdown: false,
@@ -146,6 +145,7 @@ export default {
             showScheduleDetails: false,
             isEditing: false,
             selectedSchedule: {
+                id: '',
                 title: '',
                 content: '',
                 startDate: '',
@@ -170,9 +170,16 @@ export default {
         };
     },
     async mounted() {
+        this.currentViewDate = new Date();
         // 컴포넌트 마운트 시 일정 데이터 조회
-        await this.fetchSchedules();
         this.initCalendar();
+
+        const currentYear = this.currentViewDate.getFullYear();
+        const currentMonth = String(this.currentViewDate.getMonth() + 1).padStart(2, '0');
+
+        console.log("currnetY", currentYear);
+        console.log("currnetM", currentMonth);
+        await this.fetchSchedules(currentYear, currentMonth);
         document.addEventListener('click', this.handleClickOutside);
     },
     beforeDestroy() {
@@ -180,58 +187,32 @@ export default {
         document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
-        async fetchSchedules() {
+        async fetchSchedules(year, month) {
             try {
-                const response = await $api.schedule.get('', '');
-                console.log('일정 조회 결과:', response);
+                let response;
+
+                if (year && month) {
+                    // Fetch schedules for the specified year and month
+                    response = await $api.schedule.get(`${year}/${month}`);
+                    console.log(`Fetched schedules for ${year}-${month}:`, response);
+                } else {
+                    // Fetch all schedules (default behavior)
+                    response = await $api.schedule.get('', '');
+                    console.log('Fetched all schedules:', response);
+                }
+
                 this.schedules = Array.isArray(response.data) ? response.data : response.result;
+
                 if (this.calendar) {
                     this.updateCalendarEvents();
                 }
             } catch (error) {
-                console.error('일정 조회 실패:', error);
-            }
-        },
-
-
-        // 일정 수정 저장
-        async updateSchedule() {
-            try {
-
-                const updatedData = {
-                    // scheduleId: this.editedSchedule.id,
-                    name: this.editedSchedule.title,
-                    content: this.editedSchedule.content,
-                    startAt: new Date(this.editedSchedule.startDate).toISOString(),
-                    endAt: new Date(this.editedSchedule.endDate).toISOString(),
-                    tag: this.editedSchedule.tag
-                };
-
-                const scheduleId = this.editedSchedule.id;
-                console.log("scheduleId확인:". scheduleId);
-
-                // API 호출 시 URL에서 scheduleId를 올바르게 사용
-                const response = await $api.schedule.put(
-                    `${scheduleId}`,  // scheduleId를 올바르게 삽입
-                    updatedData
-                );
-
-                console.log("response 조회", response);
-
-                if (response.success || response.status === 200) {
-                    alert('일정이 성공적으로 수정되었습니다.');
-                    await this.fetchSchedules(); // 캘린더 이벤트 새로고침
-                    this.closeEditMode();
-                } else {
-                    throw new Error('일정 수정에 실패했습니다.');
-                }
-            } catch (error) {
-                console.error('일정 수정 실패:', error);
-                alert('일정 수정에 실패했습니다. 다시 시도해주세요.');
+                console.error('Failed to fetch schedules:', error);
             }
         },
         async startEditing() {
             try {
+
                 this.isEditing = true;
                 const response = await $api.schedule.get(`${this.selectedSchedule.id}`);
                 const scheduleData = response.data || response.result;
@@ -241,14 +222,70 @@ export default {
                         id: scheduleData.scheduleId || scheduleData.id,
                         title: scheduleData.name || scheduleData.title,
                         content: scheduleData.content,
-                        startDate: this.formatDateTimeForInput(scheduleData.startAt),
-                        endDate: this.formatDateTimeForInput(scheduleData.endAt),
+                        startDate: this.formatDateToCustomFormat(scheduleData.startAt),
+                        endDate: this.formatDateToCustomFormat(scheduleData.endAt),
                         tag: scheduleData.tag
                     };
                 }
             } catch (error) {
                 console.error('일정 조회 실패:', error);
                 alert('일정을 불러오는데 실패했습니다.');
+            }
+        },
+
+        formatDateToCustomFormat(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        },
+
+        // 일정 수정 저장
+        async updateSchedule() {
+            try {
+
+                function dateToCustomFormat(date) {
+                    const d = new Date(date);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const hours = String(d.getHours()).padStart(2, '0');
+                    const minutes = String(d.getMinutes()).padStart(2, '0');
+                    const seconds = String(d.getSeconds()).padStart(2, '0');
+                    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                };
+
+                // startAt과 endAt을 원하는 형식으로 포맷
+                const startAtFormatted = dateToCustomFormat(this.editedSchedule.startDate);
+                const endAtFormatted = dateToCustomFormat(this.editedSchedule.endDate);
+
+                // API 호출 시 URL에서 scheduleId를 올바르게 사용
+                const response = await $api.schedule.put(
+                    {
+                        name: this.editedSchedule.title,
+                        content: this.editedSchedule.content,
+                        tag: this.editedSchedule.tag,
+                        startAt: startAtFormatted,
+                        endAt: endAtFormatted
+                    },
+                    this.editedSchedule.id
+                );
+
+                if (response.httpStatus === 200 && response.result === true) {
+                    alert('일정이 성공적으로 수정되었습니다.');
+                    await this.fetchSchedules(); // 캘린더 이벤트 새로고침
+                    this.closeEditMode();
+                } else {
+                    // 실패 시 msg를 출력
+                    throw new Error(response.msg || '일정 수정에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('일정 수정 실패:', error);
+                alert(error.message || '일정 수정에 실패했습니다. 다시 시도해주세요.');
             }
         },
 
@@ -264,7 +301,7 @@ export default {
             this.isEditing = false;
             this.editedSchedule = {
                 id: null,
-                title: '',
+                name: '',
                 content: '',
                 startDate: '',
                 endDate: '',
@@ -287,7 +324,7 @@ export default {
                 if (scheduleData) {
                     this.selectedSchedule = {
                         id: scheduleData.scheduleId || scheduleData.id,
-                        title: scheduleData.name || scheduleData.title,
+                        title: scheduleData.name,
                         content: scheduleData.content,
                         startDate: this.formatDateTime(scheduleData.startAt),
                         endDate: this.formatDateTime(scheduleData.endAt),
@@ -326,9 +363,12 @@ export default {
 
             // API로 받아온 일정 데이터를 캘린더 이벤트로 변환하여 추가
             this.schedules.forEach(schedule => {
+
                 // Ensure we have valid date strings
-                const startDate = this.formatDateString(schedule.startAt || schedule.date);
-                const endDate = this.formatDateString(schedule.endAt || schedule.date);
+                const startDate = this.formatDateString(schedule.startAt);
+                const endDate = this.formatEndDateString(schedule.endAt);
+
+                console.log("출력", endDate);
 
                 // Find matching tag or use default
                 const tag = this.tags.find(t => t.name === schedule.tag) || this.tags[5];
@@ -338,11 +378,11 @@ export default {
                     id: schedule.scheduleId || schedule.id,
                     title: schedule.name || schedule.title,
                     start: startDate,
-                    end: endDate || startDate, // If no end date, use start date
+                    end: endDate || startDate,
                     color: tag.color,
                     textColor: '#333',
                     tag: schedule.tag,
-                    allDay: true // Set to true for full-day events
+                    allDay: true
                 };
 
                 this.calendar.addEvent(eventObject);
@@ -351,8 +391,64 @@ export default {
         formatDateString(dateStr) {
             if (!dateStr) return '';
 
-            // Remove any time component if it exists and return just the date
+            const date = dateStr.split(' ')[0];
+
+
             return dateStr.split(' ')[0];
+        },
+
+        formatEndDateString(dateStr) {
+            if (!dateStr) return '';
+
+            // 날짜와 시간 분리
+            const [datePart] = dateStr.split(' ');
+
+            // Date 객체로 변환
+            const date = new Date(datePart);
+
+            // 날짜에 1일 추가
+            date.setDate(date.getDate() + 1);
+
+            // YYYY-MM-DD 형식으로 변환
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+            const day = String(date.getDate()).padStart(2, '0');
+
+            return `${year}-${month}-${day}`;
+        },
+        async confirmDeleteSchedule() {
+            const confirmDelete = confirm('정말로 이 일정을 삭제하시겠습니까?');
+            if (confirmDelete) {
+                await this.deleteSchedule(this.selectedSchedule.id);
+            }
+        },
+        async deleteSchedule(scheduleId) {
+            try {
+                const response = await $api.schedule.delete(`${scheduleId}`);
+                if (response.httpStatus === 200 && response.result === true) {
+                    alert('일정이 성공적으로 삭제되었습니다.');
+
+                    // 캘린더에서 이벤트 제거
+                    const event = this.calendar.getEventById(scheduleId);
+                    if (event) {
+                        event.remove();
+                    }
+
+                    // 현재 표시 중인 월 일정 새로고침
+                    const currentDate = this.calendar.getDate();
+                    await this.fetchSchedules(
+                        currentDate.getFullYear(),
+                        String(currentDate.getMonth() + 1).padStart(2, '0')
+                    );
+
+                    this.closeScheduleDetails();
+                } else {
+                    throw new Error(response.message || '일정 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('일정 삭제 오류:', error);
+                alert(error.message || '일정 삭제 중 오류가 발생했습니다.');
+            }
         },
 
         initCalendar() {
@@ -360,8 +456,8 @@ export default {
 
             this.calendar = new Calendar(calendarEl, {
                 plugins: [dayGridPlugin, interactionPlugin],
-
                 initialView: 'dayGridMonth',
+                initialDate: this.currentViewDate,
                 locale: 'ko',
                 headerToolbar: {
                     left: ' today prev,next title',
@@ -371,6 +467,29 @@ export default {
                 buttonText: {
                     today: '오늘'
                 },
+                datesSet: async (info) => {
+                    // 현재 보이는 달력의 첫 날짜
+                    const firstVisible = info.start;
+                    // 마지막 보이는 날짜
+                    const lastVisible = info.end;
+
+                    // 현재 달력이 표시하는 실제 월을 구하기
+                    const targetDate = this.calendar.getDate();
+                    const year = targetDate.getFullYear();
+                    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+
+                    console.log("Calendar Debug Info:", {
+                        firstVisible: firstVisible.toISOString(),
+                        lastVisible: lastVisible.toISOString(),
+                        targetDate: targetDate.toISOString(),
+                        calculatedYear: year,
+                        calculatedMonth: month
+                    });
+
+                    await this.fetchSchedules(year, month);
+                },
+                fixedWeekCount: false, // 주 수를 고정하지 않음
+                showNonCurrentDates: true,
                 views: {
                     dayGridMonth: {
                         dayCellContent: (info) => {
@@ -521,8 +640,13 @@ export default {
         },
         goToSelectedDate() {
             if (this.selectedDate) {
-                this.calendar.gotoDate(this.selectedDate); // FullCalendar 날짜 이동
-                this.showSmallCalendar = false; // 작은 달력 닫기
+                const selected = new Date(this.selectedDate);
+                const year = selected.getFullYear();
+                const month = String(selected.getMonth() + 1).padStart(2, '0');
+
+                this.calendar.gotoDate(this.selectedDate);
+                this.fetchSchedules(year, month);
+                this.showSmallCalendar = false;
             }
         },
         toggleTagDropdown() {
@@ -555,48 +679,80 @@ export default {
             this.showEventModal = false;
             this.newEvent = { title: '', date: '' };
         },
+        formatDateTimeForDB(date, time) {
+            return `${date} ${time}:00`;
+        },
+
+        // 일정 등록
         async addNewEvent() {
-            if (this.newEvent.title && this.newEvent.date && this.newEvent.tag) {
-                try {
-                    // ScheduleRegistDTO 구조에 맞는 데이터 준비
-                    const scheduleRegistDTO = {
-                        name: this.newEvent.title,
-                        content: `${this.newEvent.title} 관련 일정`, // 추가 정보로 content 구성
-                        tag: this.newEvent.tag,
-                        startAt: `${this.newEvent.date} 00:00:00`, // 기본적으로 시작 시간은 00:00:00
-                        endAt: `${this.newEvent.date} 23:59:59` // 종료 시간은 하루의 끝
+            try {
+                // 필수 필드 검증
+                if (!this.newEvent.title || !this.newEvent.content || !this.newEvent.tag ||
+                    !this.newEvent.startDate || !this.newEvent.startTime ||
+                    !this.newEvent.endDate || !this.newEvent.endTime) {
+                    alert('모든 필수 항목을 입력해주세요.');
+                    return;
+                }
+
+                // 시작일시와 종료일시 생성
+                const startAt = this.formatDateTimeForDB(this.newEvent.startDate, this.newEvent.startTime);
+                const endAt = this.formatDateTimeForDB(this.newEvent.endDate, this.newEvent.endTime);
+
+                // 종료일시가 시작일시보다 이후인지 검증
+                if (new Date(endAt) <= new Date(startAt)) {
+                    alert('종료일시는 시작일시보다 이후여야 합니다.');
+                    return;
+                }
+
+                // API 요청 데이터 구성
+                const scheduleData = {
+                    name: this.newEvent.title,
+                    content: this.newEvent.content,
+                    tag: this.newEvent.tag,
+                    startAt: startAt,
+                    endAt: endAt
+                };
+
+                console.log('Sending schedule data:', scheduleData);
+
+                // API 호출
+                const response = await $api.schedule.post(scheduleData);
+
+                if (response.httpStatus === 200 && response.result === true) {
+                    // 성공적으로 저장된 경우
+                    const savedSchedule = response.data || response.result;
+
+                    // 캘린더에 이벤트 추가
+                    const selectedTag = this.tags.find(tag => tag.name === this.newEvent.tag);
+                    const newEvent = {
+                        id: savedSchedule.scheduleId || savedSchedule.id,
+                        title: scheduleData.name,
+                        content: scheduleData.content,
+                        start: scheduleData.startAt,
+                        end: scheduleData.endAt,
+                        color: selectedTag.color,
+                        textColor: '#333',
+                        tag: scheduleData.tag,
+                        allDay: true
                     };
 
-                    // POST API 호출
-                    const response = await $api.schedule.post(scheduleRegistDTO);
+                    this.calendar.addEvent(newEvent);
+                    alert('일정이 성공적으로 등록되었습니다.');
 
-                    console.log('일정 등록 결과:', response);
+                    // 현재 표시 중인 월의 일정 새로고침
+                    const currentDate = this.calendar.getDate();
+                    await this.fetchSchedules(
+                        currentDate.getFullYear(),
+                        String(currentDate.getMonth() + 1).padStart(2, '0')
+                    );
 
-                    if (response.success || response.status === 201) {
-                        // 캘린더에 새 이벤트 추가
-                        const selectedTag = this.tags.find(tag => tag.name === this.newEvent.tag);
-                        this.calendar.addEvent({
-                            id: response.data.id, // 등록된 일정 ID
-                            title: this.newEvent.title,
-                            start: scheduleRegistDTO.startAt,
-                            end: scheduleRegistDTO.endAt,
-                            color: selectedTag.color,
-                            textColor: '#333',
-                            tag: this.newEvent.tag
-                        });
-
-                        alert('일정이 등록되었습니다.');
-                        this.closeEventModal();
-                        this.fetchSchedules(); // 일정 목록 새로고침
-                    } else {
-                        throw new Error('일정 등록에 실패했습니다.');
-                    }
-                } catch (error) {
-                    console.error('일정 등록 실패:', error);
-                    alert('일정 등록에 실패했습니다.');
+                    this.closeEventModal();
+                } else {
+                    throw new Error(response.message || '일정 등록에 실패했습니다.');
                 }
-            } else {
-                alert('모든 필드를 입력해주세요.');
+            } catch (error) {
+                console.error('일정 등록 오류:', error);
+                alert(error.message || '일정 등록 중 오류가 발생했습니다.');
             }
         },
     },
