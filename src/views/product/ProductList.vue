@@ -123,6 +123,33 @@ const loadData = async () => {
     }
 };
 
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.product.get('excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'productExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('파일 다운로드 완료');
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        DOMEventService.dispatchApiError('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+        loading.value = false;
+    }
+};
+
 // 페이지 로드 시 데이터 로드
 onMounted(() => {
     loadData();
