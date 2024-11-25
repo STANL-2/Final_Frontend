@@ -18,10 +18,9 @@
         <div class="table-wrapper width-s ml-l">
             <ViewTable 
             v-if="tableData && tableData.length > 0"
-            :headers="memberHeaders" 
-            :data="tableData" 
+            :headers="tableHeaders" 
+            :tableData="tableData" 
             />
-
         </div>
 
         <template #footer>
@@ -41,9 +40,6 @@ import ViewTable from '@/components/common/ViewTable.vue';
 // ViewForm에 전달할 데이터
 const centerData = ref([]);
 const tableData = ref([]);
-const memberDataRecords = ref(0);
-const rows = ref(5); // 페이지 당 행 수
-const first = ref(0); // 첫 번째 행 위치
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩
@@ -67,10 +63,10 @@ watch(
     }
 );
 
-const memberHeaders = [
-    { field: 'name', label: '이름', width: '20%' },
-    { field: 'email', label: '이메일', width: '30%' },
-    { field: 'position', label: '직급', width: '20%' },
+const tableHeaders = [
+    '이름',
+    '이메일',
+    '직급'
 ];
 
 // 모달 닫기
@@ -116,8 +112,6 @@ const getDetailRequest = async (centerId) => {
             position: item.position || 'N/A', // 직급 필드
         }));
 
-        memberDataRecords.value = responseMember.result.totalElements;
-
         console.log('가공된 memberData:', tableData.value);
     } catch (error) {
         console.error('데이터 요청 실패:', error);
@@ -138,6 +132,8 @@ onMounted(() => {
 .viewform {
     display: flex;
     width: 50%;
+    margin-left: 1.7rem;
     margin-bottom: 2rem;
 }
+
 </style>
