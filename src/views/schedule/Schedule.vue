@@ -9,19 +9,12 @@
         <div v-if="showTagDropdown" class="tag-dropdown" :style="tagDropdownPosition">
             <ul>
                 <li v-for="tag in tags" :key="tag.name" @click="selectTag(tag)" class="tag-item">
-                    <input 
-                        type="checkbox" 
-                        :id="tag.name" 
-                        :value="tag.name" 
-                        v-model="selectedTags" 
-                    />
-                    <span 
-                        class="color-dot"
-                        :style="{ backgroundColor: tag.color }"
-                    ></span>
+                    <input type="checkbox" :id="tag.name" :value="tag.name" v-model="selectedTags" />
+                    <span class="color-dot" :style="{ backgroundColor: tag.color }"></span>
                     <label :for="tag.name">{{ tag.name }}</label>
                 </li>
             </ul>
+            <button class="add-new-tag-button" @click.stop="openNewTagModal">새로운 태그 추가</button>
         </div>
         <div v-if="showEventModal" class="event-modal">
             <div class="modal-content">
@@ -32,18 +25,22 @@
                         <input type="text" id="title" v-model="newEvent.title" required />
                     </div>
                     <div>
+                        <label for="content">내용</label>
+                        <textarea id="content" v-model="newEvent.content" rows="3" required></textarea>
+                    </div>
+                    <div>
                         <label for="date">날짜</label>
                         <input type="date" id="date" v-model="newEvent.date" required />
+                        <label for="start-time">시작 시간</label>
+                        <input type="time" id="start-time" v-model="newEvent.startTime" />
+                        <label for="end-time">종료 시간</label>
+                        <input type="time" id="end-time" v-model="newEvent.endTime" />
                     </div>
                     <div>
                         <label for="tag">태그</label>
                         <select id="tag" v-model="newEvent.tag" required>
                             <option value="">태그 선택</option>
-                            <option 
-                                v-for="tag in tags" 
-                                :key="tag.name" 
-                                :value="tag.name"
-                            >
+                            <option v-for="tag in tags" :key="tag.name" :value="tag.name">
                                 {{ tag.name }}
                             </option>
                         </select>
@@ -51,6 +48,69 @@
                     <button type="submit">등록</button>
                     <button type="button" @click="closeEventModal">취소</button>
                 </form>
+            </div>
+        </div>
+        <div v-if="showScheduleDetails" class="event-detail-modal">
+            <div class="modal-content">
+                <h3 v-if="!isEditing">{{ selectedSchedule.title }}</h3>
+                <h3 v-else>일정 수정</h3>
+
+                <!-- 조회 모드 -->
+                <div v-if="!isEditing">
+                    <p><strong>제목:</strong> {{ selectedSchedule.title }}</p>
+                    <p><strong>내용:</strong> {{ selectedSchedule.content }}</p>
+                    <p><strong>시작일시:</strong> {{ selectedSchedule.startDate }}</p>
+                    <p><strong>종료일시:</strong> {{ selectedSchedule.endDate }}</p>
+                    <p>
+                        <strong>태그:</strong>
+                        <span class="tag-badge" :style="{ backgroundColor: selectedSchedule.tagColor }">
+                            {{ selectedSchedule.tag }}
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 수정 모드 -->
+                <form v-else @submit.prevent="updateSchedule" class="edit-form">
+                    <div class="form-group">
+                        <label for="edit-title">제목</label>
+                        <input type="text" id="edit-title" v-model="editedSchedule.title" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-content">내용</label>
+                        <textarea id="edit-content" v-model="editedSchedule.content" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-start-date">시작일시</label>
+                        <input type="datetime-local" id="edit-start-date" v-model="editedSchedule.startDate" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-end-date">종료일시</label>
+                        <input type="datetime-local" id="edit-end-date" v-model="editedSchedule.endDate" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-tag">태그</label>
+                        <select id="edit-tag" v-model="editedSchedule.tag" required>
+                            <option v-for="tag in tags" :key="tag.name" :value="tag.name">
+                                {{ tag.name }}
+                            </option>
+                        </select>
+                    </div>
+                </form>
+
+                <div class="modal-footer">
+                    <template v-if="!isEditing">
+                        <button @click="startEditing" class="edit-button">수정</button>
+                        <button @click="closeScheduleDetails" class="close-button">닫기</button>
+                    </template>
+                    <template v-else>
+                        <button @click="updateSchedule" class="save-button">저장</button>
+                        <button @click="cancelEditing" class="cancel-button">취소</button>
+                    </template>
+                </div>
             </div>
         </div>
     </div>
@@ -62,15 +122,16 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import tagSvg from '@/assets/icon/scheduleIcons/tag.svg';
 import calendarSvg from '@/assets/icon/scheduleIcons/calendar.svg';
+import { $api } from '@/services/api/api';
 
 export default {
     data() {
         return {
             calendar: null,
             tags: [
-                { name: '국내', color: '#E8F5E9' },
-                { name: '공장', color: '#FFF3E0' },
-                { name: '내부', color: '#E3F2FD' },
+                { name: 'METTING', color: '#B0DDFF' },
+                { name: 'TRAINING', color: '#FFF3E0' },
+                { name: 'VACATION', color: '#E3F2FD' },
                 { name: '대외', color: '#FFEBEE' },
                 { name: '세미나', color: '#F3E5F5' },
                 { name: '일정', color: '#FFFFFF' },
@@ -82,16 +143,36 @@ export default {
             showTagDropdown: false,
             showEventModal: false,
             showSmallCalendar: false,
+            showScheduleDetails: false,
+            isEditing: false,
+            selectedSchedule: {
+                title: '',
+                content: '',
+                startDate: '',
+                endDate: '',
+                tag: ''
+            },
             selectedDate: '',
             newEvent: {
                 title: '',
                 date: '',
+                tag: ''
             },
+            editedSchedule: {
+                id: null,
+                title: '',
+                content: '',
+                startDate: '',
+                endDate: '',
+                tag: ''
+            },
+            schedules: []
         };
     },
-    mounted() {
+    async mounted() {
+        // 컴포넌트 마운트 시 일정 데이터 조회
+        await this.fetchSchedules();
         this.initCalendar();
-        // 전역 클릭 이벤트 리스너 추가
         document.addEventListener('click', this.handleClickOutside);
     },
     beforeDestroy() {
@@ -99,11 +180,187 @@ export default {
         document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
+        async fetchSchedules() {
+            try {
+                const response = await $api.schedule.get('', '');
+                console.log('일정 조회 결과:', response);
+                this.schedules = Array.isArray(response.data) ? response.data : response.result;
+                if (this.calendar) {
+                    this.updateCalendarEvents();
+                }
+            } catch (error) {
+                console.error('일정 조회 실패:', error);
+            }
+        },
+
+
+        // 일정 수정 저장
+        async updateSchedule() {
+            try {
+
+                const updatedData = {
+                    // scheduleId: this.editedSchedule.id,
+                    name: this.editedSchedule.title,
+                    content: this.editedSchedule.content,
+                    startAt: new Date(this.editedSchedule.startDate).toISOString(),
+                    endAt: new Date(this.editedSchedule.endDate).toISOString(),
+                    tag: this.editedSchedule.tag
+                };
+
+                const scheduleId = this.editedSchedule.id;
+                console.log("scheduleId확인:". scheduleId);
+
+                // API 호출 시 URL에서 scheduleId를 올바르게 사용
+                const response = await $api.schedule.put(
+                    `${scheduleId}`,  // scheduleId를 올바르게 삽입
+                    updatedData
+                );
+
+                console.log("response 조회", response);
+
+                if (response.success || response.status === 200) {
+                    alert('일정이 성공적으로 수정되었습니다.');
+                    await this.fetchSchedules(); // 캘린더 이벤트 새로고침
+                    this.closeEditMode();
+                } else {
+                    throw new Error('일정 수정에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('일정 수정 실패:', error);
+                alert('일정 수정에 실패했습니다. 다시 시도해주세요.');
+            }
+        },
+        async startEditing() {
+            try {
+                this.isEditing = true;
+                const response = await $api.schedule.get(`${this.selectedSchedule.id}`);
+                const scheduleData = response.data || response.result;
+
+                if (scheduleData) {
+                    this.editedSchedule = {
+                        id: scheduleData.scheduleId || scheduleData.id,
+                        title: scheduleData.name || scheduleData.title,
+                        content: scheduleData.content,
+                        startDate: this.formatDateTimeForInput(scheduleData.startAt),
+                        endDate: this.formatDateTimeForInput(scheduleData.endAt),
+                        tag: scheduleData.tag
+                    };
+                }
+            } catch (error) {
+                console.error('일정 조회 실패:', error);
+                alert('일정을 불러오는데 실패했습니다.');
+            }
+        },
+
+        // Format datetime for input fields
+        formatDateTimeForInput(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+        },
+
+        // Close edit mode and reset form
+        closeEditMode() {
+            this.isEditing = false;
+            this.editedSchedule = {
+                id: null,
+                title: '',
+                content: '',
+                startDate: '',
+                endDate: '',
+                tag: ''
+            };
+            this.showScheduleDetails = false;
+        },
+
+        // Cancel editing
+        cancelEditing() {
+            this.closeEditMode();
+        },
+
+        // Fetch schedule details for viewing
+        async fetchScheduleDetails(scheduleId) {
+            try {
+                const response = await $api.schedule.get(`${scheduleId}`);
+                const scheduleData = response.data || response.result;
+
+                if (scheduleData) {
+                    this.selectedSchedule = {
+                        id: scheduleData.scheduleId || scheduleData.id,
+                        title: scheduleData.name || scheduleData.title,
+                        content: scheduleData.content,
+                        startDate: this.formatDateTime(scheduleData.startAt),
+                        endDate: this.formatDateTime(scheduleData.endAt),
+                        tag: scheduleData.tag,
+                        tagColor: this.tags.find(t => t.name === scheduleData.tag)?.color
+                    };
+                    this.showScheduleDetails = true;
+                }
+            } catch (error) {
+                console.error('일정 상세 조회 실패:', error);
+                alert('일정을 불러오는데 실패했습니다.');
+            }
+        },
+
+        // Format datetime for display
+        formatDateTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                weekday: 'short'
+            });
+        },
+        closeScheduleDetails() {
+            this.showScheduleDetails = false;
+            this.selectedSchedule = {};
+        },
+        // 캘린더 이벤트 업데이트
+        updateCalendarEvents() {
+            // 기존 이벤트 모두 제거
+            this.calendar.removeAllEvents();
+
+            // API로 받아온 일정 데이터를 캘린더 이벤트로 변환하여 추가
+            this.schedules.forEach(schedule => {
+                // Ensure we have valid date strings
+                const startDate = this.formatDateString(schedule.startAt || schedule.date);
+                const endDate = this.formatDateString(schedule.endAt || schedule.date);
+
+                // Find matching tag or use default
+                const tag = this.tags.find(t => t.name === schedule.tag) || this.tags[5];
+
+                // Create the event object
+                const eventObject = {
+                    id: schedule.scheduleId || schedule.id,
+                    title: schedule.name || schedule.title,
+                    start: startDate,
+                    end: endDate || startDate, // If no end date, use start date
+                    color: tag.color,
+                    textColor: '#333',
+                    tag: schedule.tag,
+                    allDay: true // Set to true for full-day events
+                };
+
+                this.calendar.addEvent(eventObject);
+            });
+        },
+        formatDateString(dateStr) {
+            if (!dateStr) return '';
+
+            // Remove any time component if it exists and return just the date
+            return dateStr.split(' ')[0];
+        },
+
         initCalendar() {
             const calendarEl = this.$refs.calendarEl;
 
             this.calendar = new Calendar(calendarEl, {
                 plugins: [dayGridPlugin, interactionPlugin],
+
                 initialView: 'dayGridMonth',
                 locale: 'ko',
                 headerToolbar: {
@@ -154,15 +411,52 @@ export default {
                         },
                     },
                 },
-                events: [
-                    { title: 'All Day Event', start: '2024-11-01', color: '#FF5733' },
-                    { title: 'Long Event', start: '2024-11-07', end: '2024-11-10', color: '#33FF57' },
-                    { title: 'Conference', start: '2024-11-10', end: '2024-11-12', color: '#3357FF' },
-                ],
+                events: this.schedules.map(schedule => ({
+                    id: schedule.scheduleId,
+                    title: schedule.title,
+                    content: schedule.content,
+                    start: schedule.startAt,
+                    end: schedule.endAt,
+                    color: this.tags.find(t => t.name === schedule.tag)?.color || '#FFFFFF',
+                    allDay: true,
+                })),
                 editable: true,
+                eventDrop: async (info) => {
+                    try {
+                        const updatedEvent = {
+                            scheduleId: info.event.id,
+                            startAt: info.event.startStr,
+                        };
+
+                        // Call the API to update the schedule date
+                        const response = await $api.schedule.put(`${updatedEvent.scheduleId}`, {
+                            date: updatedEvent.startAt,
+                        });
+
+                        if (response.success || response.status === 200) {
+                            alert('일정이 성공적으로 업데이트되었습니다.');
+                        } else {
+                            throw new Error('일정 업데이트 실패');
+                        }
+                    } catch (error) {
+                        console.error('일정 업데이트 오류:', error);
+                        alert('일정 업데이트에 실패했습니다.');
+                        // Revert the event position if API call fails
+                        info.revert();
+                    }
+                },
+                eventClick: async (info) => {
+                    const scheduleId = info.event.id;
+                    if (scheduleId) {
+                        await this.fetchScheduleDetails(scheduleId);
+                    } else {
+                        console.error('일정 ID가 없습니다.');
+                    }
+                }
             });
 
             this.calendar.render();
+            this.updateCalendarEvents();
 
             const customCalendarButton = calendarEl.querySelector('.fc-customCalendarButton-button');
             if (customCalendarButton) {
@@ -183,6 +477,10 @@ export default {
                 customTagsButton.innerHTML = '';
                 customTagsButton.appendChild(svgContainer);
             }
+        },
+        closeScheduleDetails() {
+            this.showScheduleDetails = false; // 상세 정보 닫기
+            this.selectedSchedule = null;
         },
         handleClickOutside(event) {
             // small calendar 드롭다운 처리
@@ -257,18 +555,46 @@ export default {
             this.showEventModal = false;
             this.newEvent = { title: '', date: '' };
         },
-        addNewEvent() {
+        async addNewEvent() {
             if (this.newEvent.title && this.newEvent.date && this.newEvent.tag) {
-                const selectedTag = this.tags.find(tag => tag.name === this.newEvent.tag);
-                this.calendar.addEvent({
-                    title: this.newEvent.title,
-                    start: this.newEvent.date,
-                    color: selectedTag.color,
-                    textColor: '#333', // 파스텔 색상이므로 텍스트는 어두운 색으로
-                    tag: this.newEvent.tag
-                });
-                alert('일정이 등록되었습니다.');
-                this.closeEventModal();
+                try {
+                    // ScheduleRegistDTO 구조에 맞는 데이터 준비
+                    const scheduleRegistDTO = {
+                        name: this.newEvent.title,
+                        content: `${this.newEvent.title} 관련 일정`, // 추가 정보로 content 구성
+                        tag: this.newEvent.tag,
+                        startAt: `${this.newEvent.date} 00:00:00`, // 기본적으로 시작 시간은 00:00:00
+                        endAt: `${this.newEvent.date} 23:59:59` // 종료 시간은 하루의 끝
+                    };
+
+                    // POST API 호출
+                    const response = await $api.schedule.post(scheduleRegistDTO);
+
+                    console.log('일정 등록 결과:', response);
+
+                    if (response.success || response.status === 201) {
+                        // 캘린더에 새 이벤트 추가
+                        const selectedTag = this.tags.find(tag => tag.name === this.newEvent.tag);
+                        this.calendar.addEvent({
+                            id: response.data.id, // 등록된 일정 ID
+                            title: this.newEvent.title,
+                            start: scheduleRegistDTO.startAt,
+                            end: scheduleRegistDTO.endAt,
+                            color: selectedTag.color,
+                            textColor: '#333',
+                            tag: this.newEvent.tag
+                        });
+
+                        alert('일정이 등록되었습니다.');
+                        this.closeEventModal();
+                        this.fetchSchedules(); // 일정 목록 새로고침
+                    } else {
+                        throw new Error('일정 등록에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('일정 등록 실패:', error);
+                    alert('일정 등록에 실패했습니다.');
+                }
             } else {
                 alert('모든 필드를 입력해주세요.');
             }
@@ -291,11 +617,11 @@ export default {
     color: #333;
 }
 
-::v-deep(.fc .fc-toolbar.fc-header-toolbar){
+::v-deep(.fc .fc-toolbar.fc-header-toolbar) {
     margin-bottom: 1rem;
 }
 
-::v-deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)){
+::v-deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)) {
     margin-left: 0;
 }
 
@@ -408,13 +734,13 @@ export default {
     margin-left: 0.5rem;
     border: 1px solid #dadce0 !important;
     box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-                0 1px 3px 1px rgba(60, 64, 67, 0.15) !important;
+        0 1px 3px 1px rgba(60, 64, 67, 0.15) !important;
     display: flex !important;
     align-items: center;
     gap: 4px;
     font-weight: 500;
     height: 36px;
-    margin-top:0.32rem;
+    margin-top: 0.32rem;
 }
 
 ::v-deep(.fc-customAddEventButton-button)::before {
@@ -427,7 +753,7 @@ export default {
 ::v-deep(.fc-customAddEventButton-button:hover) {
     background-color: #f8f9fa !important;
     box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-                0 2px 6px 2px rgba(60, 64, 67, 0.15) !important;
+        0 2px 6px 2px rgba(60, 64, 67, 0.15) !important;
 }
 
 ::v-deep(.fc-customAddEventButton-button:active) {
@@ -542,5 +868,152 @@ export default {
 .modal-content button[type="button"] {
     background-color: #ddd;
     color: #333;
+}
+
+.event-detail-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    width: 400px;
+}
+
+.event-detail-modal .modal-content {
+    padding: 20px;
+}
+
+.event-detail-modal h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.event-detail-modal p {
+    margin: 12px 0;
+    line-height: 1.6;
+}
+
+.event-detail-modal strong {
+    display: inline-block;
+    width: 80px;
+    color: #666;
+    font-weight: 500;
+}
+
+.tag-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-footer {
+    margin-top: 20px;
+    text-align: right;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.close-button {
+    background-color: #6360AB;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.close-button:hover {
+    background-color: #504B8A;
+}
+
+
+.edit-form {
+    margin-top: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.edit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 0.5rem;
+}
+
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.edit-button:hover,
+.save-button:hover {
+    background-color: #45a049;
+}
+
+.cancel-button:hover {
+    background-color: #da190b;
 }
 </style>
