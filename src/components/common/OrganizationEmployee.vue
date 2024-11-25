@@ -13,7 +13,9 @@
                     <td>{{ member.position }}</td>
                     <td>{{ member.jobType }}</td>
                     <td>{{ member.createdAt }}</td>
-                    <td><Button></Button></td>
+                    <td>
+                        <button @click="goProfile(data)" class="custom-button">조회</button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -22,6 +24,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import ApiService from '@/services/api/config/ApiService';
 
 const props = defineProps({
@@ -30,6 +33,15 @@ const props = defineProps({
         required: true
     }
 });
+
+const emit = defineEmits(['closeModal']);
+
+const router = useRouter();
+
+const goProfile = () => {
+    router.push('/employee/detail');        // 수정해야함
+    emit('closeModal');
+};
 
 const apiService = new ApiService('api/v1/member/organization');
 
@@ -86,5 +98,17 @@ td {
 th {
     background-color: #F8F8F8;
     color: #777777;
+}
+
+/* 버튼 스타일 */
+.custom-button {
+    margin-left: 8px;
+    padding: 4px 12px;
+    background-color: #FFF;
+    color: #777777;
+    border: 1px solid #777777;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
 }
 </style>

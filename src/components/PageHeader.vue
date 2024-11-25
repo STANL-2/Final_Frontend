@@ -36,8 +36,11 @@
                             filterPlaceholder="부서 검색" 
                             selectionMode="single" 
                             class="tree-component"
-                            @node-select="handleNodeSelect"/>
-                            <OrganizationEmployee :organizationId="organizationId" />
+                            @node-select="handleNodeSelect"
+                            />
+                            <OrganizationEmployee 
+                            :organizationId="organizationId"
+                            @closeModal="closeModal"/>
                     </div>
                 </div>
         </Modal>
@@ -74,6 +77,10 @@ const logout = () => {
 const showOrganizationModal = async () => {
     showOrganizationChart.value = true;
     await getOrganizationChart();
+};
+
+const closeModal = () => {
+    showOrganizationChart.value = false;
 };
 
 const getOrganizationChart = async () => {
@@ -115,9 +122,7 @@ const transformToTree = (data) => {
 
 // 트리 항목을 선택했을 때 호출되는 함수
 const handleNodeSelect = (event) => {
-    
     const selectedNode = event.data.organizationId;
-
     organizationId.value = selectedNode;
 };
 </script>
@@ -210,6 +215,11 @@ const handleNodeSelect = (event) => {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+}
+
+.modal-overlay {
+    position: flex;
+    height: 55rem; /* 지정된 높이 */
 }
 
 .modal {
