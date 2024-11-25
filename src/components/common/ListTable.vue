@@ -71,7 +71,7 @@ const props = defineProps({
     totalRecords: Number,
     rows: {
         type: Number,
-        default: 5
+        default: 10
     },
     rowsPerPageOptions: {
         type: Array,

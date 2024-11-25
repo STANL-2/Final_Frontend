@@ -9,6 +9,7 @@ export const useUserStore = defineStore(
         const accessToken = ref('');
         const refreshToken = ref('');
         const role = ref('');
+        const auth = ref('');
         const isLoggined = ref(false);
 
         function loginByEMPLOYEE() {
@@ -17,6 +18,7 @@ export const useUserStore = defineStore(
             accessToken.value = 'faketoken';
             refreshToken.value = 'faketoken';
             role.value = 'SalesRep';
+            auth.value = 'none';
             isLoggined.value = true;
         }
 
@@ -26,6 +28,7 @@ export const useUserStore = defineStore(
             accessToken.value = 'faketoken';
             refreshToken.value = 'faketoken';
             role.value = 'SalesManager';
+            auth.value = 'none';
             isLoggined.value = true;
         }
 
@@ -35,6 +38,7 @@ export const useUserStore = defineStore(
             accessToken.value = 'faketoken';
             refreshToken.value = 'faketoken';
             role.value = 'SalesAdmin';
+            auth.value = 'none';
             isLoggined.value = true;
         }
 
@@ -44,6 +48,7 @@ export const useUserStore = defineStore(
             accessToken.value = 'faketoken';
             refreshToken.value = 'faketoken';
             role.value = 'SystemAdmin';
+            auth.value = 'none';
             isLoggined.value = true;
         }
 
@@ -53,6 +58,7 @@ export const useUserStore = defineStore(
             accessToken.value = '';
             refreshToken.value = '';
             role.value = '';
+            auth.value = '';
             isLoggined.value = false;
         }
 
@@ -66,6 +72,7 @@ export const useUserStore = defineStore(
             id.value = userInfo.id;
             name.value = userInfo.name;
             role.value = userInfo.role;
+            auth.value = userInfo.auth;
         }
 
         return {
@@ -74,6 +81,7 @@ export const useUserStore = defineStore(
             accessToken,
             refreshToken,
             role,
+            auth,
             isLoggined,
             loginByEMPLOYEE,
             loginByADMIN,

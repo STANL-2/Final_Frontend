@@ -29,11 +29,9 @@
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start_${rowIndex}_${index}`]"
-                                    class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_start_${rowIndex}_${index}`]"class="form-date" />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end_${rowIndex}_${index}`]"
-                                    class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_end_${rowIndex}_${index}`]"class="form-date" />
                             </div>
                         </template>
 
@@ -44,26 +42,6 @@
                                 <button class="search-button" @click="openModal(rowIndex, index)">
                                     <span class="search-icon pi pi-search"></span>
                                 </button>
-                            </div>
-                        </template>
-
-                        <template v-else-if="field.type === 'radio'">
-                            <div class="radio-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                    <input type="radio" :name="`${field.model}_${rowIndex}_${index}`" :value="option"
-                                        v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </template>
-
-                        <template v-else-if="field.type === 'checkbox'">
-                            <div class="checkbox-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
-                                    <input type="checkbox" :value="option"
-                                        v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
-                                    {{ option }}
-                                </label>
                             </div>
                         </template>
                     </div>
@@ -151,10 +129,12 @@ body {
 }
 
 .search-container {
+    cursor: pointer;
     max-width: 100%;
     overflow-x: hidden;
     border: 1.5px solid #EEEEEE;
     background-color: #F8F8F8;
+    margin-bottom: 0.5rem;
 }
 
 .form-row {
@@ -188,12 +168,12 @@ body {
 
 .form-input,
 .form-select {
+    cursor: pointer;
     height: 25px;
     border: 1px solid #ddd;
     padding: 0 8px;
     font-size: 13px;
     box-sizing: border-box;
-    border-radius: 0px;
 }
 
 .form-input {
@@ -201,6 +181,7 @@ body {
 }
 
 .date-range {
+    width: 100px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -236,14 +217,17 @@ body {
 .form-input:focus,
 .form-select:focus {
     outline: none;
+    
 }
 
 .select-container {
     position: relative;
     display: inline-block;
+    
 }
 
-.form-select {
+.form-select {/*태그 CSS */
+    cursor: pointer; 
     width: 10.5rem;
     appearance: none;
     /* 기본 브라우저 화살표 제거 */
@@ -263,10 +247,10 @@ body {
 .select-icon {
     position: absolute;
     right: 0.5rem;
-    top: 50%;
+    top: 60%;
+    cursor: pointer;
     transform: translateY(-50%);
     pointer-events: none;
-    /* 아이콘 클릭 방지 */
     font-size: 14px;
     color: #888;
 }
@@ -320,7 +304,7 @@ body {
     box-sizing: border-box;
     border-radius: 0px;
     background-color: white;
-    width: 10px;
+    width: 8rem;
 }
 
 .date-range {

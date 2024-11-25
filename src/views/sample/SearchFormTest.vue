@@ -67,7 +67,7 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '계약서 명',
+            label: '계약서명',
             type: 'input',
             model: 'contractName',
             showDivider: true
@@ -82,7 +82,7 @@ const formFields = [
     ],
     [
         {
-            label: '고객 명',
+            label: '고객명',
             type: 'input',
             model: 'customerName',
             showDivider: true
@@ -95,7 +95,7 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '고객 구매 조건',
+            label: '구매 조건',
             type: 'radio',
             model: 'purchaseCondition',
             options: ['일시불', '할부', '리스'],
@@ -111,7 +111,7 @@ const formFields = [
     [
 
         {
-            label: '제품 명',
+            label: '제품명',
             type: 'input',
             model: 'productName',
             showDivider: false
