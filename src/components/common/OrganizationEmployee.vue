@@ -14,7 +14,7 @@
                     <td>{{ member.jobType }}</td>
                     <td>{{ member.createdAt }}</td>
                     <td>
-                        <button @click="goProfile(data)" class="custom-button">조회</button>
+                        <button @click="goProfile(member)" class="custom-button">조회</button>
                     </td>
                 </tr>
             </tbody>
@@ -38,8 +38,9 @@ const emit = defineEmits(['closeModal']);
 
 const router = useRouter();
 
-const goProfile = () => {
-    router.push('/employee/detail');        // 수정해야함
+const goProfile = (member) => {
+    router.push({path: '/employee/detail', query: { employeeId: member.loginId}});        // 수정해야함
+    // router.push('/employee/detail:' + member.loginId);        // 수정해야함
     emit('closeModal');
 };
 
@@ -48,7 +49,7 @@ const apiService = new ApiService('api/v1/member/organization');
 const organizationMemberHeader = ['사원번호', '성명', '직급', '발령일', '고용 구분', '상세보기'];
 const organizationMembers = ref([]);
 
-const getOrganizationMembers = async () => {
+const getOrganizationMembers = async (member) => {
     try {
         const response = await apiService.get('', props.organizationId);  // 추후에 수정 예정
         
