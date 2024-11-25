@@ -3,7 +3,7 @@
         :visible="modelValue" 
         header="제품 상세 조회" 
         width="70rem" 
-        @close="onClose">
+        @click="onClose">
         
         <!-- 상세 조회 상단 (수정/삭제 버튼) -->
         <div class="flex-row content-end mb-s">
@@ -44,14 +44,16 @@ const productDetails = ref({ ...props.details }); // 초기 데이터를 복사
 // Watch: props.details 업데이트 시 API 호출
 watch(
     () => props.details,
-    (newDetails) => {
-        if (newDetails?.productId) {
+    (newDetails, oldDetails) => {
+        // 새 값과 이전 값을 비교하여 유의미한 변경만 처리
+        if (newDetails?.productId && newDetails.productId !== oldDetails?.productId) {
             console.log('props.details 업데이트 감지. API 호출:', newDetails.productId);
             getDetailRequest(newDetails.productId);
         }
     },
-    { immediate: true } // 컴포넌트 마운트 시에도 실행
+    // { immediate: true } // 컴포넌트 마운트 시에도 실행
 );
+
 
 // 모달 닫기
 function onClose() {
