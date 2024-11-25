@@ -85,8 +85,6 @@ export default class ApiService extends BaseApiService {
 
         let requestBody;
 
-        console.log('file', file);
-
         // JSON 요청 생성
         if(file) {
             requestBody = new FormData();        
@@ -97,8 +95,6 @@ export default class ApiService extends BaseApiService {
                 { type: 'application/json'})
             );
 
-            console.log('2');
-            console.log(requestBody);
         } else {
             requestBody = JSON.stringify(data);
         }   

@@ -45,12 +45,17 @@ import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import Modal from '@/components/common/Modal.vue';
+import Tree from 'primevue/tree';
+import ApiService from '@/services/api/config/ApiService';
 
 
 const userStore = useUserStore();
 const router = useRouter();
 
 const showOrganizationChart = ref(false);
+const organization = ref([]);
+
+const apiService = new ApiService('api/v1/organization', userStore);
 
 const goMypage = () => {
     router.push('/mypage');
@@ -61,10 +66,52 @@ const logout = () => {
     router.replace('/');
 }
 
-const showOrganizationModal = () => {
+const showOrganizationModal = async () => {
     showOrganizationChart.value = true;
+    await getOrganizationChart();
 };
 
+const getOrganizationChart = async () => {
+    try {
+        const response = await apiService.get('', '');
+        
+        const result = response.result;
+
+        organization.value = transformToTree(result);
+
+        console.log(organization.value);
+
+
+    } catch (error) {
+        console.error('부서 요청 실패: ', error);
+    }
+};
+
+const transformToTree = (data) => {
+    const map = {};
+    const tree = [];
+
+    // 각 항목을 map에 저장하고 children 속성 초기화
+    data.forEach((item) => {
+        map[item.organizationId] = { 
+            label: item.name, 
+            data: item, 
+            children: item.children || [] 
+        };
+    });
+
+    // 부모 자식 관계 형성
+    data.forEach((item) => {
+        if (!item.parent) {
+            tree.push(map[item.organizationId]);
+        } else if (map[item.parent]) {
+            map[item.parent].children.push(map[item.organizationId]);
+        }
+    });
+
+    console.log('변환된 트리 데이터:', tree);
+    return tree;
+};
 </script>
 
 <style scoped>
