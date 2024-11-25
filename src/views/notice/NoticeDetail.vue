@@ -1,26 +1,3 @@
-<!-- <template>
-    <PageLayout>
-        <div class="header"> <h1>상세 페이지</h1> </div>
-        
-        <p>태그: {{ tag }}</p>
-        <p>분류: {{ classification }}</p>
-        <p>제목: {{ noticeTitle }}</p>
-    </PageLayout>
-</template>
-
-<script setup>
-import { useRoute } from 'vue-router'; // Import route
-
-const route = useRoute(); // Access route object
-
-// 쿼리 파라미터 추출
-const { tag, classification, noticeTitle } = route.query;
-</script>
-
-<style scoped>
-
-</style> -->
-
 <template>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
@@ -120,7 +97,6 @@ const deleteNotice = async () => {
 }
 
 .file-table {
-
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
