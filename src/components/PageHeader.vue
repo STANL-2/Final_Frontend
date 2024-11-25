@@ -22,8 +22,21 @@
         </nav>
     </header>
 
-    <Modal v-model="showOrganizationChart" header="상세 정보" width="40rem">
-            <p>여기에 모달 내용을 추가하세요. 원하는 정보를 표시할 수 있습니다.</p>
+    <Modal v-model="showOrganizationChart" header="조직도" width="40rem">
+            <!-- Custom Modal -->
+            <div v-if="showOrganizationChart" class="modal-overlay">
+                    <div class="modal">
+                        <Tree 
+                            :value="organization" 
+                            :filter="true" 
+                            filterMode="lenient"
+                            filterPlaceholder="부서 검색" 
+                            selectionMode="single" 
+                            class="tree-component"/>
+
+                            사원 리스트 들어갈 곳!
+                    </div>
+                </div>
         </Modal>
 </template>
 
@@ -143,4 +156,39 @@ const showOrganizationModal = () => {
     justify-content: center;
     cursor: pointer;
 }
+
+.modal {
+    display: flex;
+    flex-direction: row;
+}
+
+/* 검색 필드 스타일 */
+:deep(.tree-component .p-tree-filter-container) {
+    display: flex;
+    align-items: center;
+    background-color: #F3F3F3;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    height: 43px;
+    margin-bottom: 1rem; /* 검색창과 트리 컴포넌트 사이의 여백 */
+}
+
+/* 검색 text 스타일 */
+:deep(.tree-component .p-inputtext){
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: #777777;
+}
+
+/* 돋보기 모양 스타일 */
+:deep(.tree-component .p-tree-filter-icon){
+    color: #777777;
+    font-size: 1.2rem;
+    margin-left: -1.5rem;
+}
+
 </style>
