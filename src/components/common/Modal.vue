@@ -3,7 +3,7 @@
         v-model:visible="localVisible"
         modal
         :header="header"
-        :style="{ width: dialogWidth }"
+        :style="{ width: dialogWidth, height: dialogHeight }"
         @hide="handleHide"
     >
         <slot></slot>
@@ -24,12 +24,17 @@ const props = defineProps({
     width: {
         type: String,
         default: '40rem'
+    },
+    height: {
+        type: String,
+        default: '40rem'
     }
 });
 
 const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
 const localVisible = ref(props.modelValue);
 const dialogWidth = props.width;
+const dialogHeight = props.height;
 
 watch(() => props.modelValue, (newVal) => {
     localVisible.value = newVal;

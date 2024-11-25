@@ -22,7 +22,10 @@
         </nav>
     </header>
 
-    <Modal v-model="showOrganizationChart" header="조직도" width="40rem">
+    <Modal v-model="showOrganizationChart" 
+            header="조직도" 
+            width="70rem" 
+            height="100rem">
             <!-- Custom Modal -->
             <div v-if="showOrganizationChart" class="modal-overlay">
                     <div class="modal">
@@ -32,9 +35,9 @@
                             filterMode="lenient"
                             filterPlaceholder="부서 검색" 
                             selectionMode="single" 
-                            class="tree-component"/>
-
-                            사원 리스트 들어갈 곳!
+                            class="tree-component"
+                            @node-select="handleNodeSelect"/>
+                            <OrganizationEmployee :organizationId="organizationId" />
                     </div>
                 </div>
         </Modal>
@@ -44,10 +47,10 @@
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import Modal from '@/components/common/Modal.vue';
+import Modal from './common/Modal.vue';
 import Tree from 'primevue/tree';
 import ApiService from '@/services/api/config/ApiService';
-
+import OrganizationEmployee from './common/OrganizationEmployee.vue';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -55,7 +58,9 @@ const router = useRouter();
 const showOrganizationChart = ref(false);
 const organization = ref([]);
 
-const apiService = new ApiService('api/v1/organization', userStore);
+const organizationId = ref('ORG_000000001');
+
+const apiService = new ApiService('api/v1/organization');
 
 const goMypage = () => {
     router.push('/mypage');
@@ -78,9 +83,6 @@ const getOrganizationChart = async () => {
         const result = response.result;
 
         organization.value = transformToTree(result);
-
-        console.log(organization.value);
-
 
     } catch (error) {
         console.error('부서 요청 실패: ', error);
@@ -108,9 +110,15 @@ const transformToTree = (data) => {
             map[item.parent].children.push(map[item.organizationId]);
         }
     });
-
-    console.log('변환된 트리 데이터:', tree);
     return tree;
+};
+
+// 트리 항목을 선택했을 때 호출되는 함수
+const handleNodeSelect = (event) => {
+    
+    const selectedNode = event.data.organizationId;
+
+    organizationId.value = selectedNode;
 };
 </script>
 
@@ -207,6 +215,18 @@ const transformToTree = (data) => {
 .modal {
     display: flex;
     flex-direction: row;
+}
+.modal > div:first-child {
+    flex: 2; /* First component takes 70% of the height */
+}
+
+.modal > div:nth-child(2) {
+    flex: 8; /* Second component takes 30% of the height */
+}
+
+.tree-component{
+    display: flex;
+    flex-direction: column;
 }
 
 /* 검색 필드 스타일 */
