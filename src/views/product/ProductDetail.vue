@@ -6,10 +6,10 @@
         @click="onClose">
         
         <!-- 상세 조회 상단 (수정/삭제 버튼) -->
-        <div class="flex-row content-end mb-s">
+        <!-- <div class="flex-row content-end mb-s">
             <div class="ml-xs"><CommonButton label="수정" /></div>
             <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
-        </div>
+        </div> -->
 
         <div class="viewform">
             <ViewForm :data="productData" />
@@ -57,6 +57,7 @@ watch(
 
 // 모달 닫기
 function onClose() {
+    console.log('onClose 호출됨'); // 로그 추가
     emit('update:modelValue', false); // 부모 컴포넌트에 닫힘 전달
 }
 
@@ -193,5 +194,6 @@ onMounted(() => {
 .viewform {
     display: flex;
     width: 50%;
+    margin-bottom: 2rem;
 }
 </style>
