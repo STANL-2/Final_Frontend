@@ -5,6 +5,7 @@
         :visible="modelValue" 
         header="계약 상세 조회" 
         width="70rem" 
+        height="none"
         @click="onClose">
         <div class="flex-row content-end mb-s">
 
@@ -27,7 +28,7 @@
                 width="100%" 
                 height="552px" 
                 frameborder="0" 
-                style="border: 1px solid #ccc;"
+                style="border: 1px solid #ccc; height: 50rem;"
             >
             </iframe>
             
@@ -166,6 +167,7 @@ function deleteModal() {
 
                 await $api.contract.delete(getDetailId.value);
                 toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
+                emit('refresh');
                 emit('update:modelValue', false); // 모달 닫기
             } catch (error) {
                 console.error('삭제 요청 실패:', error);

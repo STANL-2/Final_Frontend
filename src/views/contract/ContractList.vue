@@ -15,7 +15,7 @@
                     <CommonButton label="인쇄" icon="pi pi-print" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="엑셀다운" @click="exportToXLSX" icon="pi pi-download" />
+                    <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
@@ -28,16 +28,24 @@
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
                 :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection.sync="selectedItems"
                 buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
-                @sort="onSort" @filter="onFilter" />
+                @sort="onSort" @filter="onFilter">
+                <template #body-status="{ data }">
+                    <div class="custom-tag-wrapper">
+                        <div :class="['custom-tag', getCustomTagClass(data.status)]">
+                            {{ getStatusLabel(data.status) }}
+                        </div>
+                    </div>
+                </template>
+            </ViewTable>
+
 
             <ContractDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                @close="showDetailModal = false" />
+                @close="showDetailModal = false" @refresh="loadData" />
         </div>
 
-        <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" />
+        <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection"
-            @cancel="resetModalState">
+        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">매장명: </label>
                 <!-- Enter 키 입력 시 searchStore 함수 호출 -->
@@ -72,7 +80,6 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import * as XLSX from 'xlsx'; // XLSX 라이브러리 추가
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import ContractDetail from '@/views/contract/ContractDetail.vue';
@@ -172,7 +179,7 @@ const tableHeaders = [
     { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
     { field: 'companyName', label: '고객 상호', width: '10%' },
-    { field: 'status', label: '승인 상태', width: '5%' },
+    { field: 'status', label: '승인 상태', width: '3%' },
 ];
 
 // 상태 변수
@@ -188,37 +195,32 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
-// 엑셀 다운로드 함수
-function exportToXLSX() {
-    // 선택된 데이터가 있으면 그 데이터를 사용, 없으면 전체 데이터를 사용
-    console.log("선택된 값: " + selectedItems.value);
-    const dataToExport = selectedItems.value.length > 0 ? selectedItems.value : tableData.value;
-
-    if (!dataToExport || dataToExport.length === 0) {
-        alert('엑셀로 내보낼 데이터가 없습니다.');
-        return;
-    }
-
-    try {
-        // JSON 데이터를 엑셀 워크시트로 변환
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-
-        // 엑셀 헤더 추가
-        XLSX.utils.sheet_add_aoa(worksheet, [tableHeaders.map((header) => header.label)], { origin: 'A1' });
-
-        // 엑셀 워크북 생성 및 워크시트 추가
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-        // 파일 다운로드
-        XLSX.writeFile(workbook, 'table-data.xlsx');
-        console.log('엑셀 다운로드 성공:', dataToExport);
-    } catch (error) {
-        console.error('엑셀 다운로드 중 오류 발생:', error);
-        alert('엑셀 내보내기 중 문제가 발생했습니다.');
+function getStatusLabel(status) {
+    switch (status) {
+        case "WAIT":
+            return "대기";
+        case "APPROVE":
+            return "승인";
+        case "CANCEL":
+            return "취소";
+        default:
+            return "알 수 없음";
     }
 }
 
+// 상태에 따라 표시할 색상 반환
+function getCustomTagClass(status) {
+    switch (status) {
+        case "WAIT":
+            return "success"; // 노란색
+        case "APPROVE":
+            return "info"; // 초록색
+        case "CANCEL":
+            return "danger"; // 빨간색
+        default:
+            return "warning"; // 기본 색상
+    }
+}
 
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
@@ -268,9 +270,35 @@ onMounted(() => {
     loadData();
 });
 
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.contract.get('excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'contractExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('파일 다운로드 완료');
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        alert('엑셀 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+        loading.value = false;
+    }
+};
+
 // 페이지네이션 이벤트 처리
 function onPage(event) {
-    // 페이지네이션 이벤트 처리
     first.value = event.first; // 시작 인덱스
     rows.value = event.rows; // 한 페이지당 데이터 수
     loadData(); // 데이터 로드
@@ -278,7 +306,6 @@ function onPage(event) {
 // 정렬 이벤트 처리
 
 function onSort(event) {
-    // 정렬 이벤트 처리
     sortField.value = event.sortField; // 정렬 필드
     sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
     loadData(); // 데이터 로드
@@ -351,7 +378,94 @@ function searchStore() {
 </script>
 
 <style scoped>
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    text-align: center;
+}
+
+th {
+    background-color: #F8F8F8;
+    color: #777;
+}
+
+/* 선택된 행 스타일 */
+tr.selected {
+    background-color: #e0e0e0;
+    /* 선택된 행의 배경색 */
+}
+
+tr:hover {
+    cursor: pointer;
+    background-color: #f0f0f0;
+}
+
+.p-inputtext {
+    height: 27px !important;
+    border-radius: 0px;
+}
+
+.search-button {
+    right: 0;
+    top: 0;
+    width: 27px;
+    height: 27px;
+    background: #6360AB !important;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-icon {
+    color: white;
+    font-size: 14px;
+}
+
 .component-wrapper {
     margin-bottom: 8rem;
+}
+
+.custom-tag-wrapper {
+    display: flex;
+    justify-content: center; /* 수평 가운데 정렬 */
+    align-items: center; /* 수직 가운데 정렬 */
+    height: 100%; /* 부모 높이에 맞게 정렬 */
+}
+
+.custom-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    width: 50px;
+}
+
+.custom-tag.success {
+    background-color: #caf1d8;
+    color: #188a42;
+}
+
+.custom-tag.warning {
+    background-color: #feddc7;
+    color: #ae510f;
+}
+
+.custom-tag.danger {
+    background-color: #ffd0ce;
+    color: #b32b23;
+}
+
+.custom-tag.info {
+    background-color: #d0e1fd;
+    color: #295bac;
 }
 </style>
