@@ -182,6 +182,7 @@ const routes = [
             },
             {
                 path: 'modify',
+                name: 'ENoticeModify',
                 component: () => import('@/views/notice/edit/ENoticeModify.vue')
             },
             {

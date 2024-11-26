@@ -77,15 +77,6 @@ const onRegister = async () => {
         },
         ''
     );
-
-        console.log("서버 응답 데이터1:", responseData);
-        console.log("서버 응답 데이터2:", responseData.httpStatus);
-        console.log("서버 응답 데이터3:", responseData.result);
-        console.log("서버 응답 데이터4:", responseData.result.body);
-        console.log("서버 응답 데이터5:", responseData.body);
-        console.log("서버 응답 데이터6:", responseData.result.title);
-
-    
         alert("등록되었습니다.");
         router.push('/notice/list');
     } catch (error) {

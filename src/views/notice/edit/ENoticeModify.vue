@@ -56,7 +56,7 @@ onMounted(() => {
 const closePage = () => {
     router.push('/notice/list'); // 취소 시 목록 페이지로 이동
 };
-
+console.log("noticeId",noticeId); 
 const onUpdate = async () => {
     try {
         const response = await $api.notice.put(
@@ -64,7 +64,7 @@ const onUpdate = async () => {
                 title: title.value.trim(),
                 content: content.value.trim(),
             },
-            noticeId
+            noticeId,
         );
 
         alert('공지사항이 수정되었습니다.');
