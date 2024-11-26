@@ -23,7 +23,7 @@
         
 
 
-        <!-- 학력 정보 -->
+        <!-- 계약 정보 -->
         <div class="section">
             <div class="subtitle">
                 <div class="line"></div>
@@ -31,42 +31,74 @@
                     계약서
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th v-for="header in educationHeaders" :key="header">{{ header }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(row, index) in educationData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
+            <div class="flex-row content-between mt-l">
+                <div class="list ml-l">전체목록</div>
+                <div class="flex-row items-center mb-s mr-xl">
+                    <div class="ml-xs">
+                        <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                    </div>
+                </div>
+            </div>
+            <ViewTable
+                :headers="customerContractHeaders"
+                :data="customerContractData"
+                :loading="loading"
+                :totalRecords="totalRecords"
+                :rows="rows"
+                :rowsPerPageOptions="[5, 10, 20, 50]"
+                :selectable="true"
+                buttonLabel="상세보기"
+                buttonHeader="계약 상태"
+                :buttonAction="handleView"
+                buttonField="계약 번호"
+                @page="onPage"
+                @sort="onSort"
+                @filter="onFilter"
+            />
         </div>
+
+        <ProductDetail
+            v-model="showDetailModal"
+            :showModal="showDetailModal"
+            :details="selectedDetail"
+            @close="showDetailModal = false"
+        />
+
 
     </PageLayout>
 </template>
 
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
+import ViewTable from '@/components/common/ListTable.vue';
+import ProductDetail from '@/views/product/ProductDetail.vue';
+import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
-import { useUserStore } from '@/stores/user';
-
-const userStore = useUserStore();
 
 // 기본 정보
 const customerInfo = ref([]);
 
 // 학력 정보
-const educationHeaders = ['입학일', '졸업일', '학력', '전공', '점수', '비고'];
-const educationData = ref([]);
+const customerContractHeaders = ['계약 번호', '매장', '계약형태', '계약명', '계약금', '계약상태', '상세보기'];
+const customerContractData = ref([]);
 
+const totalRecords = ref(0);
+const loading = ref(false);
+const rows = ref(5);
+const first = ref(0);
+const sortField = ref(null);
+const sortOrder = ref(null);
+const showDetailModal = ref(false);
+const selectedDetail = ref(null);
+
+const handleView = (rowData) => {
+    selectedDetail.value = rowData;
+    showDetailModal.value = true;
+};
 
 // 기본 정보
-const getcustomerInfo = async () => {
+const getCustomerInfo = async () => {
     try {
         const response = await $api.customer.get('', 'CUS_000000001');      // 추후에 수정
         const result = response.result;
@@ -93,30 +125,54 @@ const getcustomerInfo = async () => {
     }
 };
 
-// 학력 정보 API 호출
-const getEducationData = async () => {
+// 고객 계약 정보 로드
+const getCustomerContract = async () => {
     try {
-        const response = await $api.education.get('', ''); 
+        const response = await $api.customer.getParams(
+            'contract/' + 'CUS_000000001'+'?',    // 추후에 수정
+            {
+                page: page,
+                size: size
+            }
+        ); 
         const result = response.result;
+    
+        console.log('aslkdjflskjdlfjskdfjlsdk');
+        console.log(result);
 
-        educationData.value = result.map((edu) => ({
-            입학일: edu.entranceDate,
-            졸업일: edu.graduationDate,
-            학력: edu.name,
-            전공: edu.major || '-',
-            점수: edu.score || '-',
-            비고: edu.note || '-',
+        customerContractData.value = result.map((customerContract) => ({
+            '계약 번호': customerContract.contractId,
+            '매장': customerContract.centerName,
+            '계약형태': customerContract.contractCarName,
+            '계약명': customerContract.contractTTL || '-',
+            '계약금': customerContract.contractTotalSale || '-',
+            '계약상태': customerContract.contractState || '-'
         }));
+
+        totalRecords.value = response.result.totalElements;
     } catch (error) {
-        console.error('학력 정보 요청 실패: ', error);
+        console.error('고객 계약 정보 요청 실패:', error);
     }
 };
 
+// 페이지네이션
+const onPage = (event) => {
+    first.value = event.first;
+    rows.value = event.rows;
+    getCustomerContract();
+};
+
+// 정렬
+const onSort = (event) => {
+    sortField.value = event.sortField;
+    sortOrder.value = event.sortOrder;
+    getCustomerContract();
+};
 
 
 onMounted(() => {
-    getcustomerInfo();
-    getEducationData();
+    getCustomerInfo();
+    getCustomerContract();
 });
 </script>
 
