@@ -187,18 +187,34 @@ const loadData = async () => {
             tag: searchParams.value.tag || '',
             memberId: searchParams.value.memberId || '',
             classification: searchParams.value.classification || '',
-            startDate: searchParams.value.startDate || null,
-            endDate: searchParams.value.endDate || null,
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
         };
-        console.log('API 요청 파라미터:', params);
-        console.log(searchParams.value.title);
-        console.log(searchParams.value.tag);
-        console.log(searchParams.value.memberId);
-        console.log(searchParams.value.classification);
-        console.log(searchParams.value.startDate);
-        console.log(searchParams.value.endDate);
+        if(params.title!=''){
+            params.title='&title='+params.title;
+        }
+        if(params.tag!=''){
+            params.tag='&tag='+params.tag;
+        }
+        if(params.memberId!=''){
+            params.memberId='&memberId='+params.memberId;
+        }
+        if(params.classification!=''){
+            params.classification='&classification='+params.classification;
+        }
+        if(params.startDate!=''){
+            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
+        }
+        if(params.endDate!=''){
+            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
+        }
+        
 
-        const response = await $api.notice.get(`notice?page=${params.page}&size=${params.size}&title=${params.title}`);
+        console.log(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+
+        const response = await $api.notice.get(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}
+        ${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+
         console.log('응답 데이터:', response);
 
         tableData.value = response.content || [];
