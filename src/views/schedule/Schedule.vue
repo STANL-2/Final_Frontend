@@ -13,7 +13,6 @@
                     <span>{{ tag.name }}</span>
                 </li>
             </ul>
-            <button class="add-new-tag-button" @click.stop="openNewTagModal">새로운 태그 추가</button>
         </div>
         <div v-if="showEventModal" class="event-modal">
             <div class="modal-content">
@@ -23,7 +22,7 @@
                         <label for="title">제목</label>
                         <input type="text" id="title" v-model="newEvent.title" required />
                     </div>
-                    <div>
+                    <div class="form-group">
                         <label for="content">내용</label>
                         <textarea id="content" v-model="newEvent.content" rows="3" required></textarea>
                     </div>
@@ -49,7 +48,7 @@
                         </select>
                     </div>
                     <button type="submit">등록</button>
-                    <button type="button" @click="closeEventModal">취소</button>
+                    <button type="button" @click="closeEventModal" class="submit-close-button">취소</button>
                 </form>
             </div>
         </div>
@@ -73,7 +72,7 @@
                 </div>
 
                 <!-- 수정 모드 -->
-                <form v-else @submit.prevent="updateSchedule" class="edit-form">
+                <form v-else @submit.prevent="editSchedule" class="edit-form">
                     <div class="form-group">
                         <label for="edit-title">제목</label>
                         <input type="text" id="edit-title" v-model="editedSchedule.title" required />
@@ -111,7 +110,7 @@
                         <button @click="closeScheduleDetails" class="close-button">닫기</button>
                     </template>
                     <template v-else>
-                        <button @click="updateSchedule" class="save-button">저장</button>
+                        <button @click="editSchedule" class="save-button">저장</button>
                         <button @click="cancelEditing" class="cancel-button">취소</button>
                     </template>
                 </div>
@@ -134,9 +133,10 @@ export default {
             calendar: null,
             currentViewDate: null,
             tags: [
-                { name: 'METTING', color: '#B0DDFF' },
-                { name: 'TRAINING', color: '#FFF3E0' },
-                { name: 'VACATION', color: '#E3F2FD' }
+                { name: 'MEETING', color: '#AEC6CF' },
+                { name: 'TRAINING', color: '#FFDAB9' },
+                { name: 'VACATION', color: '#B0E57C' },
+                { name: 'SESSION', color: '#FFB7C5' }
             ],
             selectedTags: [],
             showTagDropdown: false,
@@ -177,8 +177,6 @@ export default {
         const currentYear = this.currentViewDate.getFullYear();
         const currentMonth = String(this.currentViewDate.getMonth() + 1).padStart(2, '0');
 
-        console.log("currnetY", currentYear);
-        console.log("currnetM", currentMonth);
         await this.fetchSchedules(currentYear, currentMonth);
         document.addEventListener('click', this.handleClickOutside);
     },
@@ -194,11 +192,9 @@ export default {
                 if (year && month) {
                     // Fetch schedules for the specified year and month
                     response = await $api.schedule.get(`${year}/${month}`);
-                    console.log(`Fetched schedules for ${year}-${month}:`, response);
                 } else {
                     // Fetch all schedules (default behavior)
                     response = await $api.schedule.get('', '');
-                    console.log('Fetched all schedules:', response);
                 }
 
                 this.schedules = Array.isArray(response.data) ? response.data : response.result;
@@ -245,7 +241,7 @@ export default {
         },
 
         // 일정 수정 저장
-        async updateSchedule() {
+        async editSchedule() {
             try {
 
                 function dateToCustomFormat(date) {
@@ -368,8 +364,6 @@ export default {
                 const startDate = this.formatDateString(schedule.startAt);
                 const endDate = this.formatEndDateString(schedule.endAt);
 
-                console.log("출력", endDate);
-
                 // Find matching tag or use default
                 const tag = this.tags.find(t => t.name === schedule.tag) || this.tags[5];
 
@@ -377,6 +371,7 @@ export default {
                 const eventObject = {
                     id: schedule.scheduleId || schedule.id,
                     title: schedule.name || schedule.title,
+                    content: schedule.content,
                     start: startDate,
                     end: endDate || startDate,
                     color: tag.color,
@@ -393,29 +388,33 @@ export default {
 
             const date = dateStr.split(' ')[0];
 
-
-            return dateStr.split(' ')[0];
+            return dateStr;
         },
 
         formatEndDateString(dateStr) {
             if (!dateStr) return '';
 
             // 날짜와 시간 분리
-            const [datePart] = dateStr.split(' ');
+            const [datePart, timePart] = dateStr.split(' ');
 
             // Date 객체로 변환
-            const date = new Date(datePart);
+            const date = new Date(dateStr);  // 시간까지 포함된 문자열을 그대로 사용
 
             // 날짜에 1일 추가
             date.setDate(date.getDate() + 1);
 
-            // YYYY-MM-DD 형식으로 변환
+            // 날짜와 시간을 다시 형식화
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+            const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
 
-            return `${year}-${month}-${day}`;
+            // 결과를 YYYY-MM-DD HH:mm:ss 형식으로 반환
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         },
+
         async confirmDeleteSchedule() {
             const confirmDelete = confirm('정말로 이 일정을 삭제하시겠습니까?');
             if (confirmDelete) {
@@ -450,7 +449,28 @@ export default {
                 alert(error.message || '일정 삭제 중 오류가 발생했습니다.');
             }
         },
+        formatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
 
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        },
+        formatEndDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate() - 1).padStart(2, '0');
+
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        },
         initCalendar() {
             const calendarEl = this.$refs.calendarEl;
 
@@ -477,14 +497,6 @@ export default {
                     const targetDate = this.calendar.getDate();
                     const year = targetDate.getFullYear();
                     const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-
-                    console.log("Calendar Debug Info:", {
-                        firstVisible: firstVisible.toISOString(),
-                        lastVisible: lastVisible.toISOString(),
-                        targetDate: targetDate.toISOString(),
-                        calculatedYear: year,
-                        calculatedMonth: month
-                    });
 
                     await this.fetchSchedules(year, month);
                 },
@@ -533,7 +545,6 @@ export default {
                 events: this.schedules.map(schedule => ({
                     id: schedule.scheduleId,
                     title: schedule.title,
-                    content: schedule.content,
                     start: schedule.startAt,
                     end: schedule.endAt,
                     color: this.tags.find(t => t.name === schedule.tag)?.color || '#FFFFFF',
@@ -542,25 +553,57 @@ export default {
                 editable: true,
                 eventDrop: async (info) => {
                     try {
-                        const updatedEvent = {
-                            scheduleId: info.event.id,
-                            startAt: info.event.startStr,
-                        };
 
-                        // Call the API to update the schedule date
-                        const response = await $api.schedule.put(`${updatedEvent.scheduleId}`, {
-                            date: updatedEvent.startAt,
-                        });
+                        const response = await $api.schedule.put(
+                            {
+                                name: info.event._def.title,
+                                content: info.event.extendedProps.content,
+                                tag: info.event.extendedProps.tag,
+                                startAt: this.formatDate(info.event._instance.range.start),
+                                endAt: this.formatEndDate(info.event._instance.range.end)
+                            },
+                            info.event.id
+                        );
 
-                        if (response.success || response.status === 200) {
+                        if (response.httpStatus === 200 && response.result === true) {
+                            // 수정 성공 시 사용자에게 알림
                             alert('일정이 성공적으로 업데이트되었습니다.');
                         } else {
+                            // 에러 발생 시 일정을 원래 위치로 되돌리기
                             throw new Error('일정 업데이트 실패');
                         }
                     } catch (error) {
                         console.error('일정 업데이트 오류:', error);
                         alert('일정 업데이트에 실패했습니다.');
-                        // Revert the event position if API call fails
+                        // 원래 위치로 이벤트 되돌리기
+                        info.revert();
+                    }
+                },
+                eventResize: async (info) => {
+                    try {
+
+                        const response = await $api.schedule.put(
+                            {
+                                name: info.event._def.title,
+                                content: info.event.extendedProps.content,
+                                tag: info.event.extendedProps.tag,
+                                startAt: this.formatDate(info.event._instance.range.start),
+                                endAt: this.formatEndDate(info.event._instance.range.end)
+                            },
+                            info.event.id
+                        );
+
+                        if (response.httpStatus === 200 && response.result === true) {
+                            // 수정 성공 시 사용자에게 알림
+                            alert('일정이 성공적으로 업데이트되었습니다.');
+                        } else {
+                            // 에러 발생 시 일정을 원래 위치로 되돌리기
+                            throw new Error('일정 업데이트 실패');
+                        }
+                    } catch (error) {
+                        console.error('일정 업데이트 오류:', error);
+                        alert('일정 업데이트에 실패했습니다.');
+                        // 원래 위치로 이벤트 되돌리기
                         info.revert();
                     }
                 },
@@ -712,8 +755,6 @@ export default {
                     startAt: startAt,
                     endAt: endAt
                 };
-
-                console.log('Sending schedule data:', scheduleData);
 
                 // API 호출
                 const response = await $api.schedule.post(scheduleData);
@@ -1080,18 +1121,18 @@ export default {
 }
 
 .close-button {
-    background-color: #6360AB;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
+    background-color: white !important;
+    color: #6360AB !important;
+    border: 0.293px solid #6360AB !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: background-color 0.2s !important;
 }
 
 .close-button:hover {
-    background-color: #504B8A;
+    background-color: white;
 }
 
 
@@ -1134,7 +1175,7 @@ export default {
 }
 
 .edit-button {
-    background-color: #4CAF50;
+    background-color: #6360AB;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1144,8 +1185,18 @@ export default {
     margin-right: 0.5rem;
 }
 
+.submit-close-button{
+    background-color: #F1F1FD !important;
+    color: #6360AB !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+}
+
 .save-button {
-    background-color: #4CAF50;
+    background-color: #6360AB;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1155,8 +1206,8 @@ export default {
 }
 
 .cancel-button {
-    background-color: #f44336;
-    color: white;
+    background-color: #F1F1FD;
+    color: #6360AB;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -1166,10 +1217,10 @@ export default {
 
 .edit-button:hover,
 .save-button:hover {
-    background-color: #45a049;
+    background-color: #6360AB;
 }
 
 .cancel-button:hover {
-    background-color: #da190b;
+    background-color: #F1F1FD;
 }
 </style>

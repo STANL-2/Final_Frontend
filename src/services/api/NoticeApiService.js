@@ -5,3 +5,4 @@ export default class NoticeApiService extends ApiService {
         super('api/v1/notice');
     }
 }
+

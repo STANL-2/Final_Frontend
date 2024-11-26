@@ -182,10 +182,12 @@ const routes = [
             },
             {
                 path: 'modify',
+                name: 'ENoticeModify',
                 component: () => import('@/views/notice/edit/ENoticeModify.vue')
             },
             {
                 path: 'register',
+                name: 'ENoticeRegister',
                 component: () => import('@/views/notice/edit/ENoticeRegister.vue')
             }
         ]
