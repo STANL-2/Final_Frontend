@@ -58,6 +58,7 @@ import Modal from './common/Modal.vue';
 import Tree from 'primevue/tree';
 import ApiService from '@/services/api/config/ApiService';
 import OrganizationEmployee from './common/OrganizationEmployee.vue';
+import '@/components/alarm.css';
 
 const userStore = useUserStore();
 const router = useRouter();
