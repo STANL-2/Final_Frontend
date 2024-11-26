@@ -48,7 +48,7 @@
             @close="closeRegisterModal" 
         />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" @confirm="confirmSelection" @cancel="resetModalState">
+        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">매장명: </label>
                 <!-- Enter 키 입력 시 searchStore 함수 호출 -->
@@ -193,7 +193,7 @@ const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(5); // 페이지 당 행 수
+const rows = ref(10); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
@@ -241,9 +241,17 @@ function handleView(rowData) {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
-        const response = await $api.contract.get('', ''); // API 요청
+        const response = await $api.contract.get(
+        '',    
+        {
+            params: {
+                page: first.value / rows.value, // 현재 페이지 계산
+                size: rows.value, // 페이지 크기
+                sort: sortField.value ? `${sortField.value},${sortOrder.value > 0 ? 'asc' : 'desc'}` : null,
+            },
+        }); // API 요청
         tableData.value = response.result.content; // 데이터 업데이트
-        totalRecords.value = response.result.totalElements; // 전체 데이터 개수 업데이트
+        totalRecords.value = response.data.result.totalElements;
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     } finally {
@@ -257,16 +265,17 @@ onMounted(() => {
 
 // 페이지네이션 이벤트 처리
 function onPage(event) {
-    first.value = event.first;
-    rows.value = event.rows;
-    loadData(); // 데이터 다시 로드
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 페이지 크기
+    loadData(); // 데이터 로드
 }
 
 // 정렬 이벤트 처리
+
 function onSort(event) {
     sortField.value = event.sortField;
     sortOrder.value = event.sortOrder;
-    loadData(); // 데이터 다시 로드
+    loadData();
 }
 
 // 필터 이벤트 처리
