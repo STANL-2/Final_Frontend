@@ -10,8 +10,10 @@
             tableStyle="min-width: 100%" 
             showGridlines 
             :selection="selectedItems"
+            selectionMode="multiple"
             :totalRecords="totalRecords"
-            @update:selection="selectedItems = $event" 
+            @update:selection="selectedItems = $event"
+            @selection-change="onSelectionChange"
             @page="onPage" 
             @sort="onSort" 
             @filter="onFilter">
@@ -58,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue';
+import { ref, watch, defineEmits } from 'vue';
 
 const props = defineProps({
     headers: Array,
@@ -71,8 +73,9 @@ const props = defineProps({
     totalRecords: Number,
     rows: {
         type: Number,
-        default: 10
+        default: 10,
     },
+    selection: Array,
     rowsPerPageOptions: {
         type: Array,
         default: () => [5, 10, 20, 50]
@@ -84,9 +87,19 @@ const props = defineProps({
     buttonColumnWidth: String
 });
 
-const emits = defineEmits(['page', 'sort', 'filter']);
+const emits = defineEmits(['page', 'sort', 'filter','update:selection']);
 
-const selectedItems = ref([]);
+const selectedItems = ref(props.selection || []);
+
+watch(selectedItems, (newSelection) => {
+    emits('update:selection', newSelection);
+    console.log('ViewTable에서 선택된 항목:', newSelection);
+});
+
+function onSelectionChange(event) {
+    selectedItems.value = event.value;
+    console.log('테이블에서 선택된 항목:', selectedItems.value);
+}
 
 function onPage(event) {
     emits('page', event);

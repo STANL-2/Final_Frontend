@@ -21,7 +21,6 @@ const { showError, showSuccess } = useToastMessage();
 
 // 경로에 따라 레이아웃을 동적으로 변경
 const layout = computed(() => {
-  // if (route.path.startsWith('/sample')) {
     if (route.path.match('/')) {
     return NoneLayout;
   }

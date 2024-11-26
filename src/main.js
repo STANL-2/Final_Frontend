@@ -37,6 +37,7 @@ import ProgressSpinner from 'primevue/progressspinner';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Card from 'primevue/card';
 import Dialog from 'primevue/dialog';
+import ConfirmationService from 'primevue/confirmationservice'; 
 
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -56,6 +57,7 @@ app.use(router);
 app.use(CkeditorPlugin);
 app.use(PrimeVue);
 app.use(ToastService);
+app.use(ConfirmationService);
 app.component('Button', Button);
 app.component('Card', Card);
 app.component('Tree', Tree);
