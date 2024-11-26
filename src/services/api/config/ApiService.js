@@ -52,7 +52,7 @@ export default class ApiService extends BaseApiService {
                 } catch (e) {
                     console.error('JSON 파싱 실패', e);
                 }
-                DOMEventService.dispatchApiError(errorMsg);
+                // DOMEventService.dispatchApiError(errorMsg);
                 return null;
             }
             // blob 요청인 경우 바로 blob 반환
@@ -67,7 +67,7 @@ export default class ApiService extends BaseApiService {
 
         } catch (err) {
             console.error('서버 에러 발생!', err);
-            DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
+            // DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
             throw err;
         }
     }
@@ -87,7 +87,7 @@ export default class ApiService extends BaseApiService {
 
         // blob 응답이 아닌 경우에만 성공 메시지 표시
         if (!options?.responseType || options.responseType !== 'blob') {
-            DOMEventService.dispatchApiSuccess(response?.msg || '성공');
+            // DOMEventService.dispatchApiSuccess(response?.msg || '성공');
         }
 
         return response;
@@ -121,7 +121,7 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
-        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
+        // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         if (responseData) {
             return responseData;
         } else {
@@ -144,7 +144,7 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
-        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
+        // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
 
         return responseData;
     }
@@ -160,7 +160,7 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
-        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
+        // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         return responseData;
     }
 }
