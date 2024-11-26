@@ -9,7 +9,7 @@ export const asideMenu = [
     { 
         key: '1', label: '사원 관리', url: '/sample',
         children: [
-            { key: '1-0', label: '사원 정보', url: '/customer/list' },
+            { key: '1-0', label: '사원 정보', url: '/employee/list' },
             { key: '1-1', label: '판매내역', url: '/sales-history/list' },
             { key: '1-2', label: '평가서', url: '/evaluation/list' }
         ]

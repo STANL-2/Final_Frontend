@@ -7,16 +7,12 @@ export default class ApiService extends BaseApiService {
 
     constructor(resource) {
         super(resource);
-
         const userStore = useUserStore();
         this.#userStore = userStore;
     }
 
-    // 요청 처리하는 곳
-    async #callApi(url, options) {
+    async #callApi(url, options = {}) { // options에 빈 객체 추가
         try {
-
-            // headers 값 셋팅
             const myHeaders = new Headers();
 
             // form data가 아니면 Content-Type 추가
@@ -24,20 +20,29 @@ export default class ApiService extends BaseApiService {
                 myHeaders.append('Content-Type', 'application/json');
             }
 
-            if (this.#userStore.isLoggined && this.#userStore.accessToken){
+            // Excel 다운로드를 위한 Accept 헤더 추가
+            if (options?.responseType === 'blob') {
+                myHeaders.append('Accept', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            }
+
+            if (this.#userStore.isLoggined && this.#userStore.accessToken) {
                 myHeaders.append('Authorization', `Bearer ${this.#userStore.accessToken}`);
             }
 
-            const fetchOptions = { ...options };
-            fetchOptions['headers'] = myHeaders;
+            // fetch options 설정
+            const fetchOptions = { 
+                ...options,
+                headers: myHeaders
+            };
 
-            // 요청 시작
+            // blob 요청인 경우 responseType 설정
+            if (options?.responseType === 'blob') {
+                fetchOptions.responseType = 'blob';
+            }
+
             const response = await fetch(url, fetchOptions);
 
-            if (response.ok) {
-                const responseData = await response.json(); // JSON 데이터 추출
-                return responseData;
-            } else {
+            if (!response.ok) {
                 console.error(`HTTP Error: ${response.status}`);
 
                 let errorMsg = '서버 요청 중 문제가 발생했습니다.';
@@ -47,20 +52,27 @@ export default class ApiService extends BaseApiService {
                 } catch (e) {
                     console.error('JSON 파싱 실패', e);
                 }
-
                 DOMEventService.dispatchApiError(errorMsg);
-
                 return null;
             }
+            // blob 요청인 경우 바로 blob 반환
+            if (options?.responseType === 'blob') {
+                const blob = await response.blob();
+                return blob;
+            }
+
+            // 일반 요청인 경우 JSON 반환
+            const responseData = await response.json();
+            return responseData;
+
         } catch (err) {
-            // 서버에서 보내주는 에러 메시지 뽑기
             console.error('서버 에러 발생!', err);
             DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
             throw err;
         }
     }
 
-    async get(subUrl, queryParams) {
+    async get(subUrl, queryParams, options = {}) {
         let url = `${this.baseUrl}/${this.resource}`;
 
         if (subUrl) {
@@ -71,11 +83,15 @@ export default class ApiService extends BaseApiService {
             url += `/${queryParams}`;
         }
 
-        const responseData = await this.#callApi(url);
-        DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
-        return responseData;
-    }
+        const response = await this.#callApi(url, options);
 
+        // blob 응답이 아닌 경우에만 성공 메시지 표시
+        if (!options?.responseType || options.responseType !== 'blob') {
+            DOMEventService.dispatchApiSuccess(response?.msg || '성공');
+        }
+
+        return response;
+    }
 
     async post(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;
@@ -84,8 +100,6 @@ export default class ApiService extends BaseApiService {
         }
 
         let requestBody;
-
-        console.log('file', file);
 
         // JSON 요청 생성
         if(file) {
@@ -97,8 +111,6 @@ export default class ApiService extends BaseApiService {
                 { type: 'application/json'})
             );
 
-            console.log('2');
-            console.log(requestBody);
         } else {
             requestBody = JSON.stringify(data);
         }   

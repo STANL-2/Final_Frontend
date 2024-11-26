@@ -3,7 +3,7 @@
         v-model:visible="localVisible"
         modal
         :header="header"
-        :style="{ width: dialogWidth, height: dialogHeight }"
+        :style="{ width: dialogWidth }"
         @hide="handleHide"
     >
         <slot></slot>
@@ -18,14 +18,11 @@
 import { ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 
+
 const props = defineProps({
     modelValue: Boolean,
     header: String,
     width: {
-        type: String,
-        default: '40rem'
-    },
-    height: {
         type: String,
         default: '40rem'
     }
@@ -34,7 +31,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
 const localVisible = ref(props.modelValue);
 const dialogWidth = props.width;
-const dialogHeight = props.height;
 
 watch(() => props.modelValue, (newVal) => {
     localVisible.value = newVal;

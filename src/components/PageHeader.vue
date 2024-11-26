@@ -5,7 +5,7 @@
                 <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
-                    <text class="title-1">영업관리</text>
+                    <text class="title">영업관리</text>
                 </RouterLink>
             </div>
 
@@ -13,27 +13,122 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
+                    <img src="../assets/header/profile.png" class="profile" @click="goMypage"/>
                     <img src="../assets/header/alarm.png" class="alarm" />
-                    <img src="../assets/header/organization-logo.png" class="organization-logo" />
+                    <img src="../assets/header/organization-logo.png" class="organization-logo" @click="showOrganizationModal" />
                     <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
                 </div>
             </div>
         </nav>
     </header>
+
+    <Modal v-model="showOrganizationChart" 
+            header="조직도" 
+            width="70rem" 
+            height="100rem">
+            <!-- Custom Modal -->
+            <div v-if="showOrganizationChart" class="modal-overlay">
+                    <div class="modal">
+                        <div class="aside">
+                            <Tree 
+                            :value="organization" 
+                            :filter="true" 
+                            filterMode="lenient"
+                            filterPlaceholder="부서 검색" 
+                            selectionMode="single" 
+                            class="tree-component"
+                            @node-select="handleNodeSelect"
+                            />
+                        </div>
+                        <div class="body">   
+                            <OrganizationEmployee 
+                            :organizationId="organizationId"
+                            @closeModal="closeModal"/>
+                        </div>
+                    </div>
+                </div>
+        </Modal>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import { ref } from 'vue';
+import Modal from './common/Modal.vue';
+import Tree from 'primevue/tree';
+import ApiService from '@/services/api/config/ApiService';
+import OrganizationEmployee from './common/OrganizationEmployee.vue';
 
 const userStore = useUserStore();
 const router = useRouter();
+
+const showOrganizationChart = ref(false);
+const organization = ref([]);
+
+const organizationId = ref('ORG_000000001');
+
+const apiService = new ApiService('api/v1/organization');
+
+const goMypage = () => {
+    router.push('/mypage');
+}
 
 const logout = () => {
     userStore.logout();
     router.replace('/');
 }
+
+const showOrganizationModal = async () => {
+    showOrganizationChart.value = true;
+    await getOrganizationChart();
+};
+
+const closeModal = () => {
+    showOrganizationChart.value = false;
+};
+
+const getOrganizationChart = async () => {
+    try {
+        const response = await apiService.get('', '');
+        
+        const result = response.result;
+
+        organization.value = transformToTree(result);
+
+    } catch (error) {
+        console.error('부서 요청 실패: ', error);
+    }
+};
+
+const transformToTree = (data) => {
+    const map = {};
+    const tree = [];
+
+    // 각 항목을 map에 저장하고 children 속성 초기화
+    data.forEach((item) => {
+        map[item.organizationId] = { 
+            label: item.name, 
+            data: item, 
+            children: item.children || [] 
+        };
+    });
+
+    // 부모 자식 관계 형성
+    data.forEach((item) => {
+        if (!item.parent) {
+            tree.push(map[item.organizationId]);
+        } else if (map[item.parent]) {
+            map[item.parent].children.push(map[item.organizationId]);
+        }
+    });
+    return tree;
+};
+
+// 트리 항목을 선택했을 때 호출되는 함수
+const handleNodeSelect = (event) => {
+    const selectedNode = event.data.organizationId;
+    organizationId.value = selectedNode;
+};
 </script>
 
 <style scoped>
@@ -66,7 +161,7 @@ const logout = () => {
     align-items: center;
 }
 
-.title-1 {
+.title {
     font-size: 20px;
     color: #6360AB;
     font-family: 'Pretendard';
@@ -91,6 +186,15 @@ const logout = () => {
     flex-direction: row;
 }
 
+.profile {
+    padding: 20px 0px 20px 20px;
+    border-left: 2px solid #CCCCCC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
 .alarm {
     padding: 20px 0px 20px 20px;
     border-left: 2px solid #CCCCCC;
@@ -105,6 +209,7 @@ const logout = () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .logout-logo {
@@ -113,5 +218,76 @@ const logout = () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
+
+.modal-overlay {
+    position: flex;
+    height: 55rem; /* 지정된 높이 */
+}
+
+.modal {
+    display: flex;
+    flex-direction: row;
+}
+.modal > div:first-child {
+    flex: 2; 
+}
+
+.modal > div:nth-child(2) {
+    flex: 8; 
+}
+
+.body {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.aside {
+    transition: width 0.3s ease;
+    width: 260px;
+    padding: 1.5rem;
+    
+}
+
+.aside.hidden {
+    width: 0;
+    overflow: hidden;
+}
+
+.tree-component{
+    display: flex;
+    flex-direction: column;
+}
+
+/* 검색 필드 스타일 */
+:deep(.tree-component .p-tree-filter-container) {
+    display: flex;
+    align-items: center;
+    background-color: #F3F3F3;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    height: 43px;
+    margin-bottom: 1rem; /* 검색창과 트리 컴포넌트 사이의 여백 */
+}
+
+/* 검색 text 스타일 */
+:deep(.tree-component .p-inputtext){
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: #777777;
+}
+
+/* 돋보기 모양 스타일 */
+:deep(.tree-component .p-tree-filter-icon){
+    color: #777777;
+    font-size: 1.2rem;
+    margin-left: -1.5rem;
+}
+
 </style>
