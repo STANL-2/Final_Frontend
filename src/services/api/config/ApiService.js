@@ -93,6 +93,28 @@ export default class ApiService extends BaseApiService {
         return response;
     }
 
+    async getParams(subUrl, queryParams) {
+        let url = `${this.baseUrl}/${this.resource}`;
+
+        if (subUrl) {
+            url += `/${subUrl}`;
+        }
+
+        if (queryParams) {
+            url += `${queryParams}`;
+        }
+        
+        const response = await this.#callApi(url, options);
+
+        // blob 응답이 아닌 경우에만 성공 메시지 표시
+        if (!options?.responseType || options.responseType !== 'blob') {
+            // DOMEventService.dispatchApiSuccess(response?.msg || '성공');
+        }
+
+        return response;
+    }
+
+
     async post(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
