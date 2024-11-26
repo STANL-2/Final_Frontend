@@ -10,7 +10,7 @@
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-m">
-                <div><CommonButton label="추가" icon="pi pi-plus" /></div>
+                <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
                 <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
@@ -51,6 +51,10 @@ import { $api } from '@/services/api/api';
 const router = useRouter(); 
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
 const loading = ref(false); // 로딩 상태 변수
+
+const navigateToRegisterPage = () => {
+    router.push({ name: 'ENoticeRegister' }); // 라우터 이름을 이용해 이동
+};
 
 const searchParams = ref({
     title: '',

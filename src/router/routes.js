@@ -186,6 +186,7 @@ const routes = [
             },
             {
                 path: 'register',
+                name: 'ENoticeRegister',
                 component: () => import('@/views/notice/edit/ENoticeRegister.vue')
             }
         ]
