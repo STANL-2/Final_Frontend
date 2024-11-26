@@ -124,7 +124,7 @@ function handleOpenModal() {
 const exportCSV = async () => {
     loading.value = true;
     try {
-        const blob = await $api.notice.get('notice/excel', '', {
+        const blob = await $api.notice.get('excel', '', {
             responseType: 'blob'
         });
 
@@ -242,7 +242,7 @@ const loadData = async () => {
 
         console.log(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
 
-        const response = await $api.notice.get(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}
+        const response = await $api.notice.getParams(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}
         ${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
 
         console.log('응답 데이터:', response);

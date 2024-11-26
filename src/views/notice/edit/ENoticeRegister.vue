@@ -82,7 +82,6 @@ const onRegister = async () => {
         // API 호출 (JSON 형태로 전송)
         const response = await $api.notice.post(
             {
-                url:"notice",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json", // JSON 요청 헤더 설정
@@ -90,17 +89,18 @@ const onRegister = async () => {
             body: JSON.stringify(postData), // JSON 형태로 변환
         });
 
-        // 응답 처리
-        if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.message || "등록에 실패했습니다.");
-        }
+        console.log("Response 객체:", response);
 
-        const responseData = await response.json();
+        if (response.httpStatus!=200) {
+            throw new Error("등록에 실패했습니다.");
+        }
+        const responseData = response.data || response;
         console.log("응답 데이터:", responseData);
+        
         alert("등록되었습니다.");
         router.push('/notice/list'); 
     } catch (error) {
+        console.error("등록 오류:", error);
         alert("등록 중 오류: " + error.message);
     }
 };
