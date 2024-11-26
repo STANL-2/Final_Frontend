@@ -112,32 +112,24 @@ const login = async () => {
     /* 처음 위치에서 멈춤 */
     0%,
     20% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-
-    /* 왼쪽 아래 대각선으로 이동 */
-    40% {
-        transform: translate(-300px, 400px) scale(0.9);
-        opacity: 1;
-    }
-
-    /* 화면 밖으로 빠르게 사라짐 */
-    55% {
-        transform: translate(-1200px, 800px) scale(0.6);
+        transform: translate(1200px, -800px) scale(0.6);
         opacity: 0;
     }
 
     /* 반대쪽에서 빠르게 다시 나타남 */
     65% {
-        transform: translate(1200px, -800px) scale(0.6);
-        opacity: 0;
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
     }
 
     /* 원래 위치로 돌아옴 */
-    100% {
+    90% {
         transform: translate(0, 0) scale(1);
         opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
     }
 }
 
