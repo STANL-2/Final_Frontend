@@ -1,118 +1,93 @@
 <template>
     <div class="search-container">
-        <!-- 행 단위 렌더링 -->
         <template v-for="(fieldGroup, rowIndex) in fields" :key="rowIndex">
             <div class="form-row">
-                <!-- 필드 그룹 렌더링 -->
                 <template v-for="(field, index) in fieldGroup" :key="`${rowIndex}_${index}`">
                     <div class="form-group">
                         <div class="label">{{ field.label }}</div>
 
-                        <!-- 필드 타입에 따른 조건부 렌더링 -->
                         <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[`${field.model}_${rowIndex}_${index}`]"
-                                :placeholder="field.placeholder" class="form-input" />
+                            <input
+                                type="text"
+                                v-model="formData[field.model]"
+                                :placeholder="field.placeholder"
+                                class="form-input"
+                            />
                         </template>
 
                         <template v-else-if="field.type === 'select'">
-                            <div class="select-container">
-                                <select v-model="formData[`${field.model}_${rowIndex}_${index}`]" class="form-select">
-                                    <option v-for="(option, idx) in field.options" :key="idx" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
-                                <span class="select-icon">
-                                    <img src="@/assets/body/chevron-down.png" />
-                                </span>
-                            </div>
+                            <select
+                                v-model="formData[field.model]"
+                                class="form-select"
+                            >
+                                <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
                         </template>
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start_${rowIndex}_${index}`]"class="form-date" />
+                                <input
+                                    type="date"
+                                    v-model="formData[`${field.model}_start`]"
+                                    class="form-date"
+                                />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end_${rowIndex}_${index}`]"class="form-date" />
-                            </div>
-                        </template>
-
-                        <template v-if="field.type === 'inputWithButton'">
-                            <div class="search-input">
-                                <input type="text" disabled v-model="formData[`${field.model}_${rowIndex}_${index}`]"
-                                    :placeholder="field.placeholder" class="form-input" />
-                                <button class="search-button" @click="openModal(rowIndex, index)">
-                                    <span class="search-icon pi pi-search"></span>
-                                </button>
+                                <input
+                                    type="date"
+                                    v-model="formData[`${field.model}_end`]"
+                                    class="form-date"
+                                />
                             </div>
                         </template>
                     </div>
                 </template>
             </div>
-            <!-- 행 아래 선 -->
-            <div v-if="rowIndex < fields.length - 1" class="row-divider"></div>
         </template>
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
+import { ref, defineProps, defineExpose, onMounted } from 'vue';
 
-const emit = defineEmits(['open-modal']);
 const props = defineProps({
     fields: {
         type: Array,
         required: true,
-        default: () => []
-    }
+    },
 });
 
-// formData를 ref 객체로 정의
-const formData = ref({});
+const formData = ref({}); // formData 정의
 
-// 컴포넌트 초기화 시 모든 필드 초기화
-
+// formData 초기화
 function initializeFormData() {
     formData.value = {};
-    props.fields.forEach((fieldGroup, rowIndex) => {
-        fieldGroup.forEach((field, index) => {
-            if (field.type === 'inputWithButton') {
-                // 키 생성 및 초기화
-                formData.value[`${field.model}_${rowIndex}_${index}`] = field.default || '';
+    props.fields.forEach((fieldGroup) => {
+        fieldGroup.forEach((field) => {
+            if (field.type === 'calendar') {
+                formData.value[`${field.model}_start`] = null;
+                formData.value[`${field.model}_end`] = null;
             } else {
-                // 다른 필드도 초기화 (옵션)
-                formData.value[`${field.model}_${rowIndex}_${index}`] = '';
+                formData.value[field.model] = '';
             }
         });
     });
-    console.log('Initialized formData:', formData.value); // formData 상태 출력
+    console.log('초기화된 formData:', formData.value);
 }
 
-// 컴포넌트가 로드될 때 formData 초기화
-onMounted(() => {
-    initializeFormData();
+// 부모 컴포넌트에서 호출할 데이터 반환 메서드
+function getFormData() {
+    console.log('getFormData 호출됨:', formData.value);
+    return formData.value;
+}
+
+defineExpose({
+    getFormData,
 });
 
-// 모달 열기 메서드
-function openModal(rowIndex, index) {
-    const field = props.fields[rowIndex][index]; // field 데이터를 가져옵니다.
-    const fieldKey = `${field.model}_${rowIndex}_${index}`; // 키 생성
-    formData.value[fieldKey] = ''; // 필드 초기화
-    emit('open-modal', fieldKey); // 부모 컴포넌트에 키 전달
-}
-
-// 부모 컴포넌트에서 호출하여 input 필드 값을 업데이트하는 메서드
-function updateFieldValue(fieldIndex, value) {
-    console.log(`Updating field ${fieldIndex} with value:`, value);
-    if (formData.value[fieldIndex] !== undefined) {
-        formData.value[fieldIndex] = value; // 필드 값 업데이트
-        console.log('Updated formData:', formData.value);
-    } else {
-        console.error(`Field ${fieldIndex} not found in formData.`);
-    }
-}
-
-// expose로 부모 컴포넌트에서 접근 가능하도록 설정
-defineExpose({
-    updateFieldValue
+onMounted(() => {
+    initializeFormData();
 });
 </script>
 

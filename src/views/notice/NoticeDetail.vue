@@ -1,26 +1,3 @@
-<!-- <template>
-    <PageLayout>
-        <div class="header"> <h1>상세 페이지</h1> </div>
-        
-        <p>태그: {{ tag }}</p>
-        <p>분류: {{ classification }}</p>
-        <p>제목: {{ noticeTitle }}</p>
-    </PageLayout>
-</template>
-
-<script setup>
-import { useRoute } from 'vue-router'; // Import route
-
-const route = useRoute(); // Access route object
-
-// 쿼리 파라미터 추출
-const { tag, classification, noticeTitle } = route.query;
-</script>
-
-<style scoped>
-
-</style> -->
-
 <template>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
@@ -29,7 +6,7 @@ const { tag, classification, noticeTitle } = route.query;
         <div class="detail-container width-xxxs ml-xl">
             <h2 class="notice-title mb-m">{{ noticeTitle }}</h2>
             <h3 class="notice-content ml-xs">
-                <p>{{ noticeContent }}</p>
+                <div v-html="noticeContent"></div>
             </h3>
 
 
@@ -55,7 +32,7 @@ const { tag, classification, noticeTitle } = route.query;
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
                         <button class="button delete-button" @click="deleteNotice">삭제</button>
-                        <button class="button edit-button">수정</button>
+                        <button class="button edit-button" @click="navigateToEditPage">수정</button>
                     </div>
                 </div>
             </div>
@@ -66,6 +43,7 @@ const { tag, classification, noticeTitle } = route.query;
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+
 
 const route = useRoute();
 const router = useRouter();
@@ -89,6 +67,17 @@ const deleteNotice = async () => {
         console.error('삭제 중 오류 발생:', error);
         alert('삭제에 실패했습니다.');
     }
+};
+
+const navigateToEditPage = () => {
+    router.push({
+        name: 'ENoticeModify',
+        query: {
+            noticeId,
+            noticeTitle,
+            noticeContent,
+        },
+    });
 };
 </script>
 
@@ -120,7 +109,6 @@ const deleteNotice = async () => {
 }
 
 .file-table {
-
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
