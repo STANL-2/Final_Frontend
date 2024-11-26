@@ -298,6 +298,7 @@ const onRegister = async () => {
         console.log("추출된 데이터:", postData);
 
         const response = await $api.contract.post(postData, "");
+        console.log("POST 요청:", postData);
         console.log("POST 응답:", response);
 
         alert("계약서가 성공적으로 등록되었습니다.");

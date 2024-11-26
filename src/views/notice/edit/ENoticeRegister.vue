@@ -64,41 +64,30 @@ const closePage = () => {
 };
 
 const onRegister = async () => {
-    try {
-        if (!title.value.trim()) {
-            throw new Error("제목을 입력해주세요.");
-        }
-        if (!content.value.trim()) {
-            throw new Error("내용을 입력해주세요.");
-        }
-
-        const postData = {
-            title: title.value, // 제목
-            content: content.value, // CKEditor 내용
+    const postData = {
+            title: title.value.trim(), // 제목
+            content: content.value.trim(), // CKEditor 내용
         };
-
-        console.log("전송 데이터:", postData); // 디버깅용 로그
-
+    try {
         // API 호출 (JSON 형태로 전송)
-        const response = await $api.notice.post(
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json", // JSON 요청 헤더 설정
-            },
-            body: JSON.stringify(postData), // JSON 형태로 변환
-        });
+        const responseData = await $api.notice.post( 
+        {
+            title: title.value.trim(),
+            content: content.value.trim(),
+        },
+        ''
+    );
 
-        console.log("Response 객체:", response);
+        console.log("서버 응답 데이터1:", responseData);
+        console.log("서버 응답 데이터2:", responseData.httpStatus);
+        console.log("서버 응답 데이터3:", responseData.result);
+        console.log("서버 응답 데이터4:", responseData.result.body);
+        console.log("서버 응답 데이터5:", responseData.body);
+        console.log("서버 응답 데이터6:", responseData.result.title);
 
-        if (response.httpStatus!=200) {
-            throw new Error("등록에 실패했습니다.");
-        }
-        const responseData = response.data || response;
-        console.log("응답 데이터:", responseData);
-        
+    
         alert("등록되었습니다.");
-        router.push('/notice/list'); 
+        router.push('/notice/list');
     } catch (error) {
         console.error("등록 오류:", error);
         alert("등록 중 오류: " + error.message);

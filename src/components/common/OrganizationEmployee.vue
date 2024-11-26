@@ -39,8 +39,7 @@ const emit = defineEmits(['closeModal']);
 const router = useRouter();
 
 const goProfile = (member) => {
-    router.push({path: '/employee/detail', query: { employeeId: member.loginId}});        // 수정해야함
-    // router.push('/employee/detail:' + member.loginId);        // 수정해야함
+    router.push({path: '/employee/detail', query: { employeeId: member.loginId}});  
     emit('closeModal');
 };
 
@@ -51,14 +50,14 @@ const organizationMembers = ref([]);
 
 const getOrganizationMembers = async (member) => {
     try {
-        const response = await apiService.get('', props.organizationId);  // 추후에 수정 예정
+        const response = await apiService.get('', props.organizationId);  
         
         const result = response.result;
 
         // 필요한 데이터만 추출하여 careerData 배열에 저장
         organizationMembers.value = result.map(member => ({
             loginId: member.loginId,
-            name: member.name,  // name이 없다면 '정보 없음'으로 처리
+            name: member.name,
             position: member.position,
             jobType: member.jobType,
             createdAt: member.createdAt
@@ -76,7 +75,7 @@ watch(() => props.organizationId, (newId) => {
 }, { immediate: true });
 
 onMounted(() => {
-    getOrganizationMembers(props.organizationId);  // Initial fetch with the given organizationId
+    getOrganizationMembers(props.organizationId); 
 });
 </script>
 

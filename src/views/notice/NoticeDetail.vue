@@ -6,7 +6,7 @@
         <div class="detail-container width-xxxs ml-xl">
             <h2 class="notice-title mb-m">{{ noticeTitle }}</h2>
             <h3 class="notice-content ml-xs">
-                <p>{{ noticeContent }}</p>
+                <div v-html="noticeContent"></div>
             </h3>
 
 
@@ -32,7 +32,7 @@
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
                         <button class="button delete-button" @click="deleteNotice">삭제</button>
-                        <button class="button edit-button">수정</button>
+                        <button class="button edit-button" @click="navigateToEditPage">수정</button>
                     </div>
                 </div>
             </div>
@@ -43,6 +43,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+
 
 const route = useRoute();
 const router = useRouter();
@@ -66,6 +67,17 @@ const deleteNotice = async () => {
         console.error('삭제 중 오류 발생:', error);
         alert('삭제에 실패했습니다.');
     }
+};
+
+const navigateToEditPage = () => {
+    router.push({
+        name: 'ENoticeModify',
+        query: {
+            noticeId,
+            noticeTitle,
+            noticeContent,
+        },
+    });
 };
 </script>
 

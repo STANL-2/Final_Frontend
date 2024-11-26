@@ -52,6 +52,8 @@ const router = useRouter();
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
 const loading = ref(false); // 로딩 상태 변수
 
+const selectedDetail = ref(null);
+
 const navigateToRegisterPage = () => {
     router.push({ name: 'ENoticeRegister' }); // 라우터 이름을 이용해 이동
 };
@@ -150,7 +152,6 @@ const exportCSV = async () => {
 
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    showDetailModal.value = true;
     router.push({
         name: 'NoticeDetail',
         query: {
@@ -242,7 +243,7 @@ const loadData = async () => {
 
         console.log(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
 
-        const response = await $api.notice.getParams(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}
+        const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}
         ${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
 
         console.log('응답 데이터:', response);
