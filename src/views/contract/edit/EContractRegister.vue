@@ -2,7 +2,8 @@
     <Modal
         v-model="isVisible"
         header="계약서 등록"
-        width="90rem"
+        width="80rem"
+        height="100rem"
         @close="closeModal"
     >
         <CKEditor 

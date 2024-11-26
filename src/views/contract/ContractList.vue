@@ -8,47 +8,36 @@
         <div class="flex-row content-between">
             <div>전체목록</div>
             <div class="flex-row items-center mb-s">
-                <div><CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal"/></div>
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportToXLSX" icon="pi pi-download" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div>
+                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="인쇄" icon="pi pi-print" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="엑셀다운" @click="exportToXLSX" icon="pi pi-download" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                </div>
             </div>
         </div>
 
         <!-- ViewTable -->
         <div class="component-wrapper">
-            <ViewTable 
-                :headers="tableHeaders" 
-                :data="tableData" 
-                :loading="loading" 
-                :totalRecords="totalRecords" 
-                :rows="rows" 
-                :rowsPerPageOptions="[5, 10, 20, 50]"
-                :selectable="true" 
-                :selection.sync="selectedItems"
-                buttonLabel="조회" 
-                buttonHeader="상세조회"
-                :buttonAction="handleView" 
-                buttonField="code"
-                @page="onPage" 
-                @sort="onSort" 
-                @filter="onFilter" 
-            />
+            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection.sync="selectedItems"
+                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
+                @sort="onSort" @filter="onFilter" />
 
-            <ContractDetail
-                v-model="showDetailModal"
-                :showModal="showDetailModal"
-                :details="selectedDetail"
-                @close="showDetailModal = false"
-            />
+            <ContractDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+                @close="showDetailModal = false" />
         </div>
 
-        <EContractRegister 
-            v-model:visible="showRegisterModal" 
-            @close="closeRegisterModal" 
-        />
+        <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" @confirm="confirmSelection" @cancel="resetModalState">
+        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection"
+            @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">매장명: </label>
                 <!-- Enter 키 입력 시 searchStore 함수 호출 -->
@@ -127,7 +116,7 @@ const formFields = [
             model: 'approvalStatus',
             options: ['대기', '승인', '취소']
         }
-        
+
     ],
     [
         {
@@ -193,7 +182,7 @@ const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(5); // 페이지 당 행 수
+const rows = ref(10); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
@@ -241,11 +230,35 @@ function handleView(rowData) {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
-        const response = await $api.contract.get('', ''); // API 요청
-        tableData.value = response.result.content; // 데이터 업데이트
-        totalRecords.value = response.result.totalElements; // 전체 데이터 개수 업데이트
+        // 쿼리 파라미터 설정
+        const query = {
+            page: first.value / rows.value, // 현재 페이지 번호
+            size: rows.value, // 한 페이지 데이터 수
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
+        };
+
+        // 쿼리 문자열 생성
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
+
+        // API 호출
+        const response = await $api.contract.getParams('', queryString);
+
+        // API 응답 데이터 확인
+        console.log("API 응답 데이터:", response);
+
+        const result = response?.result; // 응답 데이터 접근
+        if (result && Array.isArray(result.content)) {
+            tableData.value = result.content; // 테이블 데이터 업데이트
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
+        }
     } catch (error) {
-        console.error('데이터 로드 실패:', error);
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
         loading.value = false; // 로딩 종료
     }
@@ -257,16 +270,18 @@ onMounted(() => {
 
 // 페이지네이션 이벤트 처리
 function onPage(event) {
-    first.value = event.first;
-    rows.value = event.rows;
-    loadData(); // 데이터 다시 로드
+    // 페이지네이션 이벤트 처리
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 한 페이지당 데이터 수
+    loadData(); // 데이터 로드
 }
-
 // 정렬 이벤트 처리
+
 function onSort(event) {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    loadData(); // 데이터 다시 로드
+    // 정렬 이벤트 처리
+    sortField.value = event.sortField; // 정렬 필드
+    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
+    loadData(); // 데이터 로드
 }
 
 // 필터 이벤트 처리

@@ -11,9 +11,9 @@
             showGridlines 
             :selection="selectedItems"
             selectionMode="multiple"
-            @selection-change="onSelectionChange"
             :totalRecords="totalRecords"
             @update:selection="selectedItems = $event"
+            @selection-change="onSelectionChange"
             @page="onPage" 
             @sort="onSort" 
             @filter="onFilter">
