@@ -116,18 +116,18 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '계약서명',
+            label: '제품명',
             type: 'input',
-            model: 'contractName',
-            showDivider: true
+            model: 'carName',
+            showDivider: false
         },
         {
-            label: '계약일',
-            type: 'calendar', // 쌍으로 처리
-            model: 'contractDate', // 시작과 종료를 모두 포함
-            showIcon: true,
-            manualInput: false,
+            type: 'select',
+            label: '승인여부',
+            model: 'approvalStatus',
+            options: ['대기', '승인', '취소']
         }
+        
     ],
     [
         {
@@ -158,18 +158,18 @@ const formFields = [
         }
     ],
     [
-
         {
-            label: '제품명',
+            label: '계약서명',
             type: 'input',
-            model: 'carName',
-            showDivider: false
+            model: 'contractName',
+            showDivider: true
         },
         {
-            type: 'select',
-            label: '승인여부',
-            model: 'approvalStatus',
-            options: ['대기', '승인', '취소']
+            label: '계약일',
+            type: 'calendar', // 쌍으로 처리
+            model: 'contractDate', // 시작과 종료를 모두 포함
+            showIcon: true,
+            manualInput: false,
         }
     ]
 ];

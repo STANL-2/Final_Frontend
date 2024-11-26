@@ -1,7 +1,7 @@
 <template>
     <Modal
         v-model="isVisible"
-        header="등록 모달"
+        header="계약서 등록"
         width="90rem"
         @close="closeModal"
     >
@@ -205,7 +205,6 @@ const initialHtml = `
 `;
 
 // props 변화 감지
-// props 변화 감지
 watch(
     () => props.visible,
     (newVal) => {
@@ -217,7 +216,6 @@ watch(
 );
 
 
-// CKEditor 내용에서 데이터를 추출하는 함수
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
@@ -277,9 +275,7 @@ const extractDataFromHTML = (html) => {
         remainderPayment,
         consignmentPayment,
         totalSales,
-        createdUrl: html, // HTML 전체를 전송
-        customerId: "CUS_000000013",
-        productId: "PRO_000000004"
+        createdUrl: html // HTML 전체를 전송
     };
 };
 
