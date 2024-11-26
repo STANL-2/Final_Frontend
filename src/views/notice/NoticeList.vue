@@ -117,6 +117,32 @@ const first = ref(0); // 첫 번째 행 위치
 function handleOpenModal() {
     console.log('모달 열기 호출됨');
 }
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.notice.get('notice/excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'noticeExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('파일 다운로드 완료');
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        DOMEventService.dispatchApiError('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+        loading.value = false;
+    }
+};
 
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
