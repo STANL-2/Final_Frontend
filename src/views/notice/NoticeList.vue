@@ -4,10 +4,12 @@
         <div class="component-wrapper width-s ml-l">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-        <div class="flex-row content-end mr-xl"><CommonButton label="조회"/></div>
+        <div class="flex-row content-end mr-xl">
+            <CommonButton label="조회" @click="handleSearch"/>
+        </div>
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
-            <div class="flex-row items-center mb-s mr-xl">
+            <div class="flex-row items-center mb-s mr-m">
                 <div><CommonButton label="추가" icon="pi pi-plus" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
@@ -39,12 +41,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import NoticeDetail from '@/views/notice/NoticeDetail.vue'
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+
+const router = useRouter(); 
 
 const formFields = [
     [
@@ -132,10 +136,20 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
+
 function handleView(rowData) {
-    // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     showDetailModal.value = true;
+    router.push({
+        name: 'NoticeDetail',
+        query: {
+            tag: rowData.tag, // 태그
+            classification: rowData.classification, // 분류
+            noticeTitle: rowData.title, 
+            noticeContent: rowData.content,
+            noticeId: rowData.noticeId,
+        },
+    });
 }
 
 // 데이터 로드 함수
@@ -149,10 +163,10 @@ const loadData = async () => {
         console.log('GET 요청 응답 결과');
         console.log(response);
 
-        tableData.value = response.result.content; // 테이블 데이터 업데이트
-        totalRecords.value = response.result.totalElements; // 전체 데이터 개수 업데이트
+        tableData.value = response.content; // 테이블 데이터 업데이트
+        totalRecords.value = response.totalElements; // 전체 데이터 개수 업데이트
     } catch (error) {
-        console.error('데이터 로드 실패:', error);
+        console.error('데이터 로드 실패ㅠㅠ:', error);
     } finally {
         loading.value = false; // 로딩 종료
     }
@@ -232,6 +246,7 @@ function searchStore() {
     // 검색어 초기화
     searchQuery.value = '';
 }
+
 </script>
 
 <style scoped>
