@@ -11,15 +11,21 @@
             <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
         </div>
 
+        <!-- ***이미지 미리보기*** -->
+        <div class="image-preview">
+            <FilePreview v-if="imageUrl" :imageUrl="imageUrl" />
+            <p v-else>이미지가 없습니다.</p>
+        </div>
+
         <div class="viewform">
             <ViewForm :data="centerData" />
         </div>
 
         <div class="table-wrapper width-s ml-l">
             <ViewTable 
-            v-if="tableData && tableData.length > 0"
-            :headers="tableHeaders" 
-            :tableData="tableData" 
+                v-if="tableData && tableData.length > 0"
+                :headers="tableHeaders" 
+                :tableData="tableData" 
             />
         </div>
 
@@ -37,9 +43,15 @@ import { $api } from '@/services/api/api';
 import ViewForm from '@/components/common/ViewForm.vue';
 import ViewTable from '@/components/common/ViewTable.vue';
 
+// *** 파일 미리보기 import ***
+import FilePreview from '@/components/common/FilePreview.vue';
+
 // ViewForm에 전달할 데이터
 const centerData = ref([]);
 const tableData = ref([]);
+
+// *** 파일 초기화 ***
+const imageUrl = ref('');
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩
@@ -50,7 +62,6 @@ const emit = defineEmits(['update:modelValue']); // 부모에게 상태 전달
 
 // 로컬 상태로 데이터를 관리
 const centerDetails = ref({ ...props.details }); // 초기 데이터를 복사
-const memberDetails = ref({ ...props.details }); // 초기 데이터를 복사
 
 // Watch: props.details 업데이트 시 API 호출
 watch(
@@ -81,6 +92,9 @@ const getDetailRequest = async (centerId) => {
         const response = await $api.center.get('', centerId);
         centerDetails.value = response.result;
 
+        // *** iamgeUrl 불러오기 ***
+        imageUrl.value = centerDetails.value.imageUrl;
+
         centerData.value = [
             {
                 label: '매장 번호',
@@ -103,9 +117,6 @@ const getDetailRequest = async (centerId) => {
         ];
 
         const responseMember = await $api.member.get('', centerId);
-        memberDetails.value = response.result;
-
-        // 데이터를 가공하여 memberData에 저장
         tableData.value = responseMember.result.map((item) => ({
             name: item.name || 'N/A',        // 이름 필드
             email: item.email || 'N/A',     // 이메일 필드
@@ -136,4 +147,15 @@ onMounted(() => {
     margin-bottom: 2rem;
 }
 
+.image-preview {
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
 </style>
