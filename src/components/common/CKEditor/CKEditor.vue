@@ -241,7 +241,7 @@ export default {
 					Undo
 				],
 				simpleUpload: {
-					uploadUrl: 'http://localhost:3000/api/upload', // 파일 업로드 경로
+					uploadUrl: 'http://localhost:8080/api/upload', // 파일 업로드 경로
 					headers: {
 						Authorization: 'Bearer <your-token>'
 					}
