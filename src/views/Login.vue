@@ -110,14 +110,13 @@ const login = async () => {
 @keyframes drive-away {
 
     /* 처음 위치에서 멈춤 */
-    0%,
-    20% {
+    0% {
         transform: translate(1200px, -800px) scale(0.6);
         opacity: 0;
     }
 
     /* 반대쪽에서 빠르게 다시 나타남 */
-    65% {
+    40% {
         transform: translate(0, 0) scale(1);
         opacity: 1;
     }
