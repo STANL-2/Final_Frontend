@@ -107,21 +107,54 @@ function handleView(rowData) {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
-        const response = await $api.center.get(
-            '',
-            '',
-        );
-        console.log('GET 요청 응답 결과');
-        console.log(response);
 
-        tableData.value = response.result.content; // 테이블 데이터 업데이트
-        totalRecords.value = response.result.totalElements; // 전체 데이터 개수 업데이트
+        const query = {
+            page: first.value / rows.value, // 현재 페이지 번호
+            size: rows.value, // 한 페이지 데이터 수
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
+        };
+        // 쿼리 문자열 생성
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
+        // API 호출
+        const response = await $api.center.getParams('', queryString);
+
+        const result = response?.result; // 응답 데이터 접근
+        if (result && Array.isArray(result.content)) {
+            tableData.value = result.content; // 테이블 데이터 업데이트
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
+        }
     } catch (error) {
-        console.error('데이터 로드 실패:', error);
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
         loading.value = false; // 로딩 종료
     }
 };
+
+function onPage(event) {
+    first.value = event.first;
+    rows.value = event.rows;
+    loadData(); // 데이터 다시 로드
+    // 페이지네이션 이벤트 처리
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 한 페이지당 데이터 수
+    loadData(); // 데이터 로드
+}
+// 정렬 이벤트 처리
+function onSort(event) {
+    sortField.value = event.sortField;
+    sortOrder.value = event.sortOrder;
+    loadData(); // 데이터 다시 로드
+    // 정렬 이벤트 처리
+    sortField.value = event.sortField; // 정렬 필드
+    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
+    loadData(); // 데이터 로드
+}
 
 const exportCSV = async () => {
     loading.value = true;
@@ -154,20 +187,6 @@ const exportCSV = async () => {
 onMounted(() => {
     loadData();
 });
-
-// 페이지네이션 이벤트 처리
-function onPage(event) {
-    first.value = event.first;
-    rows.value = event.rows;
-    loadData(); // 데이터 다시 로드
-}
-
-// 정렬 이벤트 처리
-function onSort(event) {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    loadData(); // 데이터 다시 로드
-}
 
 // 필터 이벤트 처리
 function onFilter(event) {
@@ -232,3 +251,5 @@ function searchStore() {
     font-weight:bold;
 }
 </style>
+
+
