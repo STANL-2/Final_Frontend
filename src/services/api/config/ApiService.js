@@ -109,7 +109,6 @@ export default class ApiService extends BaseApiService {
         return response;
     }
 
-
     async post(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
