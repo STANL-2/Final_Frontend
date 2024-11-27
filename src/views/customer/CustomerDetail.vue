@@ -25,10 +25,10 @@
                     <CommonButton label="삭제" @click="goDelete" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="수정" @click="goModify"/>
+                    <CommonButton label="수정" @click="goModify" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="목록" color="#F1F1FD" textColor="#6360AB" @click="goList"/>
+                    <CommonButton label="목록" color="#F1F1FD" textColor="#6360AB" @click="goList" />
                 </div>
             </div>
         </div>
@@ -44,37 +44,41 @@
                 </div>
             </div>
 
-            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection.sync="selectedItems"
-                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
-                @sort="onSort" @filter="onFilter">
-                <template #body-status="{ data }">
-                    <div class="custom-tag-wrapper">
-                        <div :class="['custom-tag', getCustomTagClass(data.status)]">
-                            {{ getStatusLabel(data.status) }}
+            <div class="component-wrapper">
+                <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                    :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true"
+                    :selection.sync="selectedItems" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                    buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
+                    <template #body-status="{ data }">
+                        <div class="custom-tag-wrapper">
+                            <div :class="['custom-tag', getCustomTagClass(data.status)]">
+                                {{ getStatusLabel(data.status) }}
+                            </div>
                         </div>
-                    </div>
-                </template>
-            </ViewTable>
+                    </template>
+                </ViewTable>
+            </div>
 
 
 
 
 
 
-        
 
 
 
 
 
-        
 
 
 
 
 
-            
+
+
+
+
+
 
         </div>
 
@@ -87,34 +91,48 @@
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import ContractDetail from '@/views/contract/ContractDetail.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watchEffect } from 'vue';
 import { $api } from '@/services/api/api';
 
 // 기본 정보
 const customerInfo = ref([]);
 
-// 계약 정보
+// 계약 헤더
 const tableHeaders = [
-    { field: 'contractId', label: '계약 번호', width: ''},
-    { field: 'centerName', label: '매장', width: ''},
-    { field: 'contractCarName', label: '모델명', width: ''},
-    { field: 'contractTTL', label: '계약명', width: ''},
-    { field: 'contractTotalSale', label: '계약금', width: ''},
-    { field: 'contractState', label: '계약상태', width: ''}
+    { field: 'contractId', label: '계약 번호', width: '' },
+    { field: 'centerName', label: '매장', width: '' },
+    { field: 'contractCarName', label: '모델명', width: '' },
+    { field: 'contractTTL', label: '계약명', width: '' },
+    { field: 'contractTotalSale', label: '계약금', width: '' },
+    { field: 'status', label: '계약상태', width: '' }
 ];
 
 const tableData = ref([]); // 테이블 데이터
 const selectedItems = ref([]);
-const showDetailModal = ref(false); // 상세조회 모달 표시 여부
-const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
 const rows = ref(10); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
-const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+
+function goDelete() {
+    // 삭제 로직
+    console.log('삭제 버튼 클릭됨');
+    alert('삭제 로직 실행');
+}
+
+function goModify() {
+    // 수정 로직
+    console.log('수정 버튼 클릭됨');
+    alert('수정 로직 실행');
+}
+
+function goList() {
+    // 목록으로 이동
+    console.log('목록 버튼 클릭됨');
+    router.push('/customer-list'); // 적절한 경로로 이동
+}
 
 function getStatusLabel(status) {
     switch (status) {
@@ -141,12 +159,6 @@ function getCustomTagClass(status) {
         default:
             return "warning"; // 기본 색상
     }
-}
-
-function handleView(rowData) {
-    // 상세 데이터 설정 및 모달 열기
-    selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    showDetailModal.value = true;
 }
 
 
@@ -181,26 +193,33 @@ const getCustomerInfo = async () => {
 // 고객 계약 정보 로드
 const loadData = async () => {
     try {
-        console.log('#@#$@#$@#$@#$@#$@#');
-        
+        const page = Math.floor(first.value / rows.value);
+        console.log('alskdjflsjdfoisjdoifjsiodjfiouwdsj');
+        console.log(page);
+        console.log(rows.value);
+
         const query = {
-            page: first.value / rows.value,
-            size: rows.value
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
         }
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
+        console.log('쿼리 스트링: ', queryString);
         const response = await $api.customer.getParams(
-            'contract/'+'CUS_000000001' + '?',    // 추후에 수정
+            'contract/' + 'CUS_000000001' + '',                 // 추후에 수정
             queryString
         );
 
         const result = response?.result;
 
-        console.log(result);
-
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content; // 테이블 데이터 업데이트
+            // API 데이터 변환: contractStatus -> status
+            tableData.value = result.content.map(item => ({
+                ...item,
+                status: item.contractState // contractStatus를 status로 매핑
+            }));
+
             totalRecords.value = result.totalElements; // 전체 데이터 수
         } else {
             console.warn("API 응답이 예상한 구조와 다릅니다:", response);
@@ -212,6 +231,32 @@ const loadData = async () => {
         console.error('고객 계약 정보 요청 실패:', error);
     }
 };
+
+// 상세 조회 메서드
+function handleView(rowData) {
+    console.log('상세 조회 버튼 클릭됨:', rowData);
+    alert(`상세 조회 데이터: ${JSON.stringify(rowData)}`);
+}
+
+// 페이지네이션 이벤트 처리
+function onPage(event) {
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 한 페이지당 데이터 수
+    loadData(); // 데이터 로드
+}
+
+// 정렬 이벤트 처리
+function onSort(event) {
+    sortField.value = event.sortField; // 정렬 필드
+    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
+    loadData(); // 데이터 로드
+}
+
+// 필터 이벤트 처리
+function onFilter(event) {
+    filters.value = event.filters;
+    loadData(); // 데이터 다시 로드
+}
 
 
 onMounted(() => {
@@ -316,5 +361,49 @@ td {
 th {
     background-color: #F8F8F8;
     color: #777777;
+}
+
+.component-wrapper {
+    margin-bottom: 8rem;
+}
+
+.custom-tag-wrapper {
+    display: flex;
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
+    color: aqua;
+}
+
+.custom-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    width: 50px;
+}
+
+.custom-tag.success {
+    background-color: #caf1d8;
+    color: #188a42;
+}
+
+.custom-tag.warning {
+    background-color: #feddc7;
+    color: #ae510f;
+}
+
+.custom-tag.danger {
+    background-color: #ffd0ce;
+    color: #b32b23;
+}
+
+.custom-tag.info {
+    background-color: #d0e1fd;
+    color: #295bac;
 }
 </style>
