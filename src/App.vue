@@ -15,16 +15,16 @@ import MainLayout from '@/layouts/MainLayout.vue';
 import DOMEventService from '@/services/DOMEventService';
 import useToastMessage from '@/hooks/useToastMessage';
 import Toast from 'primevue/toast';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/user.js';
 
 const route = useRoute();
 const { showError, showSuccess } = useToastMessage();
 const userStore = useUserStore();
 
 const accessToken = userStore.accessToken;
-const userInfo = userStore.userInfo?.value;
+const userInfo = userStore.isLoggined;
 
-console.log("accessToke",accessToken);
+console.log("accessToken",accessToken);
 console.log("userInfo",userInfo);
 
 // 알림 초기화

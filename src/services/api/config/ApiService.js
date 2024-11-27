@@ -40,6 +40,11 @@ export default class ApiService extends BaseApiService {
                 fetchOptions.responseType = 'blob';
             }
 
+            // Last-Event-ID 헤더 추가
+            if (options?.lastEventId) {
+                myHeaders.append('Last-Event-ID', options.lastEventId);
+            }
+
             const response = await fetch(url, fetchOptions);
 
             if (!response.ok) {
