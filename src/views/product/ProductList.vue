@@ -247,5 +247,3 @@ function searchStore() {
     font-weight:bold;
 }
 </style>
-
-

@@ -3,6 +3,9 @@
         <!-- SearchForm -->
         <div class="component-wrapper">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <div class="flex-row content-end mt-xs">
+                <CommonButton label="조회" @click="handleSearch" />
+            </div>
         </div>
 
         <div class="flex-row content-between">
@@ -40,12 +43,15 @@
 
 
             <ContractDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                @close="showDetailModal = false" @refresh="loadData" />
+                :status="getStatusLabel(selectedDetail?.status)"
+                :statusClass="getCustomTagClass(selectedDetail?.status)" @close="showDetailModal = false"
+                @refresh="loadData" />
         </div>
 
         <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
+        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection"
+            @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">매장명: </label>
                 <!-- Enter 키 입력 시 searchStore 함수 호출 -->
@@ -95,6 +101,20 @@ const modalTableData = [
     { 매장코드: 'A', '매장명': 50 },
     { 매장코드: 'B', '매장명': 75 },
 ];
+
+const searchParams = ref({
+    title: '',
+    memberId: '',
+    customerClassifcation: '',
+    carName: '',
+    customerName: '',
+    centerId: '',
+    status: '',
+    customerPurchaseCondition: '',
+    companyName: '',
+    startAt: null,
+    endAt: null
+});
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -228,24 +248,103 @@ function handleView(rowData) {
     showDetailModal.value = true;
 }
 
+const handleSearch = async () => {
+    console.log('handleSearch 호출됨');
+
+    // SearchForm에서 데이터를 가져옴
+    if (!searchFormRef.value) {
+        console.error('searchFormRef가 초기화되지 않았습니다.');
+        return;
+    }
+
+    const formData = searchFormRef.value.getFormData();
+    console.log('SearchForm에서 반환된 데이터:', formData);
+
+    // 검색 파라미터 매핑
+    searchParams.value = {
+        title: formData.contractName || '',
+        memberId: formData.employeeSearch,
+        centerId: formData.storeSearch || '',
+        customerName: formData.customerName || '',
+        carName: formData.carName || '',
+        status: formData.approvalStatus || '',
+        customerClassifcation: formData.customerType || '',
+        customerPurchaseCondition: formData.purchaseCondition || '',
+        companyName: formData.customerBusinessName || '',
+        startDate: formData.contractDate_start || null,
+        endDate: formData.contractDate_end || null,
+    };
+
+    console.log('매핑된 검색 파라미터:', searchParams.value);
+
+    // 데이터 로드 호출
+    await loadData();
+};
+
 // 데이터 로드 함수
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
         // 쿼리 파라미터 설정
-        const query = {
+        const params = {
             page: first.value / rows.value, // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
             sortField: sortField.value || null, // 정렬 필드
             sortOrder: sortOrder.value || null, // 정렬 순서
+            memberId: searchParams.value.memberId || '',
+            centerId: searchParams.value.centerId || '',
+            customerName: searchParams.value.customerName || '',
+            carName: searchParams.value.carName || '',
+            status: searchParams.value.status || '',
+            customerClassifcation: searchParams.value.customerClassifcation || '',
+            customerPurchaseCondition: searchParams.value.customerPurchaseCondition || '',
+            companyName: searchParams.value.companyName || '',
+            title: searchParams.value.title || '',
+            startAt: searchParams.value.startAt || '',
+            endAt: searchParams.value.endAt || '',
         };
+        if (params.memberId !== '') {
+            params.memberId = '&memberId=' + params.memberId;
+        }
+        if (params.centerId !== '') {
+            params.centerId = '&centerId=' + params.centerId;
+        }
+        if (params.customerName !== '') {
+            params.customerName = '&customerName=' + params.customerName;
+        }
+        if (params.carName !== '') {
+            params.carName = '&carName=' + params.carName;
+        }
+        if (params.status !== '') {
+            params.status = '&status=' + params.status;
+        }
+        if (params.customerClassifcation !== '') {
+            params.customerClassifcation = '&customerClassifcation=' + params.customerClassifcation;
+        }
+        if (params.customerPurchaseCondition !== '') {
+            params.customerPurchaseCondition = '&customerPurchaseCondition=' + params.customerPurchaseCondition;
+        }
+        if (params.companyName !== '') {
+            params.companyName = '&companyName=' + params.companyName;
+        }
+        if (params.title !== '') {
+            params.title = '&title=' + params.title;
+        }
+        if (params.startAt !== '') {
+            params.startAt = '&startAt=' + params.startAt;
+        }
+        if (params.endAt !== '') {
+            params.endAt = '&endAt=' + params.endAt;
+        }
+
+        console.log(`contract?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.centerId}${params.customerName}${params.carName}${params.status}${params.customerClassifcation}${params.customerPurchaseCondition}${params.companyName}${params.startAt}${params.endAt}`);
 
         // 쿼리 문자열 생성
-        const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString); // 디버깅용
+        // const queryString = `?${new URLSearchParams(query).toString()}`;
+        // console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('', queryString);
+        const response = await $api.contract.getParams('', `?page=${params.page}&size=${params.size}&sort=${params.sortField}${params.sortOrder}${params.title}${params.memberId}${params.centerId}${params.customerName}${params.carName}${params.status}${params.customerClassifcation}${params.customerPurchaseCondition}${params.companyName}${params.startAt}${params.endAt}`);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
@@ -279,7 +378,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'contractExcel.xlsx');
@@ -430,14 +529,17 @@ tr:hover {
 }
 
 .component-wrapper {
-    margin-bottom: 8rem;
+    margin-bottom: 4rem;
 }
 
 .custom-tag-wrapper {
     display: flex;
-    justify-content: center; /* 수평 가운데 정렬 */
-    align-items: center; /* 수직 가운데 정렬 */
-    height: 100%; /* 부모 높이에 맞게 정렬 */
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
 }
 
 .custom-tag {
