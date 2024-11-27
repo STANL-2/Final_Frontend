@@ -253,7 +253,7 @@ const extractDataFromHTML = (html) => {
 
     // 필요한 필드를 추가적으로 추출
     return {
-        title: "프론트에서 하는 계약서 등록",
+        title: "20241127 셀토스 계약서",
         customerName,
         customerIdentifiNo,
         customerAddress,
