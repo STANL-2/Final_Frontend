@@ -1,53 +1,33 @@
 <template>
     <div class="card custom-datatable">
-        <DataTable 
-            lazy 
-            paginator 
-            :value="data" 
-            :rows="rows" 
-            :rowsPerPageOptions="rowsPerPageOptions"
-            :loading="loading" 
-            tableStyle="min-width: 100%" 
-            showGridlines 
-            :selection="selectedItems"
-            selectionMode="multiple"
-            @selection-change="onSelectionChange"
-            :totalRecords="totalRecords"
-            @update:selection="selectedItems = $event"
-            @page="onPage" 
-            @sort="onSort" 
-            @filter="onFilter">
+        <DataTable lazy paginator :value="data" :rows="rows" :rowsPerPageOptions="rowsPerPageOptions" :loading="loading"
+            tableStyle="min-width: 100%" showGridlines :selection="selectedItems" selectionMode="multiple"
+            :totalRecords="totalRecords" @update:selection="selectedItems = $event"
+            @selection-change="onSelectionChange" @page="onPage" @sort="onSort" @filter="onFilter">
 
             <!-- 첫 번째 체크박스 컬럼 조건부 추가 -->
-            <Column 
-                v-if="selectable" 
-                selectionMode="multiple" 
-                headerStyle="width: 3rem; text-align: center" 
-                bodyStyle="text-align: center; vertical-align: middle" 
-                class="checkbox-cell">
+            <Column v-if="selectable" selectionMode="multiple" headerStyle="width: 3rem; text-align: center"
+                bodyStyle="text-align: center; vertical-align: middle" class="checkbox-cell">
             </Column>
 
             <!-- 동적 컬럼 생성 -->
-            <Column 
-                v-for="(header, index) in headers" 
-                :key="index" 
-                :field="header.field" 
-                :header="header.label" 
-                sortable 
-                :style="{ width: header.width || 'auto' }"
+            <Column v-for="(header, index) in headers" :key="index" :field="header.field" :header="header.label"
+                sortable :style="{ width: header.width || 'auto' }"
                 :headerStyle="{ width: header.width || 'auto', textAlign: 'center' }"
                 :bodyStyle="{ width: header.width || 'auto', textAlign: 'center', verticalAlign: 'middle' }">
-                <template #body="{ data }">
+                <!-- <template #body="{ data }">
                     {{ data[header.field] }}
+                </template> -->
+                <template #body="slotProps">
+                    <slot :name="`body-${header.field}`" :data="slotProps.data">
+                        {{ slotProps.data[header.field] }}
+                    </slot>
                 </template>
             </Column>
 
             <!-- 버튼 컬럼 조건부 추가 -->
-            <Column 
-                v-if="buttonLabel && buttonAction && buttonField" 
-                :header="buttonHeader || buttonLabel" 
-                :style="{ width: buttonColumnWidth || 'auto' }" 
-                headerStyle="text-align: center" 
+            <Column v-if="buttonLabel && buttonAction && buttonField" :header="buttonHeader || buttonLabel"
+                :style="{ width: buttonColumnWidth || 'auto' }" headerStyle="text-align: center"
                 bodyStyle="text-align: center; vertical-align: middle">
                 <template #body="{ data }">
                     <div class="button-cell">
@@ -87,7 +67,7 @@ const props = defineProps({
     buttonColumnWidth: String
 });
 
-const emits = defineEmits(['page', 'sort', 'filter','update:selection']);
+const emits = defineEmits(['page', 'sort', 'filter', 'update:selection']);
 
 const selectedItems = ref(props.selection || []);
 
@@ -233,5 +213,19 @@ function onFilter(event) {
 .p-checkbox.p-highlight .p-checkbox-box {
     background: #6360AB;
     font-size: 15px;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background: #F1F1FD;
+    border-color: #F1F1FD;
+    color: #495057;
+    border-radius: 30px;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page:not(.p-highlight):hover {
+    background: #e9ecef;
+    border-color: transparent;
+    color: #495057;
+    border-radius: 30px;
 }
 </style>

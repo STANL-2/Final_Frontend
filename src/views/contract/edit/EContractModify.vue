@@ -2,7 +2,8 @@
     <Modal
         v-model="isVisible"
         header="수정 모달"
-        width="90rem"
+        width="80rem"
+        height="100rem"
         @close="closeModal"
     >
         <CKEditor 
@@ -104,6 +105,7 @@ const onUpdate = async () => {
 
         alert("계약서가 성공적으로 수정되었습니다.");
         closeModal();
+        window.location.reload();
     } catch (error) {
         console.error("수정 중 오류:", error);
         alert("수정 중 문제가 발생했습니다: " + error.message);
@@ -170,8 +172,6 @@ const extractDataFromHTML = (html) => {
         consignmentPayment,
         totalSales,
         createdUrl: html, // HTML 전체를 전송
-        customerId: "CUS_000000017",
-        productId: "PRO_000000004"
     };
 };
 
