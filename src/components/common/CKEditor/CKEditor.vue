@@ -1,11 +1,20 @@
 <template>
 	<div>
 		<div class="main-container">
-			<div class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
-				ref="editorContainerElement">
+			<div
+				class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
+				ref="editorContainerElement"
+			>
 				<div class="editor-container__editor">
 					<div ref="editorElement">
-						<ckeditor v-if="isLayoutReady" v-model="config.initialData" :editor="editor" :config="config" />
+						<ckeditor
+                            v-if="isLayoutReady"
+                            :model-value="modelValue"
+                            @update:model-value="updateContent"
+                            :editor="editor"
+                            :config="editorConfig"
+                            @ready="onEditorReady"
+                        />
 					</div>
 				</div>
 			</div>
@@ -93,76 +102,210 @@ import translations from 'ckeditor5/translations/ko.js';
 import 'ckeditor5/ckeditor5.css';
 
 export default {
-	name: 'app',
+	name: 'CKEditorComponent', // 컴포넌트 이름 설정
+	props: {
+        modelValue: {
+            type: String,
+            default: ''
+        },
+        initialHtml: {
+            type: String,
+            default: ''
+        }
+    },
+	emits: ['update:model-value'],
 	data() {
 		return {
-			isLayoutReady: false,
-			config: null,
-			editor: ClassicEditor
+			editor: ClassicEditor,
+			isLayoutReady: false, // CKEditor 렌더링 준비 상태
+			content: this.initialHtml, // CKEditor의 초기값
+			editorInstance: null,
+			editorConfig: {
+				toolbar: {
+					items: [
+						'undo',
+						'redo',
+						'|',
+						'sourceEditing',
+						'findAndReplace',
+						'|',
+						'heading',
+						'|',
+						'fontSize',
+						'fontFamily',
+						'fontColor',
+						'fontBackgroundColor',
+						'|',
+						'bold',
+						'italic',
+						'underline',
+						'strikethrough',
+						'subscript',
+						'superscript',
+						'code',
+						'removeFormat',
+						'|',
+						'specialCharacters',
+						'horizontalLine',
+						'pageBreak',
+						'link',
+						'insertImage',
+						'mediaEmbed',
+						'insertTable',
+						'highlight',
+						'blockQuote',
+						'codeBlock',
+						'htmlEmbed',
+						'|',
+						'alignment',
+						'|',
+						'bulletedList',
+						'numberedList',
+						'todoList',
+						'outdent',
+						'indent'
+					],
+					shouldNotGroupWhenFull: true // 툴바의 그룹화 비활성화
+				},
+				plugins: [
+					AccessibilityHelp,
+					Alignment,
+					Autoformat,
+					AutoImage,
+					AutoLink,
+					Autosave,
+					BalloonToolbar,
+					BlockQuote,
+					BlockToolbar,
+					Bold,
+					Code,
+					CodeBlock,
+					Essentials,
+					FindAndReplace,
+					FontBackgroundColor,
+					FontColor,
+					FontFamily,
+					FontSize,
+					FullPage,
+					GeneralHtmlSupport,
+					Heading,
+					Highlight,
+					HorizontalLine,
+					HtmlEmbed,
+					ImageBlock,
+					ImageCaption,
+					ImageInline,
+					ImageInsert,
+					ImageInsertViaUrl,
+					ImageResize,
+					ImageStyle,
+					ImageTextAlternative,
+					ImageToolbar,
+					ImageUpload,
+					Indent,
+					IndentBlock,
+					Italic,
+					Link,
+					LinkImage,
+					List,
+					ListProperties,
+					Markdown,
+					MediaEmbed,
+					Mention,
+					PageBreak,
+					Paragraph,
+					PasteFromOffice,
+					RemoveFormat,
+					SelectAll,
+					SimpleUploadAdapter,
+					SourceEditing,
+					SpecialCharacters,
+					SpecialCharactersArrows,
+					SpecialCharactersCurrency,
+					SpecialCharactersEssentials,
+					SpecialCharactersLatin,
+					SpecialCharactersMathematical,
+					SpecialCharactersText,
+					Strikethrough,
+					Subscript,
+					Superscript,
+					Table,
+					TableCaption,
+					TableCellProperties,
+					TableColumnResize,
+					TableProperties,
+					TableToolbar,
+					TextTransformation,
+					TodoList,
+					Underline,
+					Undo
+				],
+				simpleUpload: {
+					uploadUrl: 'http://localhost:3000/api/upload', // 파일 업로드 경로
+					headers: {
+						Authorization: 'Bearer <your-token>'
+					}
+				},
+				image: {
+					toolbar: [
+						'toggleImageCaption',
+						'imageTextAlternative',
+						'|',
+						'imageStyle:inline',
+						'imageStyle:wrapText',
+						'imageStyle:breakText',
+						'|',
+						'resizeImage'
+					]
+				},
+				htmlSupport: {
+					allow: [
+						{
+							name: /^.*$/,
+							styles: true, // 인라인 스타일 허용
+							attributes: true, // 모든 속성 허용
+							classes: true // 모든 클래스 허용
+						}
+					],
+					disallow: []
+				},
+				fullPage: true,
+				language: 'ko',
+				stickyToolbar: true,
+				initialData: this.initialHtml, // 초기 HTML 설정
+				placeholder: '내용을 입력하세요...' // 입력란의 기본 안내 텍스트
+			}
 		};
 	},
+	watch: {
+        modelValue(newValue) {
+            // 에디터 인스턴스가 존재하고, 현재 에디터의 데이터가 새로운 값과 다른 경우에만 업데이트
+            if (this.editorInstance && this.editorInstance.getData() !== newValue) {
+                this.editorInstance.setData(newValue);
+            }
+        }
+    },
 	mounted() {
-		this.config = {
-			toolbar: {
-				items: [
-					'undo', 'redo', '|', 'sourceEditing', 'findAndReplace', '|',
-					'heading', '|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
-					'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code', 'removeFormat', '|',
-					'specialCharacters', 'horizontalLine', 'pageBreak', 'link', 'insertImage', 'insertImageViaUrl',
-					'mediaEmbed', 'insertTable', 'highlight', 'blockQuote', 'codeBlock', 'htmlEmbed', '|',
-					'alignment', '|', 'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
-				],
-				shouldNotGroupWhenFull: false
-			},
-			plugins: [
-				AccessibilityHelp, Alignment, Autoformat, AutoImage, AutoLink, Autosave,
-				BalloonToolbar, BlockQuote, BlockToolbar, Bold, Code, CodeBlock,
-				Essentials, FindAndReplace, FontBackgroundColor, FontColor, FontFamily,
-				FontSize, FullPage, GeneralHtmlSupport, Heading, Highlight,
-				HorizontalLine, HtmlEmbed, ImageBlock, ImageCaption, ImageInline,
-				ImageInsert, ImageInsertViaUrl, ImageResize, ImageStyle,
-				ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock,
-				Italic, Link, LinkImage, List, ListProperties, Markdown, MediaEmbed,
-				Mention, PageBreak, Paragraph, PasteFromOffice, RemoveFormat, SelectAll,
-				SimpleUploadAdapter, SourceEditing, SpecialCharacters,
-				SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
-				SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText,
-				Strikethrough, Subscript, Superscript, Table, TableCaption,
-				TableCellProperties, TableColumnResize, TableProperties, TableToolbar,
-				TextTransformation, TodoList, Underline, Undo
-			],
-			simpleUpload: {
-				uploadUrl: 'http://localhost:3000/api/upload',
-				headers: {
-					Authorization: 'Bearer <your-token>'
-				}
-			},
-			image: {
-				toolbar: [
-					'toggleImageCaption', 'imageTextAlternative', '|', 'imageStyle:inline',
-					'imageStyle:wrapText', 'imageStyle:breakText', '|', 'resizeImage'
-				]
-			},
-			htmlSupport: {
-				allow: [
-					{
-						name: /^.*$/,
-						styles: true,
-						attributes: true,
-						classes: true
-					}
-				]
-			},
-			language: 'ko',
-			placeholder: '내용을 입력하세요...'
-		};
-
-		this.isLayoutReady = true;
-	}
+        this.isLayoutReady = true;
+        if (this.initialHtml && !this.modelValue) {
+            this.$emit('update:model-value', this.initialHtml);
+        }
+    },
+	methods: {
+        onEditorReady(editor) {
+            this.editorInstance = editor;
+            if (this.initialHtml && !this.modelValue) {
+                editor.setData(this.initialHtml);
+            }
+        },
+        updateContent(content) {
+            this.$emit('update:model-value', content);
+        }
+    }
 };
 </script>
 
-<style>
+<style scoped>
 .main-container {
 	max-width: 99%;
 	margin: 0 auto;
@@ -172,7 +315,6 @@ export default {
 
 .editor-container {
 	background-color: #ffffff;
-	border: 1px solid #ddd;
 	border-radius: 8px;
 	padding: 16px;
 }
@@ -199,37 +341,13 @@ export default {
 	padding: 16px;
 	border-radius: 4px;
 }
+
+::v-deep .ck-editor__top {
+    position: sticky;
+    top: 0;
+    z-index: 10; /* 툴바가 다른 콘텐츠 위로 올라오도록 설정 */
+    background-color: #fff; /* 툴바 배경색 설정 */
+    border-bottom: 1px solid #e0e0e0; /* 툴바 하단 경계선 */
+}
+
 </style>
-
-
-
-
-<!-- const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const app = express();
-const PORT = 3000;
-
-const storage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, 'uploads/');
-	},
-	filename: (req, file, cb) => {
-		cb(null, `${Date.now()}-${file.originalname}`);
-	}
-});
-
-const upload = multer({ storage });
-
-app.post('/api/upload', upload.single('upload'), (req, res) => {
-	if (!req.file) {
-		return res.status(400).json({ error: 'No file uploaded' });
-	}
-	res.json({ url: `http://localhost:${PORT}/uploads/${req.file.filename}` });
-});
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.listen(PORT, () => {
-	console.log(`Server running at http://localhost:${PORT}`);
-}); -->

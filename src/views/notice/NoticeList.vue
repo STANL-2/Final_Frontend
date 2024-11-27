@@ -4,13 +4,13 @@
         <div class="component-wrapper width-s ml-l">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-        <div class="flex-row content-end mr-xl">
+        <div class="flex-row content-end mr-m">
             <CommonButton label="조회" @click="handleSearch"/>
         </div>
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-m">
-                <div><CommonButton label="추가" icon="pi pi-plus" /></div>
+                <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
                 <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
@@ -49,35 +49,26 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 
 const router = useRouter(); 
+const searchFormRef = ref(null); // ref로 searchFormRef 정의
+const loading = ref(false); // 로딩 상태 변수
+
+const selectedDetail = ref(null);
+
+const navigateToRegisterPage = () => {
+    router.push({ name: 'ENoticeRegister' }); // 라우터 이름을 이용해 이동
+};
+
+const searchParams = ref({
+    title: '',
+    tag: '',
+    memberId: '',
+    classification: '',
+    startDate: null,
+    endDate: null
+});
 
 const formFields = [
     [
-        // {
-        //     type: 'select',
-        //     label: '승인여부',
-        //     model: 'approvalStatus',
-        //     options: ['대기', '승인', '취소']
-        // },
-        // {
-        //     label: '고객 구분',
-        //     type: 'radio',
-        //     model: 'customerType',
-        //     options: ['개인', '법인'],
-        //     showDivider: false
-        // },
-        // {
-        //     label: '매장 검색',
-        //     type: 'inputWithButton',
-        //     model: 'storeSearch',
-        //     showDivider: false
-        // },
-        // {
-        //     label: '계약일',
-        //     type: 'calendar', // 쌍으로 처리
-        //     model: 'contractDate', // 시작과 종료를 모두 포함
-        //     showIcon: true,
-        //     manualInput: false,
-        // }
         {
             type: 'select',
             label: '태그',
@@ -125,21 +116,42 @@ const tableHeaders = [
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
-const showDetailModal = ref(false); // 상세조회 모달 표시 여부
-const selectedDetail = ref(null); // 선택된 상세 데이터
-
 const totalRecords = ref(0); // 전체 데이터 개수
-const loading = ref(false); // 로딩 상태
 const rows = ref(5); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
-const filters = ref({}); // 필터
-const sortField = ref(null); // 정렬 필드
-const sortOrder = ref(null); // 정렬 순서
 
+function handleOpenModal() {
+    console.log('모달 열기 호출됨');
+}
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.notice.get('excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'noticeExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('파일 다운로드 완료');
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        DOMEventService.dispatchApiError('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+        loading.value = false;
+    }
+};
 
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    showDetailModal.value = true;
     router.push({
         name: 'NoticeDetail',
         query: {
@@ -151,103 +163,105 @@ function handleView(rowData) {
         },
     });
 }
+function onPage(event) {
+    console.log('페이지네이션 이벤트:', event);
+    first.value = event.first;
+    rows.value = event.rows;
+    loadData();
+}
 
-// 데이터 로드 함수
+function onSort(event) {
+    console.log('정렬 이벤트:', event);
+    loadData();
+}
+
+function onFilter(event) {
+    console.log('필터 이벤트:', event);
+    loadData();
+}
+
+const handleSearch = async () => {
+    console.log('handleSearch 호출됨');
+
+    // SearchForm에서 데이터를 가져옴
+    if (!searchFormRef.value) {
+        console.error('searchFormRef가 초기화되지 않았습니다.');
+        return;
+    }
+
+    const formData = searchFormRef.value.getFormData();
+    console.log('SearchForm에서 반환된 데이터:', formData);
+
+    // 검색 파라미터 매핑
+    searchParams.value = {
+        title: formData.noticeTitle || '',
+        tag: formData.tag === 'ALL' ? '' : formData.tag,
+        memberId: formData.noticeWriter || '',
+        classification: formData.classification || '',
+        startDate: formData.NoticeSearchDate_start || null,
+        endDate: formData.NoticeSearchDate_end || null,
+    };
+
+    console.log('매핑된 검색 파라미터:', searchParams.value);
+
+    // 데이터 로드 호출
+    await loadData();
+};
+
 const loadData = async () => {
-    loading.value = true; // 로딩 시작
+    loading.value = true;
     try {
-        const response = await $api.notice.get(
-            '',
-            '',
-        );
-        console.log('GET 요청 응답 결과');
-        console.log(response);
+        const params = {
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
+            title: searchParams.value.title || '',
+            tag: searchParams.value.tag || '',
+            memberId: searchParams.value.memberId || '',
+            classification: searchParams.value.classification || '',
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
+        };
+        if(params.title!=''){
+            params.title='&title='+params.title;
+        }
+        if(params.tag!=''){
+            params.tag='&tag='+params.tag;
+        }
+        if(params.memberId!=''){
+            params.memberId='&memberId='+params.memberId;
+        }
+        if(params.classification!=''){
+            params.classification='&classification='+params.classification;
+        }
+        if(params.startDate!=''){
+            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
+        }
+        if(params.endDate!=''){
+            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
+        }
+        
 
-        tableData.value = response.content; // 테이블 데이터 업데이트
-        totalRecords.value = response.totalElements; // 전체 데이터 개수 업데이트
+        console.log(`notice?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+
+        const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}
+        ${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+
+        console.log('응답 데이터:', response);
+
+        tableData.value = response.content || [];
+        totalRecords.value = response.totalElements || 0;
     } catch (error) {
-        console.error('데이터 로드 실패ㅠㅠ:', error);
+        console.error('데이터 로드 실패:', error);
     } finally {
-        loading.value = false; // 로딩 종료
+        loading.value = false;
     }
 };
 
-// 페이지 로드 시 데이터 로드
 onMounted(() => {
     loadData();
 });
-
-// 페이지네이션 이벤트 처리
-function onPage(event) {
-    first.value = event.first;
-    rows.value = event.rows;
-    loadData(); // 데이터 다시 로드
-}
-
-// 정렬 이벤트 처리
-function onSort(event) {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    loadData(); // 데이터 다시 로드
-}
-
-// 필터 이벤트 처리
-function onFilter(event) {
-    filters.value = event.filters;
-    loadData(); // 데이터 다시 로드
-}
-
-
-// 모달에서 쓰이는 값들
-const showModal = ref(false);
-const selectedRow = ref(null);
-const selectedCode = ref('');
-const searchFormRef = ref(null);
-const selectedFieldIndex = ref(null);
-const searchQuery = ref('');
-
-function handleOpenModal(fieldIndex) {
-    console.log(`Opening modal for field: ${fieldIndex}`);
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
-}
-
-function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
-}
-
-function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
-    }
-    closeModal();
-}
-
-function resetModalState() {
-    closeModal();
-}
-
-function closeModal() {
-    showModal.value = false;
-    selectedRow.value = null;
-    selectedCode.value = '';
-}
-
-// 여기에 검색어 조회 API 로직 작성
-function searchStore() {
-    // 입력된 값 출력
-    console.log('검색어:', searchQuery.value);
-
-    // 추가적인 검색 로직을 여기에 추가할 수 있습니다.
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
-    }
-    // 검색어 초기화
-    searchQuery.value = '';
-}
-
 </script>
+
 
 <style scoped>
 .list{
