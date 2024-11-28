@@ -37,7 +37,8 @@ import ProgressSpinner from 'primevue/progressspinner';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Card from 'primevue/card';
 import Dialog from 'primevue/dialog';
-import ConfirmationService from 'primevue/confirmationservice'; 
+import ConfirmationService from 'primevue/confirmationservice';
+import RadioButton from 'primevue/radiobutton';
 
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -76,5 +77,6 @@ app.component('Divider', Divider);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('Dialog', Dialog);
+app.component('RadioButton', RadioButton);
 
 app.mount('#app');

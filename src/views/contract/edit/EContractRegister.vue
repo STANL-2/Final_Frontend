@@ -6,6 +6,7 @@
         height="100rem"
         @close="closeModal"
     >
+        <InputText type="text" v-model="value" />
         <CKEditor 
             v-model="content" 
             :initial-html="initialHtml"

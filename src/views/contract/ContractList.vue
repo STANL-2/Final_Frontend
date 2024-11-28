@@ -12,7 +12,7 @@
                     <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" />
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
@@ -26,7 +26,8 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection.sync="selectedItems"
+                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows" 
+                @update:selection="updateSelectedRows"
                 buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
                 @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
@@ -171,7 +172,7 @@ const formFields = [
 ];
 
 // table 헤더 값
-const tableHeaders = [
+const tableHeaders = ref([
     { field: 'contractId', label: '계약서 번호', width: '15%' },
     { field: 'title', label: '계약서명', width: '25%' },
     { field: 'carName', label: '제품명', width: '13%' },
@@ -180,11 +181,10 @@ const tableHeaders = [
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
     { field: 'companyName', label: '고객 상호', width: '10%' },
     { field: 'status', label: '승인 상태', width: '3%' },
-];
+]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
-const selectedItems = ref([]);
 const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
@@ -194,6 +194,7 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+const selectedRows = ref([]);
 
 function getStatusLabel(status) {
     switch (status) {
@@ -295,6 +296,75 @@ const exportCSV = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+const updateSelectedRows = (newSelection) => {
+    selectedRows.value = newSelection;
+    console.log('선택된 항목 업데이트:', selectedRows.value);
+    };
+
+    const printSelectedRows = () => {
+  if (selectedRows.value.length === 0) {
+    alert('인쇄할 행을 선택하세요.');
+    return;
+  }
+
+  const headersToPrint = tableHeaders.value.filter(
+    (header) => header.excludeFromPrint !== true
+  );
+
+  const printContent = document.createElement('div');
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  const headerRow = document.createElement('tr');
+  headersToPrint.forEach((header) => {
+    const th = document.createElement('th');
+    th.innerText = header.label;
+    th.style.border = '1px solid #ddd';
+    th.style.padding = '8px';
+    th.style.textAlign = 'left';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  selectedRows.value.forEach((row) => {
+    const tr = document.createElement('tr');
+    headersToPrint.forEach((header) => {
+      const td = document.createElement('td');
+      td.innerText = row[header.field] || '';
+      td.style.border = '1px solid #ddd';
+      td.style.padding = '8px';
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  printContent.appendChild(table);
+
+  // iframe 생성
+  const printFrame = document.createElement('iframe');
+  printFrame.style.position = 'absolute';
+  printFrame.style.top = '-10000px';
+  printFrame.style.left = '-10000px';
+  document.body.appendChild(printFrame);
+
+  const frameDoc = printFrame.contentWindow?.document;
+  if (frameDoc) {
+    frameDoc.open();
+    frameDoc.write('<html><head><title>Print</title></head><body>');
+    frameDoc.write(printContent.innerHTML);
+    frameDoc.write('</body></html>');
+    frameDoc.close();
+
+    // 인쇄 호출
+    printFrame.contentWindow?.focus();
+    printFrame.contentWindow?.print();
+  }
+
+  // iframe 제거
+  document.body.removeChild(printFrame);
 };
 
 // 페이지네이션 이벤트 처리
