@@ -4,7 +4,7 @@
         header="계약서 등록"
         width="80rem"
         height="100rem"
-        @close="closeModal"
+        @cancel="resetModalState"
     >
         <div class="flex-row content-center">
             <div class="flex-row items-center">
@@ -100,7 +100,7 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value">강남</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value"></td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">상호</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value">-</td>
                 </tr>
@@ -118,7 +118,7 @@ const initialHtml = `
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">전화(휴대폰)</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value">010-1234-2222</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value"></td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구분</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-classification-value">개인</td>
                 </tr>

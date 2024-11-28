@@ -4,7 +4,7 @@
         header="계약서 수정"
         width="80rem"
         height="100rem"
-        @close="closeModal"
+        @cancel="resetModalState"
     >
         <div class="flex-row content-center">
             <div class="flex-row items-center">

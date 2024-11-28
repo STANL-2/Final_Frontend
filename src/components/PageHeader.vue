@@ -13,10 +13,10 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
-                    <img src="../assets/header/profile.png" class="profile" @click="goMypage"/>
-                    <img src="../assets/header/alarm.png" class="alarm" />
-                    <img src="../assets/header/organization-logo.png" class="organization-logo" @click="showOrganizationModal" />
-                    <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
+                    <div class="pi pi-user profile" @click="goMypage"></div>
+                    <div class="pi pi-bell alarm"> </div>
+                    <div class="pi pi-sitemap organization-logo" @click="showOrganizationModal"></div>
+                    <div class="pi pi-sign-out logout-logo" @click="logout"></div>
                 </div>
             </div>
         </nav>
@@ -188,37 +188,41 @@ const handleNodeSelect = (event) => {
 
 .profile {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .alarm {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #777777 !important;
 }
 
 .organization-logo {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .logout-logo {
     padding: 20px 20px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .modal-overlay {
