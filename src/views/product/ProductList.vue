@@ -11,14 +11,14 @@
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-xl">
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
+                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" /></div>
                 <div class="ml-xs"><CommonButton label="초기화" @click="resetSearch"icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
             </div>
         </div>
 
         <!-- ViewTable -->
         <div class="table-wrapper width-s ml-l">
-            <ViewTable 
+            <ViewTable class="view-table" 
                 :headers="tableHeaders" 
                 :data="tableData" 
                 :loading="loading" 
@@ -28,6 +28,8 @@
                 :selectable="true" 
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
+                :selection="selectedRows" 
+                @update:selection="updateSelectedRows"
                 :buttonAction="handleView" 
                 buttonField="code"
                 @page="onPage" 
@@ -77,13 +79,13 @@ const formFields = [
     ]
 ];
 
-const tableHeaders = [
+const tableHeaders = ref([
     { field: 'productId', label: '제품번호', width: '17%' },
     { field: 'name', label: '모델명', width: '10%' },
     { field: 'serialNumber', label: '일련번호', width: '30%' },
     { field: 'cost', label: '차량가액', width: '20%' },
     { field: 'stock', label: '재고 수', width: '10%' }
-];
+]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
@@ -97,6 +99,7 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+const selectedRows = ref([]);
 
 const searchParams = ref({
     productId: '',
@@ -260,6 +263,77 @@ const resetSearch = () => {
     loadData(); // 데이터 재로딩
 }
 
+const updateSelectedRows = (newSelection) => {
+    selectedRows.value = newSelection;
+    console.log('선택된 항목 업데이트:', selectedRows.value);
+    };
+
+    const printSelectedRows = () => {
+  if (selectedRows.value.length === 0) {
+    alert('인쇄할 행을 선택하세요.');
+    return;
+  }
+
+  const headersToPrint = tableHeaders.value.filter(
+    (header) => header.excludeFromPrint !== true
+  );
+
+  const printContent = document.createElement('div');
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  const headerRow = document.createElement('tr');
+  headersToPrint.forEach((header) => {
+    const th = document.createElement('th');
+    th.innerText = header.label;
+    th.style.border = '1px solid #ddd';
+    th.style.padding = '8px';
+    th.style.textAlign = 'left';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  selectedRows.value.forEach((row) => {
+    const tr = document.createElement('tr');
+    headersToPrint.forEach((header) => {
+      const td = document.createElement('td');
+      td.innerText = row[header.field] || '';
+      td.style.border = '1px solid #ddd';
+      td.style.padding = '8px';
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  printContent.appendChild(table);
+
+  // iframe 생성
+  const printFrame = document.createElement('iframe');
+  printFrame.style.position = 'absolute';
+  printFrame.style.top = '-10000px';
+  printFrame.style.left = '-10000px';
+  document.body.appendChild(printFrame);
+
+  const frameDoc = printFrame.contentWindow?.document;
+  if (frameDoc) {
+    frameDoc.open();
+    frameDoc.write('<html><head><title>Print</title></head><body>');
+    frameDoc.write(printContent.innerHTML);
+    frameDoc.write('</body></html>');
+    frameDoc.close();
+
+    // 인쇄 호출
+    printFrame.contentWindow?.focus();
+    printFrame.contentWindow?.print();
+  }
+
+  // iframe 제거
+  document.body.removeChild(printFrame);
+};
+
+
+
 </script>
 
 <style scoped>
@@ -267,6 +341,7 @@ const resetSearch = () => {
     font-size: 1.5rem;
     font-weight:bold;
 }
+
 </style>
 
 
