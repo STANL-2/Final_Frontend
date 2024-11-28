@@ -6,12 +6,6 @@
         height="none"
         @click="onClose">
         
-        <!-- 상세 조회 상단 (수정/삭제 버튼) -->
-        <div class="flex-row content-end mb-s">
-            <div class="ml-xs"><CommonButton label="수정" /></div>
-            <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
-        </div>
-
         <div class="horizontal-layout">
             <!-- ***이미지 미리보기*** -->
             <div class="image-preview">

@@ -61,7 +61,7 @@ const formFields = [
         {
             type: 'input',
             label: '매장번호',
-            model: 'productId',
+            model: 'centerId',
             showDivider: false
         },
         {
@@ -251,28 +251,6 @@ function handleOpenModal(fieldIndex) {
     showModal.value = true;
 }
 
-function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
-}
-
-function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
-    }
-    closeModal();
-}
-
-function resetModalState() {
-    closeModal();
-}
-
-function closeModal() {
-    showModal.value = false;
-    selectedRow.value = null;
-    selectedCode.value = '';
-}
-
 const resetSearch = () => {
     searchParams.value = {
     centerId: '',
@@ -282,6 +260,7 @@ const resetSearch = () => {
     first.value = 0; // 페이지를 첫 번째로 초기화
     sortField.value = null; // 정렬 조건 초기화
     sortOrder.value = null; // 정렬 순서 초기화
+    searchFormRef.value.initializeFormData();
     loadData(); // 데이터 재로딩
 }
 

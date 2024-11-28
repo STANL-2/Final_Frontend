@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="handleSearch"/>
+            <SearchForm class="search-from" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="handleSearch"/>
         </div>
         <div class="flex-row content-end mr-m">
             <CommonButton label="조회" @click="handleSearch"/>
@@ -260,6 +260,7 @@ const resetSearch = () => {
     first.value = 0; // 페이지를 첫 번째로 초기화
     sortField.value = null; // 정렬 조건 초기화
     sortOrder.value = null; // 정렬 순서 초기화
+    searchFormRef.value.initializeFormData();
     loadData(); // 데이터 재로딩
 }
 
@@ -332,8 +333,6 @@ const updateSelectedRows = (newSelection) => {
   document.body.removeChild(printFrame);
 };
 
-
-
 </script>
 
 <style scoped>
@@ -341,7 +340,6 @@ const updateSelectedRows = (newSelection) => {
     font-size: 1.5rem;
     font-weight:bold;
 }
-
 </style>
 
 
