@@ -5,12 +5,12 @@
             <div class="subtitle">
                 <div class="line"></div>
                 <div class="subtitle-text">
-                    고객 정보
+                    고객 정보 수정
                 </div>
             </div>
         </div>
 
-        <div class="customer-info">
+        <div class="customer-info-modify">
 
             <div class="row" v-for="(item, index) in customerInfo" :key="index">
                 <div class="label">{{ item.firstLabel }}</div>
@@ -47,13 +47,7 @@
 
             <div class="flex-row items-center mb-s content-end">
                 <div class="ml-xs">
-                    <CommonButton label="삭제" @click="goDelete" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="수정" @click="goModify" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="목록" color="#F1F1FD" textColor="#6360AB" @click="goList" />
+                    <CommonButton label="수정 완료" @click="goModify" />
                 </div>
             </div>
         </div>
@@ -116,7 +110,7 @@
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import { ref, onMounted, watchEffect } from 'vue';
+import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 
 // 기본 정보
@@ -163,17 +157,40 @@ const rows = ref(10); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+const sex = ref('');
 
-function goDelete() {
-    // 삭제 로직
-    console.log('삭제 버튼 클릭됨');
-    alert('삭제 로직 실행');
+const getModifyCustomer = async () => {
+    const payload = {
+            name: customerInfo.value[0].firstValue,
+            age: customerInfo.value[0].secondValue,
+            phone: customerInfo.value[0].thirdValue,
+            email: customerInfo.value[1].firstValue,
+            emergePhone: customerInfo.value[1].secondValue,
+        };
+
+        try{
+            const response = await $api.customer.put(
+                {
+                    name: payload.name,
+                    age: payload.age,
+                    sex: sex.value,
+                    phone: payload.phone,
+                    email: payload.email,
+                    emergePhone: payload.emergePhone
+                },
+                'CUS_000000001'             // 추후에 변경 예정
+            )
+
+            console.log(response);
+        }catch{
+            console.log('put 도중에 에러가 발생하였습니다.')
+        }
 }
 
 function goModify() {
-    // 수정 로직
-    console.log('수정 버튼 클릭됨');
-    alert('수정 로직 실행');
+    getModifyCustomer();
+
+    // 추후에 다음 페이지로 이동
 }
 
 function goList() {
@@ -240,6 +257,7 @@ const getCustomerInfo = async () => {
                 thirdEditable: false,
             },
         ];
+        sex.value = result.sex;
     } catch (error) {
         console.error('GET 요청 실패: ', error);
     }
@@ -248,10 +266,6 @@ const getCustomerInfo = async () => {
 // 고객 계약 정보 로드
 const loadData = async () => {
     try {
-        const page = Math.floor(first.value / rows.value);
-        console.log('alskdjflsjdfoisjdoifjsiodjfiouwdsj');
-        console.log(page);
-        console.log(rows.value);
 
         const query = {
             page: Math.floor(first.value / rows.value),
@@ -260,7 +274,6 @@ const loadData = async () => {
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        console.log('쿼리 스트링: ', queryString);
         const response = await $api.customer.getParams(
             'contract/' + 'CUS_000000001' + '',                 // 추후에 수정
             queryString
@@ -332,7 +345,7 @@ onMounted(() => {
     color: #000000;
 }
 
-.customer-info {
+.customer-info-modify {
     margin-top: 20px;
     margin-bottom: 30px;
 }
