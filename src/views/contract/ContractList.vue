@@ -3,9 +3,6 @@
         <!-- SearchForm -->
         <div class="component-wrapper">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-            <div class="flex-row content-end mt-xs">
-                <CommonButton label="조회" @click="handleSearch" />
-            </div>
         </div>
 
         <div class="flex-row content-between">
@@ -15,7 +12,7 @@
                     <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" />
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
@@ -29,7 +26,8 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection.sync="selectedItems"
+                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows" 
+                @update:selection="updateSelectedRows"
                 buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
                 @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
@@ -43,15 +41,12 @@
 
 
             <ContractDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                :status="getStatusLabel(selectedDetail?.status)"
-                :statusClass="getCustomTagClass(selectedDetail?.status)" @close="showDetailModal = false"
-                @refresh="loadData" />
+                @close="showDetailModal = false" @refresh="loadData" />
         </div>
 
         <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection"
-            @cancel="resetModalState">
+        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">매장명: </label>
                 <!-- Enter 키 입력 시 searchStore 함수 호출 -->
@@ -101,20 +96,6 @@ const modalTableData = [
     { 매장코드: 'A', '매장명': 50 },
     { 매장코드: 'B', '매장명': 75 },
 ];
-
-const searchParams = ref({
-    title: '',
-    memberId: '',
-    customerClassifcation: '',
-    carName: '',
-    customerName: '',
-    centerId: '',
-    status: '',
-    customerPurchaseCondition: '',
-    companyName: '',
-    startAt: null,
-    endAt: null
-});
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -191,7 +172,7 @@ const formFields = [
 ];
 
 // table 헤더 값
-const tableHeaders = [
+const tableHeaders = ref([
     { field: 'contractId', label: '계약서 번호', width: '15%' },
     { field: 'title', label: '계약서명', width: '25%' },
     { field: 'carName', label: '제품명', width: '13%' },
@@ -200,11 +181,10 @@ const tableHeaders = [
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
     { field: 'companyName', label: '고객 상호', width: '10%' },
     { field: 'status', label: '승인 상태', width: '3%' },
-];
+]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
-const selectedItems = ref([]);
 const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
@@ -214,6 +194,7 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+const selectedRows = ref([]);
 
 function getStatusLabel(status) {
     switch (status) {
@@ -248,103 +229,24 @@ function handleView(rowData) {
     showDetailModal.value = true;
 }
 
-const handleSearch = async () => {
-    console.log('handleSearch 호출됨');
-
-    // SearchForm에서 데이터를 가져옴
-    if (!searchFormRef.value) {
-        console.error('searchFormRef가 초기화되지 않았습니다.');
-        return;
-    }
-
-    const formData = searchFormRef.value.getFormData();
-    console.log('SearchForm에서 반환된 데이터:', formData);
-
-    // 검색 파라미터 매핑
-    searchParams.value = {
-        title: formData.contractName || '',
-        memberId: formData.employeeSearch,
-        centerId: formData.storeSearch || '',
-        customerName: formData.customerName || '',
-        carName: formData.carName || '',
-        status: formData.approvalStatus || '',
-        customerClassifcation: formData.customerType || '',
-        customerPurchaseCondition: formData.purchaseCondition || '',
-        companyName: formData.customerBusinessName || '',
-        startDate: formData.contractDate_start || null,
-        endDate: formData.contractDate_end || null,
-    };
-
-    console.log('매핑된 검색 파라미터:', searchParams.value);
-
-    // 데이터 로드 호출
-    await loadData();
-};
-
 // 데이터 로드 함수
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
         // 쿼리 파라미터 설정
-        const params = {
+        const query = {
             page: first.value / rows.value, // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
             sortField: sortField.value || null, // 정렬 필드
             sortOrder: sortOrder.value || null, // 정렬 순서
-            memberId: searchParams.value.memberId || '',
-            centerId: searchParams.value.centerId || '',
-            customerName: searchParams.value.customerName || '',
-            carName: searchParams.value.carName || '',
-            status: searchParams.value.status || '',
-            customerClassifcation: searchParams.value.customerClassifcation || '',
-            customerPurchaseCondition: searchParams.value.customerPurchaseCondition || '',
-            companyName: searchParams.value.companyName || '',
-            title: searchParams.value.title || '',
-            startAt: searchParams.value.startAt || '',
-            endAt: searchParams.value.endAt || '',
         };
-        if (params.memberId !== '') {
-            params.memberId = '&memberId=' + params.memberId;
-        }
-        if (params.centerId !== '') {
-            params.centerId = '&centerId=' + params.centerId;
-        }
-        if (params.customerName !== '') {
-            params.customerName = '&customerName=' + params.customerName;
-        }
-        if (params.carName !== '') {
-            params.carName = '&carName=' + params.carName;
-        }
-        if (params.status !== '') {
-            params.status = '&status=' + params.status;
-        }
-        if (params.customerClassifcation !== '') {
-            params.customerClassifcation = '&customerClassifcation=' + params.customerClassifcation;
-        }
-        if (params.customerPurchaseCondition !== '') {
-            params.customerPurchaseCondition = '&customerPurchaseCondition=' + params.customerPurchaseCondition;
-        }
-        if (params.companyName !== '') {
-            params.companyName = '&companyName=' + params.companyName;
-        }
-        if (params.title !== '') {
-            params.title = '&title=' + params.title;
-        }
-        if (params.startAt !== '') {
-            params.startAt = '&startAt=' + params.startAt;
-        }
-        if (params.endAt !== '') {
-            params.endAt = '&endAt=' + params.endAt;
-        }
-
-        console.log(`contract?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.centerId}${params.customerName}${params.carName}${params.status}${params.customerClassifcation}${params.customerPurchaseCondition}${params.companyName}${params.startAt}${params.endAt}`);
 
         // 쿼리 문자열 생성
-        // const queryString = `?${new URLSearchParams(query).toString()}`;
-        // console.log("API 호출 URL:", queryString); // 디버깅용
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('', `?page=${params.page}&size=${params.size}&sort=${params.sortField}${params.sortOrder}${params.title}${params.memberId}${params.centerId}${params.customerName}${params.carName}${params.status}${params.customerClassifcation}${params.customerPurchaseCondition}${params.companyName}${params.startAt}${params.endAt}`);
+        const response = await $api.contract.getParams('', queryString);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
@@ -378,7 +280,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-
+        
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'contractExcel.xlsx');
@@ -394,6 +296,75 @@ const exportCSV = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+const updateSelectedRows = (newSelection) => {
+    selectedRows.value = newSelection;
+    console.log('선택된 항목 업데이트:', selectedRows.value);
+    };
+
+    const printSelectedRows = () => {
+  if (selectedRows.value.length === 0) {
+    alert('인쇄할 행을 선택하세요.');
+    return;
+  }
+
+  const headersToPrint = tableHeaders.value.filter(
+    (header) => header.excludeFromPrint !== true
+  );
+
+  const printContent = document.createElement('div');
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  const headerRow = document.createElement('tr');
+  headersToPrint.forEach((header) => {
+    const th = document.createElement('th');
+    th.innerText = header.label;
+    th.style.border = '1px solid #ddd';
+    th.style.padding = '8px';
+    th.style.textAlign = 'left';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  selectedRows.value.forEach((row) => {
+    const tr = document.createElement('tr');
+    headersToPrint.forEach((header) => {
+      const td = document.createElement('td');
+      td.innerText = row[header.field] || '';
+      td.style.border = '1px solid #ddd';
+      td.style.padding = '8px';
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  printContent.appendChild(table);
+
+  // iframe 생성
+  const printFrame = document.createElement('iframe');
+  printFrame.style.position = 'absolute';
+  printFrame.style.top = '-10000px';
+  printFrame.style.left = '-10000px';
+  document.body.appendChild(printFrame);
+
+  const frameDoc = printFrame.contentWindow?.document;
+  if (frameDoc) {
+    frameDoc.open();
+    frameDoc.write('<html><head><title>Print</title></head><body>');
+    frameDoc.write(printContent.innerHTML);
+    frameDoc.write('</body></html>');
+    frameDoc.close();
+
+    // 인쇄 호출
+    printFrame.contentWindow?.focus();
+    printFrame.contentWindow?.print();
+  }
+
+  // iframe 제거
+  document.body.removeChild(printFrame);
 };
 
 // 페이지네이션 이벤트 처리
@@ -529,17 +500,14 @@ tr:hover {
 }
 
 .component-wrapper {
-    margin-bottom: 4rem;
+    margin-bottom: 8rem;
 }
 
 .custom-tag-wrapper {
     display: flex;
-    justify-content: center;
-    /* 수평 가운데 정렬 */
-    align-items: center;
-    /* 수직 가운데 정렬 */
-    height: 100%;
-    /* 부모 높이에 맞게 정렬 */
+    justify-content: center; /* 수평 가운데 정렬 */
+    align-items: center; /* 수직 가운데 정렬 */
+    height: 100%; /* 부모 높이에 맞게 정렬 */
 }
 
 .custom-tag {
