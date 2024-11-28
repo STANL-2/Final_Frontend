@@ -20,6 +20,7 @@ import PurchaseOrderApiService from './PurchaseOrderApiService';
 import SalesHistoryApiService from './SalesHistoryApiService';
 import SampleApiService from './SampleApiService';
 import ScheduleApiService from './ScheduleApiService';
+import FileApiService from './FileApiService';
 
 export const $api = {
     alarm: new AlarmApiService(),
@@ -43,5 +44,6 @@ export const $api = {
     purchaseOrder: new PurchaseOrderApiService(),
     salesHistory: new SalesHistoryApiService(),
     sample: new SampleApiService(),
-    schedule: new ScheduleApiService()
+    schedule: new ScheduleApiService(),
+    file: new FileApiService()
 };

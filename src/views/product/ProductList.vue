@@ -341,5 +341,3 @@ const updateSelectedRows = (newSelection) => {
     font-weight:bold;
 }
 </style>
-
-

@@ -47,7 +47,6 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/center/CenterDetail.vue')
-
             }
         ]
     },
