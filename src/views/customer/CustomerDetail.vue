@@ -2,16 +2,16 @@
     <PageLayout>
         <!-- 기초 정보 -->
         <div>
-            
-                <div class="subtitle">
+            <div class="subtitle">
                 <div class="line"></div>
                 <div class="subtitle-text">
                     고객 정보
                 </div>
             </div>
-            </div>
-            <div class="customer-info">
-                <div class="row" v-for="(item, index) in customerInfo" :key="index">
+        </div>
+
+        <div class="customer-info">
+            <div class="row" v-for="(item, index) in customerInfo" :key="index">
                 <div class="label">{{ item.firstLabel }}</div>
                 <div class="value">{{ item.firstValue }}</div>
                 <div class="label">{{ item.secondLabel }}</div>
@@ -19,8 +19,20 @@
                 <div class="label">{{ item.thirdLabel }}</div>
                 <div class="value">{{ item.thirdValue }}</div>
             </div>
+
+            <div class="flex-row items-center mb-s content-end">
+                <div class="ml-xs">
+                    <CommonButton label="삭제" @click="goDelete" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="수정" @click="goModify" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="목록" color="#F1F1FD" textColor="#6360AB" @click="goList" />
+                </div>
             </div>
-        
+        </div>
+
 
 
         <!-- 계약 정보 -->
@@ -31,38 +43,45 @@
                     계약서
                 </div>
             </div>
-            <div class="flex-row content-between mt-l">
-                <div class="list ml-l">전체목록</div>
-                <div class="flex-row items-center mb-s mr-xl">
-                    <div class="ml-xs">
-                        <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                    </div>
-                </div>
+
+            <div class="component-wrapper">
+                <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                    :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true"
+                    :selection.sync="selectedItems" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                    buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
+                    <template #body-status="{ data }">
+                        <div class="custom-tag-wrapper">
+                            <div :class="['custom-tag', getCustomTagClass(data.status)]">
+                                {{ getStatusLabel(data.status) }}
+                            </div>
+                        </div>
+                    </template>
+                </ViewTable>
             </div>
-            <ViewTable
-                :headers="customerContractHeaders"
-                :data="customerContractData"
-                :loading="loading"
-                :totalRecords="totalRecords"
-                :rows="rows"
-                :rowsPerPageOptions="[5, 10, 20, 50]"
-                :selectable="true"
-                buttonLabel="상세보기"
-                buttonHeader="계약 상태"
-                :buttonAction="handleView"
-                buttonField="계약 번호"
-                @page="onPage"
-                @sort="onSort"
-                @filter="onFilter"
-            />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
 
-        <ProductDetail
-            v-model="showDetailModal"
-            :showModal="showDetailModal"
-            :details="selectedDetail"
-            @close="showDetailModal = false"
-        />
 
 
     </PageLayout>
@@ -71,31 +90,77 @@
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ProductDetail from '@/views/product/ProductDetail.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watchEffect } from 'vue';
 import { $api } from '@/services/api/api';
 
 // 기본 정보
 const customerInfo = ref([]);
 
-// 학력 정보
-const customerContractHeaders = ['계약 번호', '매장', '계약형태', '계약명', '계약금', '계약상태', '상세보기'];
-const customerContractData = ref([]);
+// 계약 헤더
+const tableHeaders = [
+    { field: 'contractId', label: '계약 번호', width: '' },
+    { field: 'centerName', label: '매장', width: '' },
+    { field: 'contractCarName', label: '모델명', width: '' },
+    { field: 'contractTTL', label: '계약명', width: '' },
+    { field: 'contractTotalSale', label: '계약금', width: '' },
+    { field: 'status', label: '계약상태', width: '' }
+];
 
-const totalRecords = ref(0);
-const loading = ref(false);
-const rows = ref(5);
-const first = ref(0);
-const sortField = ref(null);
-const sortOrder = ref(null);
-const showDetailModal = ref(false);
-const selectedDetail = ref(null);
+const tableData = ref([]); // 테이블 데이터
+const selectedItems = ref([]);
+const totalRecords = ref(0); // 전체 데이터 개수
+const loading = ref(false); // 로딩 상태
+const rows = ref(10); // 페이지 당 행 수
+const first = ref(0); // 첫 번째 행 위치
+const sortField = ref(null); // 정렬 필드
+const sortOrder = ref(null); // 정렬 순서
 
-const handleView = (rowData) => {
-    selectedDetail.value = rowData;
-    showDetailModal.value = true;
-};
+function goDelete() {
+    // 삭제 로직
+    console.log('삭제 버튼 클릭됨');
+    alert('삭제 로직 실행');
+}
+
+function goModify() {
+    // 수정 로직
+    console.log('수정 버튼 클릭됨');
+    alert('수정 로직 실행');
+}
+
+function goList() {
+    // 목록으로 이동
+    console.log('목록 버튼 클릭됨');
+    router.push('/customer-list'); // 적절한 경로로 이동
+}
+
+function getStatusLabel(status) {
+    switch (status) {
+        case "WAIT":
+            return "대기";
+        case "APPROVE":
+            return "승인";
+        case "CANCEL":
+            return "취소";
+        default:
+            return "알 수 없음";
+    }
+}
+
+// 상태에 따라 표시할 색상 반환
+function getCustomTagClass(status) {
+    switch (status) {
+        case "WAIT":
+            return "success"; // 노란색
+        case "APPROVE":
+            return "info"; // 초록색
+        case "CANCEL":
+            return "danger"; // 빨간색
+        default:
+            return "warning"; // 기본 색상
+    }
+}
+
 
 // 기본 정보
 const getCustomerInfo = async () => {
@@ -115,7 +180,7 @@ const getCustomerInfo = async () => {
                 thirdLabel: '이메일', thirdValue: result.email
             },
             {
-                firstLabel: '비상연락처', firstValue: result.emergePhone, 
+                firstLabel: '비상연락처', firstValue: result.emergePhone,
                 secondLabel: '', secondValue: '',
                 thirdLabel: '', thirdValue: ''
             }
@@ -126,28 +191,40 @@ const getCustomerInfo = async () => {
 };
 
 // 고객 계약 정보 로드
-const getCustomerContract = async () => {
+const loadData = async () => {
     try {
-        const response = await $api.customer.getParams(
-            'contract/' + 'CUS_000000001'+'?',    // 추후에 수정
-            {
-                page: page,
-                size: size
-            }
-        ); 
-        const result = response.result;
-    
-        console.log('aslkdjflskjdlfjskdfjlsdk');
-        console.log(result);
+        const page = Math.floor(first.value / rows.value);
+        console.log('alskdjflsjdfoisjdoifjsiodjfiouwdsj');
+        console.log(page);
+        console.log(rows.value);
 
-        customerContractData.value = result.map((customerContract) => ({
-            '계약 번호': customerContract.contractId,
-            '매장': customerContract.centerName,
-            '계약형태': customerContract.contractCarName,
-            '계약명': customerContract.contractTTL || '-',
-            '계약금': customerContract.contractTotalSale || '-',
-            '계약상태': customerContract.contractState || '-'
-        }));
+        const query = {
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
+        }
+
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+
+        console.log('쿼리 스트링: ', queryString);
+        const response = await $api.customer.getParams(
+            'contract/' + 'CUS_000000001' + '',                 // 추후에 수정
+            queryString
+        );
+
+        const result = response?.result;
+
+        if (result && Array.isArray(result.content)) {
+            // API 데이터 변환: contractStatus -> status
+            tableData.value = result.content.map(item => ({
+                ...item,
+                status: item.contractState // contractStatus를 status로 매핑
+            }));
+
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
+        }
 
         totalRecords.value = response.result.totalElements;
     } catch (error) {
@@ -155,30 +232,43 @@ const getCustomerContract = async () => {
     }
 };
 
-// 페이지네이션
-const onPage = (event) => {
-    first.value = event.first;
-    rows.value = event.rows;
-    getCustomerContract();
-};
+// 상세 조회 메서드
+function handleView(rowData) {
+    console.log('상세 조회 버튼 클릭됨:', rowData);
+    alert(`상세 조회 데이터: ${JSON.stringify(rowData)}`);
+}
 
-// 정렬
-const onSort = (event) => {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    getCustomerContract();
-};
+// 페이지네이션 이벤트 처리
+function onPage(event) {
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 한 페이지당 데이터 수
+    loadData(); // 데이터 로드
+}
+
+// 정렬 이벤트 처리
+function onSort(event) {
+    sortField.value = event.sortField; // 정렬 필드
+    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
+    loadData(); // 데이터 로드
+}
+
+// 필터 이벤트 처리
+function onFilter(event) {
+    filters.value = event.filters;
+    loadData(); // 데이터 다시 로드
+}
 
 
 onMounted(() => {
     getCustomerInfo();
-    getCustomerContract();
+    loadData();
 });
 </script>
 
 <style scoped>
 .section {
-    margin-bottom: 30px; /* 각 섹션 간 간격 */
+    margin-bottom: 30px;
+    /* 각 섹션 간 간격 */
 }
 
 .section-text {
@@ -187,14 +277,15 @@ onMounted(() => {
     color: #000000;
 }
 
-.customer-info{
+.customer-info {
     margin-top: 20px;
     margin-bottom: 30px;
 }
 
 .subtitle {
     display: flex;
-    align-items: center;    /* 수직 중앙 정렬 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
 }
 
 .line {
@@ -215,14 +306,18 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 35px;   /* 각 행의 높이를 고정 */
-    border-bottom: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
-    border-top: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
+    height: 35px;
+    /* 각 행의 높이를 고정 */
+    border-bottom: 0.5px solid #EEEEEE;
+    /* 행 간의 구분선을 적용 */
+    border-top: 0.5px solid #EEEEEE;
+    /* 행 간의 구분선을 적용 */
 }
 
 .label,
 .value {
-    border-right: 1px solid #EEEEEE;    /* 좌우 구분선 추가 */
+    border-right: 1px solid #EEEEEE;
+    /* 좌우 구분선 추가 */
     font-family: 'Pretendard';
     font-size: 12px;
     line-height: 1.5;
@@ -266,5 +361,49 @@ td {
 th {
     background-color: #F8F8F8;
     color: #777777;
+}
+
+.component-wrapper {
+    margin-bottom: 8rem;
+}
+
+.custom-tag-wrapper {
+    display: flex;
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
+    color: aqua;
+}
+
+.custom-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    width: 50px;
+}
+
+.custom-tag.success {
+    background-color: #caf1d8;
+    color: #188a42;
+}
+
+.custom-tag.warning {
+    background-color: #feddc7;
+    color: #ae510f;
+}
+
+.custom-tag.danger {
+    background-color: #ffd0ce;
+    color: #b32b23;
+}
+
+.custom-tag.info {
+    background-color: #d0e1fd;
+    color: #295bac;
 }
 </style>
