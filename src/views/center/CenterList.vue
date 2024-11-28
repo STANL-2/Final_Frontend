@@ -2,16 +2,17 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter ="handleSearch"/>
         </div>
-        <div class="flex-row content-end mr-xl"><CommonButton label="조회"/></div>
+        <div class="flex-row content-end mr-m">
+            <CommonButton label="조회" @click="handleSearch"/>
+        </div>
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-xl">
-                <div><CommonButton label="추가" icon="pi pi-plus" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" /></div>
+                <div class="ml-xs"><CommonButton label="초기화" @click="resetSearch"icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
             </div>
         </div>
 
@@ -27,6 +28,8 @@
                 :selectable="true" 
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
+                :selection="selectedRows" 
+                @update:selection="updateSelectedRows"
                 :buttonAction="handleView" 
                 buttonField="code"
                 @page="onPage" 
@@ -58,7 +61,7 @@ const formFields = [
         {
             type: 'input',
             label: '매장번호',
-            model: 'productId',
+            model: 'centerId',
             showDivider: false
         },
         {
@@ -76,13 +79,13 @@ const formFields = [
     ]
 ];
 
-const tableHeaders = [
+const tableHeaders = ref([
     { field: 'centerId', label: '매장번호', width: '17%' },
     { field: 'name', label: '매장명', width: '10%' },
     { field: 'address', label: '주소', width: '30%' },
     { field: 'memberCount', label: '사원수', width: '20%' },
     { field: 'operatingAt', label: '운영시간', width: '10%' }
-];
+]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
@@ -96,6 +99,13 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+const selectedRows = ref([]);
+
+const searchParams = ref({
+    centerId: '',
+    name: '',
+    address: ''
+});
 
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
@@ -103,27 +113,59 @@ function handleView(rowData) {
     showDetailModal.value = true;
 }
 
+const handleSearch = async () => {
+    console.log('handleSearch 호출됨');
+
+    // SearchForm에서 데이터를 가져옴
+    if (!searchFormRef.value) {
+        console.error('searchFormRef가 초기화되지 않았습니다.');
+        return;
+    }
+
+    const formData = searchFormRef.value.getFormData();
+    console.log('SearchForm에서 반환된 데이터:', formData);
+
+    // 검색 파라미터 매핑
+    searchParams.value = {
+        centerId: formData.centerId || '',
+        name: formData.name || '',
+        address: formData.address || ''
+    };
+
+    console.log('매핑된 검색 파라미터:', searchParams.value);
+
+    // 데이터 로드 호출
+    await loadData();
+};
+
 // 데이터 로드 함수
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
 
         const query = {
-            page: first.value / rows.value, // 현재 페이지 번호
+            page: Math.floor(first.value / rows.value), // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
+            centerId: searchParams.value.centerId || '',
+            name: searchParams.value.name || '',
+            address: searchParams.value.address || '',
             sortField: sortField.value || null, // 정렬 필드
             sortOrder: sortOrder.value || null, // 정렬 순서
         };
+
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
         console.log("API 호출 URL:", queryString); // 디버깅용
         // API 호출
-        const response = await $api.center.getParams('', queryString);
+        const response = await $api.center.getParams('search', queryString);
 
         const result = response?.result; // 응답 데이터 접근
+
         if (result && Array.isArray(result.content)) {
             tableData.value = result.content; // 테이블 데이터 업데이트
             totalRecords.value = result.totalElements; // 전체 데이터 수
+            
+            console.log(tableData.value);
         } else {
             console.warn("API 응답이 예상한 구조와 다릅니다:", response);
             throw new Error("API 응답 데이터 구조 오류");
@@ -209,40 +251,87 @@ function handleOpenModal(fieldIndex) {
     showModal.value = true;
 }
 
-function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
+const resetSearch = () => {
+    searchParams.value = {
+    centerId: '',
+    name: '',
+    address: '',
+    };
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+    searchFormRef.value.initializeFormData();
+    loadData(); // 데이터 재로딩
 }
 
-function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
-    }
-    closeModal();
-}
+const updateSelectedRows = (newSelection) => {
+    selectedRows.value = newSelection;
+    console.log('선택된 항목 업데이트:', selectedRows.value);
+    };
 
-function resetModalState() {
-    closeModal();
-}
+    const printSelectedRows = () => {
+  if (selectedRows.value.length === 0) {
+    alert('인쇄할 행을 선택하세요.');
+    return;
+  }
 
-function closeModal() {
-    showModal.value = false;
-    selectedRow.value = null;
-    selectedCode.value = '';
-}
+  const headersToPrint = tableHeaders.value.filter(
+    (header) => header.excludeFromPrint !== true
+  );
 
-// 여기에 검색어 조회 API 로직 작성
-function searchStore() {
-    // 입력된 값 출력
-    console.log('검색어:', searchQuery.value);
+  const printContent = document.createElement('div');
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
 
-    // 추가적인 검색 로직을 여기에 추가할 수 있습니다.
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
-    }
-    // 검색어 초기화
-    searchQuery.value = '';
-}
+  const headerRow = document.createElement('tr');
+  headersToPrint.forEach((header) => {
+    const th = document.createElement('th');
+    th.innerText = header.label;
+    th.style.border = '1px solid #ddd';
+    th.style.padding = '8px';
+    th.style.textAlign = 'left';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  selectedRows.value.forEach((row) => {
+    const tr = document.createElement('tr');
+    headersToPrint.forEach((header) => {
+      const td = document.createElement('td');
+      td.innerText = row[header.field] || '';
+      td.style.border = '1px solid #ddd';
+      td.style.padding = '8px';
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  printContent.appendChild(table);
+
+  // iframe 생성
+  const printFrame = document.createElement('iframe');
+  printFrame.style.position = 'absolute';
+  printFrame.style.top = '-10000px';
+  printFrame.style.left = '-10000px';
+  document.body.appendChild(printFrame);
+
+  const frameDoc = printFrame.contentWindow?.document;
+  if (frameDoc) {
+    frameDoc.open();
+    frameDoc.write('<html><head><title>Print</title></head><body>');
+    frameDoc.write(printContent.innerHTML);
+    frameDoc.write('</body></html>');
+    frameDoc.close();
+
+    // 인쇄 호출
+    printFrame.contentWindow?.focus();
+    printFrame.contentWindow?.print();
+  }
+
+  // iframe 제거
+  document.body.removeChild(printFrame);
+};
 </script>
 
 <style scoped>
