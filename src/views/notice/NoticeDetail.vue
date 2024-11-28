@@ -11,7 +11,7 @@
                 </div>
             </h3>
 
-
+            <!-- 첨부 파일 보여주기 -->
             <div class="bottom-section flex-col items-center width-s ml-xxxl">
                 <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
@@ -59,6 +59,8 @@ const router = useRouter();
 const noticeTitle = route.query.noticeTitle || '';
 const noticeContent = route.query.noticeContent || '';
 const noticeId = route.query.noticeId || '';
+
+// 첨부파일 조회하기
 const noticeImage = ref('');
 
 console.log("route", route.query);
@@ -67,6 +69,7 @@ const goBack = () => {
     router.back();
 };
 
+// 첨부파일 조회를 위한 get 메소드
 const getNotice = async () => {
     try {
         const response = await $api.notice.get(
@@ -213,13 +216,15 @@ onMounted(() => {
     color: #333;
 }
 
+/* 첨부 파일을 위한 css */
 .file-link {
-    color: #007bff; /* 기본 링크 색상 */
-    text-decoration: none; /* 기본 링크 밑줄 제거 */
+    color: #007bff; 
+    text-decoration: none; 
 }
 
+/* 첨부 파일을 위한 css */
 .file-link:hover {
-    color: #0056b3; /* 마우스 오버 시 색상 변경 */
-    text-decoration: underline; /* 마우스 오버 시 밑줄 추가 */
+    color: #0056b3; 
+    text-decoration: underline; 
 }
 </style>
