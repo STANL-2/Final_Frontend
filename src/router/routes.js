@@ -47,11 +47,8 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/center/CenterDetail.vue')
-<<<<<<< HEAD
+
             }
-=======
-            },
->>>>>>> a93413fa81f3394beafe6be79595e4fbdd8e3951
         ]
     },
     {
