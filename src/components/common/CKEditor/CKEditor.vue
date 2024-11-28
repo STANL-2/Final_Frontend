@@ -102,36 +102,83 @@ class CustomUploadAdapter {
 	upload() {
 		return this.loader.file
 			.then(file => {
-
-				const formData = new FormData();
-				formData.append('file', file);
-				
-				console.log(formData);
-
-				return $api.file.post(
-					{},
-					'',
-					file
-				)
-					.then(response => {
-						console.log("response", response);
-						const imageUrl = response.imageUrl;
-
-						return {
-							default: imageUrl
-						};
-					})
-					.catch(error => {
-						console.error('Image upload failed', error);
-						throw error;
+				return this.resizeImage(file, 500, 500)
+					.then(resizedFile => {
+						return $api.file.post({}, '', resizedFile)
+							.then(response => {
+								const imageUrl = response.msg;
+								return {
+									default: imageUrl,
+									fileName: resizedFile.name
+								};
+							});
 					});
 			});
+	}
+
+	resizeImage(file, maxWidth, maxHeight) {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = event => {
+				const img = new Image();
+				img.src = event.target.result;
+				img.onload = () => {
+					const canvas = document.createElement('canvas');
+					let width = img.width;
+					let height = img.height;
+
+					if (width > height) {
+						if (width > maxWidth) {
+							height *= maxWidth / width;
+							width = maxWidth;
+						}
+					} else {
+						if (height > maxHeight) {
+							width *= maxHeight / height;
+							height = maxHeight;
+						}
+					}
+
+					canvas.width = width;
+					canvas.height = height;
+
+					const ctx = canvas.getContext('2d');
+					ctx.drawImage(img, 0, 0, width, height);
+
+					canvas.toBlob(blob => {
+						const resizedFile = new File([blob], file.name, {
+							type: file.type,
+							lastModified: Date.now()
+						});
+						resolve(resizedFile);
+					}, file.type);
+				};
+				img.onerror = reject;
+			};
+			reader.onerror = reject;
+		});
 	}
 }
 
 function uploadPlugin(editor) {
 	editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-		return new CustomUploadAdapter(loader);
+		const adapter = new CustomUploadAdapter(loader);
+
+		// 이미지 업로드 후 파일 이름을 HTML에 추가하는 로직
+		loader.on('change', () => {
+			loader.file.then(file => {
+				// 파일 이름을 data-filename 속성으로 추가
+				editor.model.change(writer => {
+					const imageElement = editor.model.document.selection.getSelectedElement();
+					if (imageElement) {
+						writer.setAttribute('data-filename', file.name, imageElement);
+					}
+				});
+			});
+		});
+
+		return adapter;
 	};
 }
 
@@ -298,6 +345,12 @@ export default {
 							styles: true, // 인라인 스타일 허용
 							attributes: true, // 모든 속성 허용
 							classes: true // 모든 클래스 허용
+						},
+						{
+							name: 'img',
+							attributes: {
+								'data-filename': true  // data-filename 속성 허용
+							}
 						}
 					],
 					disallow: []

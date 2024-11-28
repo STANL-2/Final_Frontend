@@ -6,7 +6,9 @@
         <div class="detail-container width-xxxs ml-xl">
             <h2 class="notice-title mb-m">{{ noticeTitle }}</h2>
             <h3 class="notice-content ml-xs">
-                <div v-html="noticeContent"></div>
+                <div class="notice-content ml-xs content-container">
+                    <div v-html="noticeContent"></div>
+                </div>
             </h3>
 
 
@@ -20,8 +22,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>2024년 11월 영업목표 안내문.pdf</td>
+                            <tr v-if="noticeImage">
+                                <td>
+                                    <a :href="noticeImage" target="_blank" class="file-link">{{ noticeImage }}</a>
+                                </td>
+                            </tr>
+                            <tr v-else>
+                                <td>첨부파일이 없습니다.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -41,6 +48,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
 
@@ -51,10 +59,32 @@ const router = useRouter();
 const noticeTitle = route.query.noticeTitle || '';
 const noticeContent = route.query.noticeContent || '';
 const noticeId = route.query.noticeId || '';
+const noticeImage = ref('');
+
+console.log("route", route.query);
 
 const goBack = () => {
     router.back();
 };
+
+const getNotice = async () => {
+    try {
+        const response = await $api.notice.get(
+            '',
+            noticeId
+        )
+
+        if (response.fileUrl) {
+            noticeImage.value = response.fileUrl; // API에서 반환된 fileUrl 할당
+        } else {
+            noticeImage.value = ''; // fileUrl이 없으면 빈 값
+        }
+    } catch (error) {
+        console.error('조회 중 오류 발생:', error);
+        alert('조회에 실패했습니다.');
+    }
+}
+
 const deleteNotice = async () => {
     try {
         const response = await $api.notice.delete(
@@ -62,7 +92,7 @@ const deleteNotice = async () => {
         );
         console.log(response.status)
         alert('공지사항이 삭제되었습니다.');
-        router.back(); 
+        router.back();
     } catch (error) {
         console.error('삭제 중 오류 발생:', error);
         alert('삭제에 실패했습니다.');
@@ -79,6 +109,10 @@ const navigateToEditPage = () => {
         },
     });
 };
+
+onMounted(() => {
+    getNotice();
+});
 </script>
 
 <style scoped>
@@ -164,5 +198,28 @@ const navigateToEditPage = () => {
 .edit-button {
     background-color: #6360AB;
     color: #FFFFFF;
+}
+
+.content-container {
+    max-width: 50rem;
+    max-height: 500px;
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #333;
+}
+
+.file-link {
+    color: #007bff; /* 기본 링크 색상 */
+    text-decoration: none; /* 기본 링크 밑줄 제거 */
+}
+
+.file-link:hover {
+    color: #0056b3; /* 마우스 오버 시 색상 변경 */
+    text-decoration: underline; /* 마우스 오버 시 밑줄 추가 */
 }
 </style>

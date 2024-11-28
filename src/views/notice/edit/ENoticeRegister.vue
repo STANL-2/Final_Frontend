@@ -10,16 +10,15 @@
             />
         </div>
 
-        <div class="file-upload-container">
-            <label for="file-upload">파일 업로드</label>
-            <input 
-                id="file-upload" 
-                type="file" 
-                @change="onFileChange"
-                accept="image/*" 
-            />
-        </div>
+        <!-- FileUpload template에 적용  => 필요하면 class로 css 추가-->
+        <FileUpload 
+            label="파일 업로드" 
+            class="file-upload-input"
+            @file-selected="onFileSelected" 
+            @file-error="onFileError"
+        />
 
+        <!-- CKEditor 필요한거 가져다가 쓰기 -->
         <CKEditor 
             v-model="content" 
             :initial-html="initialHtml"
@@ -46,14 +45,18 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
-import { $api } from "@/services/api/api";
+import { $api } from '@/services/api/api';
 
+// CKEditor 컴포넌트 import  -> 이미지 업로드도 등록해둠
+import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
+
+// FileUpload 컴포넌트 import
+import FileUpload from '@/components/common/FileUpload.vue'; 
 
 const router = useRouter();
 
 const title = ref(''); // 제목
-const content = ref('')
+const content = ref('');
 const file = ref(null); // 업로드할 파일
 
 const initialHtml = `
@@ -71,11 +74,12 @@ const initialHtml = `
 `;
 
 // 파일 선택 핸들러
-const onFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-        file.value = selectedFile; // 선택한 파일 저장
-    }
+const onFileSelected = (selectedFile) => {
+    file.value = selectedFile; // 파일 저장
+};
+
+const onFileError = (errorMessage) => {
+    alert(errorMessage);
 };
 
 const closePage = () => {
@@ -94,13 +98,14 @@ const onRegister = async () => {
         content: content.value.trim(),
     };
 
-    console.log("notice", noticeData);
-
     try {
-        // API 호출
-        const response = await $api.notice.post(noticeData, '', file.value);
 
-        console.log("response",response.value);
+        // API 호출
+        const response = await $api.notice.post(
+            noticeData,
+            '',
+            file.value || null
+        );
 
         alert("등록되었습니다.");
         router.push('/notice/list');
@@ -143,26 +148,6 @@ const onRegister = async () => {
     width: 100%;
 }
 
-.file-upload-container {
-    margin-left: 2.4rem;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.file-upload-container label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.file-upload-container input {
-    padding: 5px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-}
-
 .footer-buttons {
     margin-right:2.5rem;
     display: flex;
@@ -170,6 +155,9 @@ const onRegister = async () => {
     gap: 10px;
     margin-top: 5px;
 }
-</style>
 
-<!--패딩 수정 필요 시 CKEditor.vue 들어가서 고치면 됨-->
+/* 본인에 맞게 upload 상자 커스텀 */
+/* .file-upload-input{
+    
+} */
+</style>
