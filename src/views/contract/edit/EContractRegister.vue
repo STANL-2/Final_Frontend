@@ -6,7 +6,12 @@
         height="100rem"
         @close="closeModal"
     >
-        <InputText type="text" v-model="value" />
+        <div class="flex-row content-center">
+            <div class="flex-row items-center">
+                <Typography type="title3" color="black" fontSize="16px" class="mr-s">계약서 제목:</Typography>
+            </div>
+            <InputText type="text" v-model="title" />
+        </div>
         <CKEditor 
             v-model="content" 
             :initial-html="initialHtml"
@@ -35,6 +40,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
+import Typography from '@/components/Typography.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
 
 // 부모에서 전달받는 props
@@ -51,6 +57,7 @@ const emit = defineEmits(['update:visible', 'close']);
 // 내부 상태 변수
 const isVisible = ref(props.visible);
 const content = ref(''); // CKEditor의 현재 내용
+const title = ref('');
 const initialHtml = `
     <!DOCTYPE html>
 <html lang="ko">
@@ -73,12 +80,10 @@ const initialHtml = `
             <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">계약 정보</h2>
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
                 <tr>
-                    <th rowspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약 번호</th>
-                    <td rowspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left;">2024112701</td>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약일</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">2024-11-27</td>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약장소</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">신대방삼거리점</td>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;"></td>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약장소</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;"></td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">담당자</th>
@@ -95,15 +100,15 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value"></td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value">강남</td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">상호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value"></td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value">-</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주민등록번호</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-identifiNo-value">990212-2314152</td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">사업자등록번호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-campanyNo-value"></td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-campanyNo-value">-</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주소</th>
@@ -113,7 +118,7 @@ const initialHtml = `
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">전화(휴대폰)</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value"></td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value">010-1234-2222</td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구분</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-classification-value">개인</td>
                 </tr>
@@ -145,7 +150,7 @@ const initialHtml = `
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">선택옵션</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-selectOption-value"></td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">대수</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량대수</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-numberOfVehicles-value">1</td>
                 </tr>
                 <tr>
@@ -254,7 +259,7 @@ const extractDataFromHTML = (html) => {
 
     // 필요한 필드를 추가적으로 추출
     return {
-        title: "20241127 셀토스 계약서",
+        title: title.value,
         customerName,
         customerIdentifiNo,
         customerAddress,
@@ -358,5 +363,14 @@ function closeModal() {
     color: #61dafb;
     padding: 16px;
     border-radius: 4px;
+}
+
+.p-inputtext {
+    width: 30rem;
+    border-bottom: 3px solid #000;
+    border-radius: 0px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
 }
 </style>
