@@ -1,20 +1,12 @@
 <template>
 	<div>
 		<div class="main-container">
-			<div
-				class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
-				ref="editorContainerElement"
-			>
+			<div class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
+				ref="editorContainerElement">
 				<div class="editor-container__editor">
 					<div ref="editorElement">
-						<ckeditor
-                            v-if="isLayoutReady"
-                            :model-value="modelValue"
-                            @update:model-value="updateContent"
-                            :editor="editor"
-                            :config="editorConfig"
-                            @ready="onEditorReady"
-                        />
+						<ckeditor v-if="isLayoutReady" :model-value="modelValue" @update:model-value="updateContent"
+							:editor="editor" :config="editorConfig" @ready="onEditorReady" />
 					</div>
 				</div>
 			</div>
@@ -100,19 +92,61 @@ import {
 
 import translations from 'ckeditor5/translations/ko.js';
 import 'ckeditor5/ckeditor5.css';
+import { $api } from "@/services/api/api";
+
+class CustomUploadAdapter {
+	constructor(loader) {
+		this.loader = loader;
+	}
+
+	upload() {
+		return this.loader.file
+			.then(file => {
+
+				const formData = new FormData();
+				formData.append('file', file);
+				
+				console.log(formData);
+
+				return $api.file.post(
+					{},
+					'',
+					file
+				)
+					.then(response => {
+						console.log("response", response);
+						const imageUrl = response.imageUrl;
+
+						return {
+							default: imageUrl
+						};
+					})
+					.catch(error => {
+						console.error('Image upload failed', error);
+						throw error;
+					});
+			});
+	}
+}
+
+function uploadPlugin(editor) {
+	editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+		return new CustomUploadAdapter(loader);
+	};
+}
 
 export default {
 	name: 'CKEditorComponent', // 컴포넌트 이름 설정
 	props: {
-        modelValue: {
-            type: String,
-            default: ''
-        },
-        initialHtml: {
-            type: String,
-            default: ''
-        }
-    },
+		modelValue: {
+			type: String,
+			default: ''
+		},
+		initialHtml: {
+			type: String,
+			default: ''
+		}
+	},
 	emits: ['update:model-value'],
 	data() {
 		return {
@@ -163,7 +197,8 @@ export default {
 						'numberedList',
 						'todoList',
 						'outdent',
-						'indent'
+						'indent',
+						'insertImage'
 					],
 					shouldNotGroupWhenFull: true // 툴바의 그룹화 비활성화
 				},
@@ -240,11 +275,9 @@ export default {
 					Underline,
 					Undo
 				],
+				extraPlugins: [uploadPlugin],
 				simpleUpload: {
-					uploadUrl: 'http://localhost:8080/api/upload', // 파일 업로드 경로
-					headers: {
-						Authorization: 'Bearer <your-token>'
-					}
+					uploadUrl: '' // 파일 업로드 경로
 				},
 				image: {
 					toolbar: [
@@ -278,30 +311,30 @@ export default {
 		};
 	},
 	watch: {
-        modelValue(newValue) {
-            // 에디터 인스턴스가 존재하고, 현재 에디터의 데이터가 새로운 값과 다른 경우에만 업데이트
-            if (this.editorInstance && this.editorInstance.getData() !== newValue) {
-                this.editorInstance.setData(newValue);
-            }
-        }
-    },
+		modelValue(newValue) {
+			// 에디터 인스턴스가 존재하고, 현재 에디터의 데이터가 새로운 값과 다른 경우에만 업데이트
+			if (this.editorInstance && this.editorInstance.getData() !== newValue) {
+				this.editorInstance.setData(newValue);
+			}
+		}
+	},
 	mounted() {
-        this.isLayoutReady = true;
-        if (this.initialHtml && !this.modelValue) {
-            this.$emit('update:model-value', this.initialHtml);
-        }
-    },
+		this.isLayoutReady = true;
+		if (this.initialHtml && !this.modelValue) {
+			this.$emit('update:model-value', this.initialHtml);
+		}
+	},
 	methods: {
-        onEditorReady(editor) {
-            this.editorInstance = editor;
-            if (this.initialHtml && !this.modelValue) {
-                editor.setData(this.initialHtml);
-            }
-        },
-        updateContent(content) {
-            this.$emit('update:model-value', content);
-        }
-    }
+		onEditorReady(editor) {
+			this.editorInstance = editor;
+			if (this.initialHtml && !this.modelValue) {
+				editor.setData(this.initialHtml);
+			}
+		},
+		updateContent(content) {
+			this.$emit('update:model-value', content);
+		}
+	}
 };
 </script>
 
@@ -343,11 +376,13 @@ export default {
 }
 
 ::v-deep .ck-editor__top {
-    position: sticky;
-    top: 0;
-    z-index: 10; /* 툴바가 다른 콘텐츠 위로 올라오도록 설정 */
-    background-color: #fff; /* 툴바 배경색 설정 */
-    border-bottom: 1px solid #e0e0e0; /* 툴바 하단 경계선 */
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	/* 툴바가 다른 콘텐츠 위로 올라오도록 설정 */
+	background-color: #fff;
+	/* 툴바 배경색 설정 */
+	border-bottom: 1px solid #e0e0e0;
+	/* 툴바 하단 경계선 */
 }
-
 </style>
