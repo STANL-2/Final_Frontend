@@ -108,12 +108,11 @@ export default class ApiService extends BaseApiService {
         if (queryParams) {
             url += `${queryParams}`;
         }
-
+        
         const response = await this.#callApi(url);
 
         return response;
     }
-
 
     async post(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;

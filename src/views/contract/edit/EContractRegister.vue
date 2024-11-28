@@ -6,6 +6,7 @@
         height="100rem"
         @close="closeModal"
     >
+        <InputText type="text" v-model="value" />
         <CKEditor 
             v-model="content" 
             :initial-html="initialHtml"
@@ -73,11 +74,11 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
                 <tr>
                     <th rowspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약 번호</th>
-                    <td rowspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left;"></td>
+                    <td rowspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left;">2024112701</td>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약일</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;"></td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">2024-11-27</td>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">계약장소</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;"></td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">신대방삼거리점</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">담당자</th>
@@ -94,7 +95,7 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value">강남</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value"></td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">상호</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value"></td>
                 </tr>
@@ -112,7 +113,7 @@ const initialHtml = `
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">전화(휴대폰)</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value">010-1234-2222</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value"></td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구분</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-classification-value">개인</td>
                 </tr>
@@ -253,7 +254,7 @@ const extractDataFromHTML = (html) => {
 
     // 필요한 필드를 추가적으로 추출
     return {
-        title: "프론트에서 하는 계약서 등록",
+        title: "20241127 셀토스 계약서",
         customerName,
         customerIdentifiNo,
         customerAddress,
@@ -303,6 +304,7 @@ const onRegister = async () => {
         console.log("POST 응답:", response);
 
         alert("계약서가 성공적으로 등록되었습니다.");
+        emit('refresh');
         closeModal();
     } catch (error) {
         console.error("등록 중 오류:", error);

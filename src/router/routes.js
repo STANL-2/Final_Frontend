@@ -47,23 +47,7 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/center/CenterDetail.vue')
-            },
-            {
-                path: 'Elist',
-                component: () => import('@/views/center/edit/ECenterList.vue')
-            },
-            {
-                path: 'Edetail',
-                component: () => import('@/views/center/edit/ECenterDetail.vue')
-            },
-            {
-                path: 'modify',
-                component: () => import('@/views/center/edit/ECenterModify.vue')
-            },
-            {
-                path: 'register',
-                component: () => import('@/views/center/edit/ECenterRegister.vue')
-            },
+            }
         ]
     },
     {
