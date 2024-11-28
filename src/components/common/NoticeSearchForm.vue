@@ -84,6 +84,7 @@ function getFormData() {
 
 defineExpose({
     getFormData,
+    initializeFormData
 });
 
 onMounted(() => {
@@ -143,7 +144,6 @@ body {
 
 .form-input,
 .form-select {
-    cursor: pointer;
     height: 25px;
     border: 1px solid #ddd;
     padding: 0 8px;
