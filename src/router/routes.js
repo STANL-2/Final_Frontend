@@ -63,6 +63,22 @@ const routes = [
                 path: 'detail',
                 component: () => import('@/views/contract/ContractDetail.vue')
             },
+            {
+                path: 'Elist',
+                component: () => import('@/views/contract/edit/EContractList.vue')
+            },
+            {
+                path: 'Edetail',
+                component: () => import('@/views/contract/edit/EContractDetail.vue')
+            },
+            {
+                path: 'modify',
+                component: () => import('@/views/contract/edit/EContractModify.vue')
+            },
+            {
+                path: 'register',
+                component: () => import('@/views/contract/edit/EContractRegister.vue')
+            }
         ]
     },
     {
