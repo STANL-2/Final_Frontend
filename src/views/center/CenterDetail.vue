@@ -3,6 +3,7 @@
         :visible="modelValue" 
         header="매장 상세 조회" 
         width="70rem" 
+        height="none"
         @click="onClose">
         
         <!-- 상세 조회 상단 (수정/삭제 버튼) -->
@@ -11,15 +12,23 @@
             <div class="ml-xs"><CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" /></div>
         </div>
 
-        <!-- ***이미지 미리보기*** -->
-        <div class="image-preview">
-            <FilePreview v-if="imageUrl" :imageUrl="imageUrl" />
-            <p v-else>이미지가 없습니다.</p>
+        <div class="horizontal-layout">
+            <!-- ***이미지 미리보기*** -->
+            <div class="image-preview">
+                <FilePreview v-if="imageUrl" :imageUrl="imageUrl" />
+                <p v-else>이미지가 없습니다.</p>
+            </div>
+            <div class="info-card">
+                <div class="row" v-for="(item, index) in centerData" :key="index">
+                    <div class="label">{{ item.label }}</div>
+                    <div class="value">{{ item.value }}</div>
+                    <div class="label">{{ item.secondLabel }}</div>
+                    <div class="value">{{ item.secondValue }}</div>
+                </div>
+            </div>
         </div>
 
-        <div class="viewform">
-            <ViewForm :data="centerData" />
-        </div>
+
 
         <div class="table-wrapper width-s ml-l">
             <ViewTable 
@@ -40,7 +49,6 @@ import { ref, defineProps, defineEmits, watch, onMounted } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import ViewForm from '@/components/common/ViewForm.vue';
 import ViewTable from '@/components/common/ViewTable.vue';
 
 // *** 파일 미리보기 import ***
@@ -140,22 +148,75 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.viewform {
+.info-card {
+    width: 100%;
     display: flex;
-    width: 50%;
+    flex-direction: column;
+    gap: 0px; /* 간격을 없앰 */
+    height: none;
+    border-top: 1px solid #EEEEEE;
+    margin-top: 1rem;
     margin-left: 1.7rem;
     margin-bottom: 2rem;
+    margin-right: 1.7rem;
+}
+
+.row {
+    /* position: relative; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 35px; /* 각 행의 높이를 고정 */
+    border-bottom: 1px solid #EEEEEE; /* 행 간의 구분선을 적용 */
+    border-left: 1px solid #EEEEEE;
+}
+
+.label, .value {
+    border-right: 1px solid #EEEEEE; /* 좌우 구분선 추가 */
+    font-family: 'Pretendard';
+    font-size: 12px;
+    line-height: 1.5; 
+    display: flex;
+    align-items: center; 
+    height: 100%; 
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/* 각 label 셀의 스타일 */
+.label {
+    width: 25%; 
+    color: #777777; 
+    background: #F8F8F8;
+    display: flex;
+    justify-content: center;
+}
+
+/* 각 value 셀의 스타일 */
+.value {
+    width: 75%;
+    color: #000000;
+}
+
+.horizontal-layout {
+  display: flex; /* Flexbox를 활성화합니다 */
+  /* align-items: center; */
+  gap: 16px; /* 두 요소 사이의 간격을 조절합니다 */
 }
 
 .image-preview {
-    margin: 1rem 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 200px;
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
+  margin: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 15rem; /* 고정 높이 */
+  min-height: 15rem; /* 최소 높이 설정 */
+  width: 100%; /* 가로 크기 고정 */
+  border: 1px solid #ddd; /* 테두리 */
+  border-radius: 8px; /* 모서리 둥글게 */
+  overflow: hidden;
+  background-color: #f9f9f9; /* 이미지 없을 때 배경색 */
 }
+
 </style>
