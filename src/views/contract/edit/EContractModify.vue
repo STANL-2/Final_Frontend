@@ -1,11 +1,17 @@
 <template>
     <Modal
         v-model="isVisible"
-        header="수정 모달"
+        header="계약서 수정"
         width="80rem"
         height="100rem"
-        @close="closeModal"
+        @cancel="resetModalState"
     >
+        <div class="flex-row content-center">
+            <div class="flex-row items-center">
+                <Typography type="title3" color="black" fontSize="16px" class="mr-s">계약서 제목:</Typography>
+            </div>
+            <InputText type="text" v-model="title" />
+        </div>
         <CKEditor 
             v-if="content"
             v-model="content" 
@@ -34,6 +40,7 @@
 import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
+import Typography from '@/components/Typography.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import { $api } from "@/services/api/api";
 
@@ -51,6 +58,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'close']);
 const isVisible = ref(props.visible);
 const content = ref('');
+const title = ref('');
 
 watch(
     () => props.visible,
@@ -148,7 +156,7 @@ const extractDataFromHTML = (html) => {
 
     // 필요한 필드를 추가적으로 추출
     return {
-        title: "프론트에서 하는 계약서 수정",
+        title: title.value,
         customerName,
         customerIdentifiNo,
         customerAddress,
@@ -224,5 +232,14 @@ function closeModal() {
     color: #61dafb;
     padding: 16px;
     border-radius: 4px;
+}
+
+.p-inputtext {
+    width: 30rem;
+    border-bottom: 3px solid #000;
+    border-radius: 0px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
 }
 </style>
