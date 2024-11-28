@@ -10,6 +10,16 @@
             />
         </div>
 
+        <div class="file-upload-container">
+            <label for="file-upload">파일 업로드</label>
+            <input 
+                id="file-upload" 
+                type="file" 
+                @change="onFileChange"
+                accept="image/*" 
+            />
+        </div>
+
         <CKEditor 
             v-model="content" 
             :initial-html="initialHtml"
@@ -44,6 +54,7 @@ const router = useRouter();
 
 const title = ref(''); // 제목
 const content = ref('')
+const file = ref(null); // 업로드할 파일
 
 const initialHtml = `
     <!DOCTYPE html>
@@ -59,26 +70,41 @@ const initialHtml = `
     </html>
 `;
 
+// 파일 선택 핸들러
+const onFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+        file.value = selectedFile; // 선택한 파일 저장
+    }
+};
+
 const closePage = () => {
     router.push('/notice/list'); // 취소 시 이동 경로
 };
 
 const onRegister = async () => {
-    const postData = {
-            title: title.value.trim(), // 제목
-            content: content.value.trim(), // CKEditor 내용
-        };
+    if (!title.value.trim() || !content.value.trim()) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+    }
+
+    // JSON 데이터 추가
+    const noticeData = {
+        title: title.value.trim(),
+        content: content.value.trim(),
+    };
+
+    console.log("notice", noticeData);
+
     try {
-        // API 호출 (JSON 형태로 전송)
-        const responseData = await $api.notice.post( 
-        {
-            title: title.value.trim(),
-            content: content.value.trim(),
-        },
-        ''
-    );
+        // API 호출
+        const response = await $api.notice.post(noticeData, '', file.value);
+
+        console.log("response",response.value);
+
         alert("등록되었습니다.");
         router.push('/notice/list');
+        
     } catch (error) {
         console.error("등록 오류:", error);
         alert("등록 중 오류: " + error.message);
@@ -114,6 +140,26 @@ const onRegister = async () => {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    width: 100%;
+}
+
+.file-upload-container {
+    margin-left: 2.4rem;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-upload-container label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.file-upload-container input {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     width: 100%;
 }
 
