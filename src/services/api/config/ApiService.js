@@ -30,7 +30,7 @@ export default class ApiService extends BaseApiService {
             }
 
             // fetch options 설정
-            const fetchOptions = { 
+            const fetchOptions = {
                 ...options,
                 headers: myHeaders
             };
@@ -108,7 +108,7 @@ export default class ApiService extends BaseApiService {
         if (queryParams) {
             url += `${queryParams}`;
         }
-        
+
         const response = await this.#callApi(url);
 
         return response;
@@ -124,18 +124,18 @@ export default class ApiService extends BaseApiService {
         let requestBody;
 
         // JSON 요청 생성
-        if(file) {
-            requestBody = new FormData();        
+        if (file) {
+            requestBody = new FormData();
 
             requestBody.append('file', file);
-            requestBody.append('dto', 
-                new Blob([JSON.stringify(data)], 
-                { type: 'application/json'})
+            requestBody.append('dto',
+                new Blob([JSON.stringify(data)],
+                    { type: 'application/json' })
             );
 
         } else {
             requestBody = JSON.stringify(data);
-        }   
+        }
 
         const options = {
             method: 'POST',
