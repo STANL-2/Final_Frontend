@@ -2,15 +2,17 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="handleSearch"/>
         </div>
-        <div class="flex-row content-end mr-xl"><CommonButton label="조회"/></div>
+        <div class="flex-row content-end mr-m">
+            <CommonButton label="조회" @click="handleSearch"/>
+        </div>
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-xl">
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div class="ml-xs"><CommonButton label="초기화" @click="resetSearch"icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
             </div>
         </div>
 
@@ -96,11 +98,38 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
+const searchParams = ref({
+    productId: '',
+    name: '',
+    serialNumber: ''
+});
+
+
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     showDetailModal.value = true;
 }
+
+const handleSearch = async () => {
+    console.log('handleSearch 호출됨');
+    // SearchForm에서 데이터를 가져옴
+    if (!searchFormRef.value) {
+        console.error('searchFormRef가 초기화되지 않았습니다.');
+        return;
+    }
+    const formData = searchFormRef.value.getFormData();
+    console.log('SearchForm에서 반환된 데이터:', formData);
+    // 검색 파라미터 매핑
+    searchParams.value = {
+        productId: formData.productId || '',
+        name: formData.name || '',
+        serialNumber: formData.serialNumber || ''
+    };
+    console.log('매핑된 검색 파라미터:', searchParams.value);
+    // 데이터 로드 호출
+    await loadData();
+};
 
 // 데이터 로드 함수
 const loadData = async () => {
@@ -108,7 +137,11 @@ const loadData = async () => {
     try {
         const query = {
             page: first.value / rows.value, // 현재 페이지 번호
+            page: Math.floor(first.value / rows.value), // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
+            productId: searchParams.value.productId || '',
+            name: searchParams.value.name || '',
+            serialNumber: searchParams.value.serialNumber || '',
             sortField: sortField.value || null, // 정렬 필드
             sortOrder: sortOrder.value || null, // 정렬 순서
         };
@@ -116,7 +149,7 @@ const loadData = async () => {
         const queryString = `?${new URLSearchParams(query).toString()}`;
         console.log("API 호출 URL:", queryString); // 디버깅용
         // API 호출
-        const response = await $api.product.getParams('', queryString);
+        const response = await $api.product.getParams('search', queryString);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {
@@ -205,18 +238,6 @@ function handleOpenModal(fieldIndex) {
     showModal.value = true;
 }
 
-function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
-}
-
-function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
-    }
-    closeModal();
-}
-
 function resetModalState() {
     closeModal();
 }
@@ -227,18 +248,18 @@ function closeModal() {
     selectedCode.value = '';
 }
 
-// 여기에 검색어 조회 API 로직 작성
-function searchStore() {
-    // 입력된 값 출력
-    console.log('검색어:', searchQuery.value);
-
-    // 추가적인 검색 로직을 여기에 추가할 수 있습니다.
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
-    }
-    // 검색어 초기화
-    searchQuery.value = '';
+const resetSearch = () => {
+    searchParams.value = {
+    productId: '',
+    name: '',
+    serialNumber: '',
+    };
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+    loadData(); // 데이터 재로딩
 }
+
 </script>
 
 <style scoped>

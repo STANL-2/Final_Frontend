@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter ="handleSearch"/>
         </div>
         <div class="flex-row content-end mr-m">
             <CommonButton label="조회" @click="handleSearch"/>
@@ -10,10 +10,9 @@
         <div class="flex-row content-between mt-l">
             <div class="list ml-l">전체목록</div>
             <div class="flex-row items-center mb-s mr-xl">
-                <div><CommonButton label="추가" icon="pi pi-plus" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div class="ml-xs"><CommonButton label="초기화" @click="resetSearch"icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
             </div>
         </div>
 
@@ -271,6 +270,17 @@ function closeModal() {
     selectedCode.value = '';
 }
 
+const resetSearch = () => {
+    searchParams.value = {
+    centerId: '',
+    name: '',
+    address: '',
+    };
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+    loadData(); // 데이터 재로딩
+}
 
 </script>
 
