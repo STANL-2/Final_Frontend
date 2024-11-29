@@ -202,14 +202,17 @@ const routes = [
             },
             {
                 path: 'detail',
+                name: 'ProblemDetail',
                 component: () => import('@/views/problem/ProblemDetail.vue')
             },
             {
                 path: 'modify',
+                name: 'EProblemModify',
                 component: () => import('@/views/problem/ProblemModify.vue')
             },
             {
                 path: 'register',
+                name: 'EProblemRegister',
                 component: () => import('@/views/problem/ProblemRegister.vue')
             }
         ]
