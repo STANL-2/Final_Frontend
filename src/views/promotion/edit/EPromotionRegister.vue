@@ -105,10 +105,13 @@ const onRegister = async () => {
             '',
             file.value || null
         );
+        console.log("성공",response);
+
         alert("등록되었습니다.");
         router.push('/promotion/list');
         
     } catch (error) {
+        console.log("실패",response);
         console.error("등록 오류:", error);
         alert("등록 중 오류: " + error.message);
     }
