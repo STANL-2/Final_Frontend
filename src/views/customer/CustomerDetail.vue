@@ -59,27 +59,43 @@
                 </ViewTable>
             </div>
 
+            <Modal v-model="showModifyModal" width="40rem" height="none" header="고객정보 수정">
+                <div class="modal-content">
+                    <div class="form-row" v-for="(item, index) in modifyInfo" :key="index">
 
+                        <!-- 첫 번째 필드 -->
+                        <div class="form-group">
+                            <label class="form-label">{{ item.firstLabel }}</label>
+                            <template v-if="item.type === 'radio'">
+                                <div class="radio-group">
+                                    <label v-for="option in item.options" :key="option" class="radio-option">
+                                        <input type="radio" :value="option" v-model="item.firstValue" />
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <input v-if="item.firstEditable" type="text" v-model="item.firstValue"
+                                    class="form-input" :placeholder="`${item.firstLabel}을(를) 입력하세요`" />
+                                <span v-else class="form-value">{{ item.firstValue }}</span>
+                            </template>
+                        </div>
 
+                        <!-- 두 번째 필드 -->
+                        <div class="form-group" v-if="item.secondLabel">
+                            <label class="form-label">{{ item.secondLabel }}</label>
+                            <input v-if="item.secondEditable" type="text" v-model="item.secondValue" class="form-input"
+                                :placeholder="`${item.secondLabel}을(를) 입력하세요`" />
+                            <span v-else class="form-value">{{ item.secondValue }}</span>
+                        </div>
+                    </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    <div class="modal-actions">
+                        <CommonButton label="저장" class="btn-save" @click="modifyModalBtn" />
+                        <CommonButton label="취소" class="btn-cancel" @click="closemodifyModal" />
+                    </div>
+                </div>
+            </Modal>
         </div>
 
 
@@ -91,6 +107,7 @@
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
+import Modal from '@/components/common/Modal.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 import { useRoute, useRouter } from 'vue-router';
@@ -99,6 +116,11 @@ const route = useRoute();
 const router = useRouter();
 
 const customerId = route.query.customerId;
+
+const showModifyModal = ref(false);
+
+
+const modifyInfo = ref([]);
 
 // 기본 정보
 const customerInfo = ref([]);
@@ -129,7 +151,7 @@ function goDelete() {
 }
 
 function goModify() {
-    router.push({path: '/customer/modify', query: { customerId: customerId}});  
+    showModifyModal.value = true;
 }
 
 function goList() {
@@ -180,13 +202,40 @@ const getCustomerInfo = async () => {
             },
             {
                 firstLabel: '성별', firstValue: result.sex,
-                secondLabel: '휴대전화', secondValue: result.phone,
+                secondLabel: '연락처', secondValue: result.phone,
                 thirdLabel: '이메일', thirdValue: result.email
             },
             {
                 firstLabel: '비상연락처', firstValue: result.emergePhone,
                 secondLabel: '', secondValue: '',
                 thirdLabel: '', thirdValue: ''
+            }
+        ];
+
+        modifyInfo.value = [
+            {
+                firstLabel: '고객명',
+                firstValue: result.name || '',
+                firstEditable: true,
+                secondLabel: '나이',
+                secondValue: result.age || '',
+            },
+            {
+                firstLabel: '성별',
+                firstValue: result.sex || '',
+                type: 'radio',
+                options: ['남성', '여성'],
+                secondLabel: '연락처',
+                secondValue: result.phone || '',
+                secondEditable: true,
+            },
+            {
+                firstLabel: '비상연락처',
+                firstValue: result.emergePhone || '',
+                firstEditable: true,
+                secondLabel: '이메일',
+                secondValue: result.email || '',
+                secondEditable: true,
             }
         ];
     } catch (error) {
@@ -233,6 +282,58 @@ const loadData = async () => {
         totalRecords.value = response.result.totalElements;
     } catch (error) {
         console.error('고객 계약 정보 요청 실패:', error);
+    }
+};
+
+function closemodifyModal() {
+    showModifyModal.value = false;
+}
+
+const modifyModalBtn = async () => {
+    try {
+        // Construct the payload with the correct field mapping
+        const payload = {
+            name: modifyInfo.value.find(item => {
+                console.log('firstLabel 검사:', item.firstLabel); // 디버깅용 로그
+                return item.firstLabel === '고객명';
+            })?.firstValue || '',
+            age: parseInt(modifyInfo.value.find(item => {
+                console.log('secondLabel 검사:', item.secondLabel); // 디버깅용 로그
+                return item.secondLabel === '나이';
+            })?.secondValue || '0', 10),
+            sex: modifyInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '',
+            phone: modifyInfo.value.find(item => item.secondLabel === '연락처')?.secondValue || '',
+            emergePhone: modifyInfo.value.find(item => item.firstLabel === '비상연락처')?.firstValue || '',
+            email: modifyInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
+        };
+
+
+        const phoneItem = modifyInfo.value.find(item => item.secondLabel === '연락처');
+        console.log('연락처 항목:', phoneItem);
+
+        // Call your API service
+        const response = await $api.customer.put(
+            {
+                "name": payload.name,
+                "age": payload.age,
+                "sex": payload.sex,
+                "phone": payload.phone,
+                "emergePhone": payload.emergePhone,
+                "email": payload.email,
+            },
+            customerId
+        );
+
+        showModifyModal.value = false;
+
+        console.log('modoify전');
+        await getCustomerInfo(); // 고객 정보를 다시 로드
+        await loadData();        // 테이블 데이터를 다시 로드
+        console.log('modoify후');
+
+
+    } catch (error) {
+        console.error('Error during API communication:', error);
     }
 };
 
@@ -409,5 +510,51 @@ th {
 .custom-tag.info {
     background-color: #d0e1fd;
     color: #295bac;
+}
+
+
+.modal-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.form-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.p-ripple-disabled {
+    height: none;
 }
 </style>
