@@ -135,7 +135,7 @@ const resetRegisterInfo = () => {
 
 const registerModalBtn = async () => {
     try {
-        // Construct the payload with the correct field mapping
+        // 필드 맵핑
         const payload = {
             name: registerInfo.value.find(item => item.firstLabel === '고객명')?.firstValue || '',
             age: parseInt(registerInfo.value.find(item => item.secondLabel === '나이')?.secondValue || '0', 10),
@@ -145,7 +145,7 @@ const registerModalBtn = async () => {
             email: registerInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
         };
 
-        // Call your API service
+        // API 호출
         const response = await $api.customer.post(
             {
                 "name": payload.name,
@@ -297,10 +297,8 @@ const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
 function handleView(rowData) {
-    console.log('@####');
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    console.log(rowData.customerId);
     router.push({path: '/customer/detail', query: { customerId: rowData.customerId}});  
 }
 
@@ -316,21 +314,15 @@ const refresh = () => {
 const select = () => {
     const formData = searchFormRef.value?.formData;
 
-    console.log('formData', formData);
     if (!formData) {
         console.error('formData를 가져올 수 없습니다.');
         return;
     }
 
-    console.log('CSearchForm에서 가져온 formData:', formData);
-
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
         Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
     );
-
-    console.log('검색 조건:', searchCriteria.value);
-
     // 검색 실행
     loadData();
 };
@@ -338,7 +330,6 @@ const select = () => {
 
 // 데이터 로드 함수
 const loadData = async () => {
-    console.log('검색 조건으로 데이터 로드:', searchCriteria.value);
     loading.value = true; // 로딩 시작
     try {
         // 검색 조건 필터링 및 유효한 값만 유지
@@ -352,8 +343,6 @@ const loadData = async () => {
             })
         );
 
-        console.log('필터링된 검색 조건:', filteredCriteria);
-
         // 쿼리 파라미터 생성
         const query = {
             page: first.value / rows.value, // 현재 페이지
@@ -363,18 +352,16 @@ const loadData = async () => {
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        console.log('생성된 쿼리 문자열:', queryString);
-
         // API 호출
         const response = await $api.customer.getParams('search', queryString);
 
-        // API 응답 데이터 처리
-        console.log('API 응답 데이터:', response);
-
-        const result = response?.result; // 응답 데이터
+        // 응답 데이터
+        const result = response?.result; 
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content; // 테이블 데이터 업데이트
-            totalRecords.value = result.totalElements; // 전체 데이터 수
+            // 테이블 데이터 업데이트
+            tableData.value = result.content; 
+            // 전체 데이터 수
+            totalRecords.value = result.totalElements; 
         } else {
             console.warn('API 응답이 예상한 구조와 다릅니다:', response);
             throw new Error('API 응답 데이터 구조 오류');
@@ -410,8 +397,6 @@ const exportCSV = async () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
-        console.log('파일 다운로드 완료');
     } catch (error) {
         console.error('다운로드 에러:', error);
         alert('엑셀 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');

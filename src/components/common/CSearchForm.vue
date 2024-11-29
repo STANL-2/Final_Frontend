@@ -8,12 +8,13 @@
                     <div class="form-group">
                         <div class="label">{{ field.label }}</div>
 
-                        <!-- 필드 타입에 따른 조건부 렌더링 -->
+                        <!-- Input field -->
                         <template v-if="field.type === 'input'">
                             <input type="text" v-model="formData[field.model]"
                                 :placeholder="field.placeholder" class="form-input" />
                         </template>
 
+                        <!-- Select field -->
                         <template v-else-if="field.type === 'select'">
                             <div class="select-container">
                                 <select v-model="formData[`${field.model}_${rowIndex}_${index}`]" class="form-select">
@@ -47,11 +48,11 @@
                             </div>
                         </template>
 
+                        <!-- Radio field -->
                         <template v-else-if="field.type === 'radio'">
                             <div class="radio-group">
                                 <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                    <input type="radio" :name="`${field.model}_${rowIndex}_${index}`" :value="option"
-                                        v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
+                                    <input type="radio" :name="field.model" :value="option" v-model="formData[field.model]" />
                                     {{ option }}
                                 </label>
                             </div>

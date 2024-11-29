@@ -1,4 +1,6 @@
 <template>
+    <Toast />
+    <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <!-- 기초 정보 -->
         <div>
@@ -20,7 +22,7 @@
                 <div class="value">{{ item.thirdValue }}</div>
             </div>
 
-            <div class="flex-row items-center mb-s content-end">
+            <div class="flex-row items-center mb-s content-end btn">
                 <div class="ml-xs">
                     <CommonButton label="삭제" @click="goDelete" />
                 </div>
@@ -111,15 +113,21 @@ import Modal from '@/components/common/Modal.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 import { useRoute, useRouter } from 'vue-router';
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import ConfirmDialog from 'primevue/confirmdialog';
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
+// 현재 페이지 고객
 const customerId = route.query.customerId;
 
+// 수정 모달 열/닫
 const showModifyModal = ref(false);
 
-
+// 수정 정보
 const modifyInfo = ref([]);
 
 // 기본 정보
@@ -127,12 +135,12 @@ const customerInfo = ref([]);
 
 // 계약 헤더
 const tableHeaders = [
-    { field: 'contractId', label: '계약 번호', width: '' },
-    { field: 'centerName', label: '매장', width: '' },
-    { field: 'contractCarName', label: '모델명', width: '' },
-    { field: 'contractTTL', label: '계약명', width: '' },
-    { field: 'contractTotalSale', label: '계약금', width: '' },
-    { field: 'status', label: '계약상태', width: '' }
+    { field: 'contractId', label: '계약 번호', width: '20%' },
+    { field: 'centerName', label: '매장', width: '20%' },
+    { field: 'contractCarName', label: '모델명', width: '20%' },
+    { field: 'contractTTL', label: '계약명', width: '20%' },
+    { field: 'contractTotalSale', label: '계약금', width: '20%' },
+    { field: 'status', label: '계약상태', width: '20%' }
 ];
 
 const tableData = ref([]); // 테이블 데이터
@@ -144,10 +152,37 @@ const first = ref(0); // 첫 번째 행 위치
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
+const confirm = useConfirm();
+
 function goDelete() {
-    // 삭제 로직
-    console.log('삭제 버튼 클릭됨');
-    alert('삭제 로직 실행');
+    confirm.require({
+        message: '고객을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                // 고객 id 있는지 체크
+                if (!customerId) {
+                    throw new Error("customerId가 없습니다.");
+                }
+
+                await $api.customer.delete(customerId);
+                toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
+
+                router.push('/customer/list'); // 고객 목록으로 이동
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
 }
 
 function goModify() {
@@ -155,9 +190,7 @@ function goModify() {
 }
 
 function goList() {
-    // 목록으로 이동
-    console.log('목록 버튼 클릭됨');
-    router.push('/customer/list'); // 적절한 경로로 이동
+    router.push('/customer/list');  // 고객 목록으로 이동
 }
 
 function getStatusLabel(status) {
@@ -246,11 +279,6 @@ const getCustomerInfo = async () => {
 // 고객 계약 정보 로드
 const loadData = async () => {
     try {
-        const page = Math.floor(first.value / rows.value);
-        console.log('alskdjflsjdfoisjdoifjsiodjfiouwdsj');
-        console.log(page);
-        console.log(rows.value);
-
         const query = {
             page: Math.floor(first.value / rows.value),
             size: rows.value,
@@ -258,7 +286,6 @@ const loadData = async () => {
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        console.log('쿼리 스트링: ', queryString);
         const response = await $api.customer.getParams(
             'contract/' + customerId + '',                 // 추후에 수정
             queryString
@@ -390,7 +417,7 @@ onMounted(() => {
 .subtitle {
     display: flex;
     align-items: center;
-    /* 수직 중앙 정렬 */
+    margin-bottom: 24px;
 }
 
 .line {
@@ -447,7 +474,9 @@ onMounted(() => {
     width: 75%;
     color: #000000;
 }
-
+.btn{
+    margin-top: 16px;
+}
 table {
     width: 100%;
     border-collapse: collapse;

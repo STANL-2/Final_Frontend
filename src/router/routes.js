@@ -93,14 +93,6 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/customer/CustomerDetail.vue')
-            },
-            {
-                path: 'modify',
-                component: () => import('@/views/customer/CustomerModify.vue')
-            },
-            {
-                path: 'register',
-                component: () => import('@/views/customer/CustomerRegister.vue')
             }
         ]
     },
