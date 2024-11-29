@@ -1,13 +1,9 @@
 <template>
-    <Modal v-model="visible" header="서명 추가" width="600px" height="400px">
+    <Modal v-model="visible" header="서명 추가" width="30rem" height="none">
         <div>
             <!-- 서명 캔버스 -->
             <SignatureCanvas @signatureSaved="saveSignature" />
         </div>
-        <template #footer>
-            <button @click="closeModal">취소</button>
-            <button @click="saveSignature">저장</button>
-        </template>
     </Modal>
 </template>
 
@@ -33,3 +29,6 @@ const closeModal = () => {
     emit("update:modelValue", false); // 부모에 모달 상태 전달
 };
 </script>
+
+<style scoped>
+</style>

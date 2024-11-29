@@ -49,7 +49,7 @@
                         대기
                     </label>
                     <label>
-                        <input type="radio" value="APPROVE" v-model="newStatus" />
+                        <input type="radio" value="APPROVED" v-model="newStatus" />
                         승인
                     </label>
                     <label>
