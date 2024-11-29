@@ -143,35 +143,6 @@ const confirmStatusChange = async () => {
     }
 }
 
-
-// async function confirmStatusChange() {
-//     try {
-//         if (!getDetailId.value) {
-//             throw new Error("contractId가 없습니다.");
-//         }
-
-//         await $api.contract.put(getDetailId.value, { status: newStatus.value });
-
-//         toast.add({
-//             severity: 'success',
-//             summary: '성공',
-//             detail: `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-//             life: 3000,
-//         });
-
-//         emit('refresh');
-//         closeStatusModal();
-//     } catch (error) {
-//         console.error('상태 변경 실패:', error);
-//         toast.add({
-//             severity: 'error',
-//             summary: '실패',
-//             detail: '상태 변경 중 오류가 발생했습니다.',
-//             life: 3000,
-//         });
-//     }
-// }
-
 // details 값이 변경될 때마다 contractId를 업데이트
 watch(
     () => props.details,
@@ -254,7 +225,11 @@ function deleteModal() {
     confirm.require({
         message: '이 계약서를 삭제하시겠습니까?',
         header: '삭제 확인',
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
         accept: async () => {
             try {
                 if (!getDetailId.value) {
@@ -394,4 +369,5 @@ iframe {
     background-color: #f1f1fd;
     color: #6360ab;
 }
+
 </style>
