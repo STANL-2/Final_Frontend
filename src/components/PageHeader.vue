@@ -5,7 +5,7 @@
                 <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
-                    <text class="title">영업관리</text>
+                    <span class="title">영업관리</span>
                 </RouterLink>
             </div>
 
@@ -13,9 +13,9 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
-                    <img src="../assets/header/profile.png" class="profile" @click="goMypage" />
+                    <i class="pi pi-user profile" @click="goMypage"></i>
                     <div class="alarm-container">
-                        <img src="../assets/header/alarm.png" class="alarm" @click="toggleAlarmDropdown" />
+                        <i class="pi pi-bell alarm" @click="toggleAlarmDropdown"></i>
                         <span v-if="totalUnreadAlarms > 0" class="alarm-badge">
                             {{ totalUnreadAlarms }}
                         </span>
@@ -34,11 +34,9 @@
                             </div>
                         </div>
                     </div>
-                    <img src="../assets/header/organization-logo.png" class="organization-logo"
-                        @click="showOrganizationModal" />
-                    <img src="../assets/header/logout-logo.png" class="logout-logo" @click="logout" />
+                    <i class="pi pi-sitemap organization-logo" @click="showOrganizationModal"></i>
+                    <i class="pi pi-sign-out logout-logo" @click="logout"></i>
                 </div>
-
             </div>
         </nav>
     </header>
@@ -277,37 +275,41 @@ onUnmounted(() => {
 
 .profile {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .alarm {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #777777 !important;
 }
 
 .organization-logo {
     padding: 20px 0px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .logout-logo {
     padding: 20px 20px 20px 20px;
-    border-left: 2px solid #CCCCCC;
+    border-left: 1px solid #e4e4e4;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #777777 !important;
 }
 
 .modal-overlay {

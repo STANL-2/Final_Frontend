@@ -112,14 +112,6 @@ const routes = [
             {
                 path: 'detail',
                 component: () => import('@/views/customer/CustomerDetail.vue')
-            },
-            {
-                path: 'modify',
-                component: () => import('@/views/customer/CustomerModify.vue')
-            },
-            {
-                path: 'register',
-                component: () => import('@/views/customer/CustomerRegister.vue')
             }
         ]
     },
@@ -267,6 +259,7 @@ const routes = [
             },
             {
                 path: 'detail',
+                name: 'PromotionDetail',
                 component: () => import('@/views/promotion/PromotionDetail.vue')
             },
             {
@@ -279,10 +272,12 @@ const routes = [
             },
             {
                 path: 'modify',
+                name: 'EPromotionModify',
                 component: () => import('@/views/promotion/edit/EPromotionModify.vue')
             },
             {
                 path: 'register',
+                name: 'EPromotionRegister',
                 component: () => import('@/views/promotion/edit/EPromotionRegister.vue')
             }
         ]
