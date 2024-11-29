@@ -105,7 +105,7 @@ export default class ApiService extends BaseApiService {
         }
 
         const response = await this.#callApi(url);
-
+        console.log(url);
         return response;
     }
 

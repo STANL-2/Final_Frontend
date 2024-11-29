@@ -240,6 +240,7 @@ const routes = [
             },
             {
                 path: 'detail',
+                name: 'PromotionDetail',
                 component: () => import('@/views/promotion/PromotionDetail.vue')
             },
             {
@@ -252,10 +253,12 @@ const routes = [
             },
             {
                 path: 'modify',
+                name: 'EPromotionModify',
                 component: () => import('@/views/promotion/edit/EPromotionModify.vue')
             },
             {
                 path: 'register',
+                name: 'EPromotionRegister',
                 component: () => import('@/views/promotion/edit/EPromotionRegister.vue')
             }
         ]
