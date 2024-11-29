@@ -112,6 +112,11 @@ import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
+import { useRoute } from 'vue-router';
+
+const router = useRoute();
+const customerId = router.query.customerId;
+console.log(customerId);
 
 // 기본 정보
 const customerInfo = ref([

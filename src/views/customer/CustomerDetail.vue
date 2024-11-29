@@ -91,8 +91,14 @@
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import { ref, onMounted, watchEffect } from 'vue';
+import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
+
+const customerId = route.query.customerId;
 
 // 기본 정보
 const customerInfo = ref([]);
@@ -123,15 +129,13 @@ function goDelete() {
 }
 
 function goModify() {
-    // 수정 로직
-    console.log('수정 버튼 클릭됨');
-    alert('수정 로직 실행');
+    router.push({path: '/customer/modify', query: { customerId: customerId}});  
 }
 
 function goList() {
     // 목록으로 이동
     console.log('목록 버튼 클릭됨');
-    router.push('/customer-list'); // 적절한 경로로 이동
+    router.push('/customer/list'); // 적절한 경로로 이동
 }
 
 function getStatusLabel(status) {
@@ -165,7 +169,7 @@ function getCustomTagClass(status) {
 // 기본 정보
 const getCustomerInfo = async () => {
     try {
-        const response = await $api.customer.get('', 'CUS_000000001');      // 추후에 수정
+        const response = await $api.customer.get('', customerId);      // 추후에 수정
         const result = response.result;
 
         customerInfo.value = [
@@ -207,7 +211,7 @@ const loadData = async () => {
 
         console.log('쿼리 스트링: ', queryString);
         const response = await $api.customer.getParams(
-            'contract/' + 'CUS_000000001' + '',                 // 추후에 수정
+            'contract/' + customerId + '',                 // 추후에 수정
             queryString
         );
 

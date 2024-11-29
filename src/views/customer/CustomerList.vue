@@ -47,6 +47,7 @@
         <Modal v-model="showRegisterModal" width="40rem" height="none" header="고객 등록">
             <div class="modal-content">
                 <div class="form-row" v-for="(item, index) in registerInfo" :key="index">
+
                     <!-- 첫 번째 필드 -->
                     <div class="form-group">
                         <label class="form-label">{{ item.firstLabel }}</label>
@@ -80,8 +81,6 @@
                 </div>
             </div>
         </Modal>
-
-
     </PageLayout>
 </template>
 
@@ -93,6 +92,9 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
 import { $api } from '@/services/api/api';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const registerInfo = ref([
     {
@@ -142,8 +144,6 @@ const registerModalBtn = async () => {
             emergePhone: registerInfo.value.find(item => item.firstLabel === '비상연락처')?.firstValue || '',
             email: registerInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
         };
-
-        console.log('Payload:', payload);
 
         // Call your API service
         const response = await $api.customer.post(
@@ -296,11 +296,12 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
-
 function handleView(rowData) {
+    console.log('@####');
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    showDetailModal.value = true;
+    console.log(rowData.customerId);
+    router.push({path: '/customer/detail', query: { customerId: rowData.customerId}});  
 }
 
 const searchCriteria = ref({});
@@ -470,34 +471,7 @@ function handleOpenModal(fieldIndex) {
     showModal.value = true;
 }
 
-function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
-}
 
-function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
-    }
-    closeModal();
-}
-
-function resetModalState() {
-    closeModal();
-}
-
-function closeModal() {
-    showModal.value = false;
-    selectedRow.value = null;
-    selectedCode.value = '';
-}
-
-function searchStore() {
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
-    }
-    searchQuery.value = '';
-}
 </script>
 
 <style scoped>
