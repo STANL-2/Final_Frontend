@@ -16,24 +16,23 @@ import DOMEventService from '@/services/DOMEventService';
 import useToastMessage from '@/hooks/useToastMessage';
 import Toast from 'primevue/toast';
 import { useUserStore } from '@/stores/user';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // pinia에 있는 유저 정보
 const userStore = useUserStore();   
+const eventSource = ref(null);
 
 // SSE 연결 함수
 const connectToSSE = () => {
-  const eventSource = ref(null);
+  const jwtToken = userStore.accessToken;
 
   // SSE 연결 생성
-  eventSource.value = new EventSource(
-    `http://localhost:8080/api/v1/connect`
-  );
-
-  console.log('이벤트 소스 값')
-  console.log(eventSource.value);
+  eventSource.value = new EventSourcePolyfill('http://localhost:8080/api/v1/alarm/connect', {
+    headers: {
+      Authorization: `Bearer ${jwtToken}`
+    }
+  });
 
   // 이벤트 수신 시 알림 추가
   eventSource.value.onmessage = (event) => {
@@ -62,7 +61,6 @@ const disconnectFromSSE = () => {
 // 로그인 상태 확인 후 SSE 연결
 const checkLoginStatus = () => {
   const accessToken = userStore.accessToken;
-  console.log(accessToken);
 
   if (accessToken) {
     console.log('로그인 상태 성공!');
@@ -72,9 +70,6 @@ const checkLoginStatus = () => {
     disconnectFromSSE(); // 로그인 안 됐을 경우 SSE 해제
   }
 };
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 const route = useRoute();
 const { showError, showSuccess } = useToastMessage();
