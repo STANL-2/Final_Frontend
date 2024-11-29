@@ -136,7 +136,7 @@ const customerInfo = ref([
         thirdLabel: '',
         thirdValue: '',
         thirdEditable: false,
-    },
+    }
 ]);
 
 // 계약 헤더
