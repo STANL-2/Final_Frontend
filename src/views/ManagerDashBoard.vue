@@ -140,17 +140,14 @@ const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
 
-        const responseMember = await $api.member.get('',);
+        const responseMember = await $api.member.get('','');
 
-        const myCenter = response?.result.centerId;
+        const myCenter = responseMember?.result?.centerId;
 
-        console.log("myCenter: " + myCenter.value);
 
         let currentTime = new Date();
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
-
-        console.log("startTime: " + startTime + '\ncurrentTime: ' + currentTime);
 
         const searchParams = ref({
             startDate: startTime.toISOString(),
@@ -158,21 +155,30 @@ const loadData = async () => {
         });
 
         const query = {
-            centerId: myCenter || '',
-            startDate: searchParams.value.startDate || '',
-            endDate: searchParams.value.endDate || '',
+            "centerList": myCenter || '',
+            "startDate": searchParams.value.startDate || '',
+            "endDate": searchParams.value.endDate || '',
         };
 
-        const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString); // 디버깅용
-
         // API 호출
-        const response = await $api.salesHistory.getParams('employee/statistics/search/month', queryString);
+        const response = await $api.salesHistory.post(
+            {
+                "centerList": [myCenter],
+                "startDate": searchParams.value.startDate || '',
+                "endDate": searchParams.value.endDate || '',
+            }
+            ,'statistics/center/search/month',
+
+        );
 
         const result = response?.result; // 응답 데이터 접근
 
-        if (result && Array.isArray(result)) {
-            chartData.value = result;
+        console.log(response?.result);
+        console.log(result.content);        
+
+
+        if (result && Array.isArray(result.content)) {
+            chartData.value = result.content;
 
             // 데이터 매핑
             bigCardChartData.value = {
@@ -181,18 +187,18 @@ const loadData = async () => {
                 datasets: [
                     {
                         ...bigCardChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.incentive || 0),
+                        data: chartData.value.map((item) => item.totalIncentive || 0),
                     },
                 ],
             };
-
+            
             secondChartData.value = {
                 ...secondChartData.value,
                 labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...secondChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.performance || 0),
+                        data: chartData.value.map((item) => item.totalPerformance || 0),
                     },
                 ],
             };
