@@ -79,16 +79,16 @@ const secondChartData = ref({
             yAxisID: 'y1',
             borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루
             backgroundColor: 'rgba(52, 115, 235, 0.2)', // 블루 배경색
-
+            
             type: 'bar', // 바 차트
             barThickness: 15, // 바의 두께
         },
     ],
     gradientColors: [
-        'rgba(52, 115, 235, 0.8)', // 상단 진한 블루
-        'rgba(52, 115, 235, 0.3)', // 중간 블루
-        'rgba(52, 115, 235, 0)',   // 하단 투명
-    ],
+                'rgba(52, 115, 235, 0.8)', // 상단 진한 블루
+                'rgba(52, 115, 235, 0.3)', // 중간 블루
+                'rgba(52, 115, 235, 0)',   // 하단 투명
+            ],
 });
 
 const thirdChartData = ref({
@@ -140,14 +140,11 @@ const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
 
-        const responseMember = await $api.member.get('','');
-
-        const myCenter = responseMember?.result?.centerId;
-
-
         let currentTime = new Date();
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
+
+        console.log("startTime: " + startTime +'\ncurrentTime: ' + currentTime); 
 
         const searchParams = ref({
             startDate: startTime.toISOString(),
@@ -155,68 +152,58 @@ const loadData = async () => {
         });
 
         const query = {
-            "centerList": myCenter || '',
-            "startDate": searchParams.value.startDate || '',
-            "endDate": searchParams.value.endDate || '',
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
         };
 
-        // API 호출
-        const response = await $api.salesHistory.post(
-            {
-                "centerList": [myCenter],
-                "startDate": searchParams.value.startDate || '',
-                "endDate": searchParams.value.endDate || '',
-            }
-            ,'statistics/center/search/month',
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
 
-        );
+        // API 호출
+        const response = await $api.salesHistory.getParams('employee/statistics/search/month', queryString);
 
         const result = response?.result; // 응답 데이터 접근
 
-        console.log(response?.result);
-
-        console.log(result.value);
-
         if (result && Array.isArray(result)) {
-            chartData.value = result;
+    chartData.value = result;
 
-            // 데이터 매핑
-            bigCardChartData.value = {
-                ...bigCardChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
-                datasets: [
-                    {
-                        ...bigCardChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.totalIncentive || 0),
-                    },
-                ],
-            };
+    // 데이터 매핑
+    bigCardChartData.value = {
+        ...bigCardChartData.value,
+        labels: chartData.value.map((item) => item.month || ''),
+        datasets: [
+            {
+                ...bigCardChartData.value.datasets[0],
+                data: chartData.value.map((item) => item.incentive || 0),
+            },
+        ],
+    };
 
-            secondChartData.value = {
-                ...secondChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
-                datasets: [
-                    {
-                        ...secondChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.totalPerformance || 0),
-                    },
-                ],
-            };
+    secondChartData.value = {
+        ...secondChartData.value,
+        labels: chartData.value.map((item) => item.month || ''),
+        datasets: [
+            {
+                ...secondChartData.value.datasets[0],
+                data: chartData.value.map((item) => item.performance || 0),
+            },
+        ],
+    };
 
-            thirdChartData.value = {
-                ...thirdChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
-                datasets: [
-                    {
-                        ...thirdChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.totalSales || 0),
-                    },
-                ],
-            };
+    thirdChartData.value = {
+        ...thirdChartData.value,
+        labels: chartData.value.map((item) => item.month || ''),
+        datasets: [
+            {
+                ...thirdChartData.value.datasets[0],
+                data: chartData.value.map((item) => item.totalSales || 0),
+            },
+        ],
+    };
 
-            console.log("bigCardChartData:", bigCardChartData.value);
-            console.log("secondChartData:", secondChartData.value);
-            console.log("thirdChartData:", thirdChartData.value);
+    console.log("bigCardChartData:", bigCardChartData.value);
+    console.log("secondChartData:", secondChartData.value);
+    console.log("thirdChartData:", thirdChartData.value);
 
 
         } else {
