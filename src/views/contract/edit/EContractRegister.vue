@@ -1,46 +1,29 @@
 <template>
-    <Modal
-        v-model="isVisible"
-        header="계약서 등록"
-        width="80rem"
-        height="100rem"
-        @cancel="resetModalState"
-    >
+    <Modal v-model="isVisible" header="계약서 등록" width="80rem" height="100rem">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">계약서 제목:</Typography>
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor 
-            v-model="content" 
-            :initial-html="initialHtml"
-            @update:model-value="handleEditorUpdate" 
-        />
+        <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate"
+            @ready="onEditorReady" />
+        <SignatureModal v-model="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
         <template #footer>
-            <CommonButton 
-                label="취소" 
-                color="#F1F1FD" 
-                textColor="#6360AB" 
-                @click="closeModal" 
-            />
-            <CommonButton 
-                label="등록" 
-                color="#6360AB" 
-                textColor="#FFFFFF" 
-                @click="onRegister" 
-            />
+            <CommonButton label="취소" color="#F1F1FD" textColor="#6360AB" @click="closeModal" />
+            <CommonButton label="등록" color="#6360AB" textColor="#FFFFFF" @click="onRegister" />
         </template>
     </Modal>
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, watch, defineProps, defineEmits, onUpdated, nextTick, onMounted } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import Typography from '@/components/Typography.vue';
+import SignatureModal from '@/components/common/signatureCanvas/SignatureModal.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
 
 // 부모에서 전달받는 props
@@ -56,6 +39,7 @@ const emit = defineEmits(['update:visible', 'close']);
 
 // 내부 상태 변수
 const isVisible = ref(props.visible);
+const isSignatureModalVisible = ref(false);
 const content = ref(''); // CKEditor의 현재 내용
 const title = ref('');
 const initialHtml = `
@@ -201,7 +185,13 @@ const initialHtml = `
         <section style="margin-top: 20px;">
             <p style="margin-top: 30px;">본 계약서 주요 내용을 확인하고 계약을 체결하였음을 확인합니다.</p>
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <div>매수인 (서명):유혜진</div>
+                <div>매수인
+        <div
+            id="signature-area"
+            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
+        >
+            (서명)
+        </div>:유혜진</div>
                 <div>매도인 (서명):강남</div>
             </div>
         </section>
@@ -222,11 +212,10 @@ watch(
     }
 );
 
-
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
-    
+
     const doc = parser.parseFromString(html, "text/html");
 
     // 고객 사항
@@ -286,11 +275,19 @@ const extractDataFromHTML = (html) => {
     };
 };
 
-// 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
     content.value = newContent;
-    console.log("Editor content updated:", newContent);
+
+    nextTick(() => {
+        const signatureArea = document.querySelector("#signature-area");
+        if (signatureArea) {
+            console.log("Signature area found:", signatureArea);
+        } else {
+            console.warn("Signature area not found after content update.");
+        }
+    });
 };
+
 
 // 등록 버튼 클릭 시 호출되는 함수
 const onRegister = async () => {
@@ -317,7 +314,112 @@ const onRegister = async () => {
     }
 };
 
+const ckEditorRef = ref(null);
 
+// 에디터 준비 완료 시 호출되는 핸들러
+const onEditorReady = (editor) => {
+    console.log("CKEditor is ready");
+    ckEditorRef.value = editor;
+
+    nextTick(() => {
+        const signatureArea = document.querySelector("#signature-area");
+        if (signatureArea) {
+            console.log("Signature area found:", signatureArea);
+        } else {
+            console.warn("Signature area not found.");
+        }
+    });
+};
+
+setTimeout(() => {
+    const signatureArea = document.querySelector("#signature-area");
+    if (signatureArea) {
+        console.log("Signature area found:", signatureArea);
+    } else {
+        console.warn("Signature area not found after timeout.");
+    }
+}, 100); // 필요한 경우 100ms 지연 시간을 조정
+
+// 서명 영역 클릭 이벤트 바인딩 함수
+const bindSignatureAreaClick = () => {
+    const observer = new MutationObserver(() => {
+        const signatureArea = document.getElementById("signature-area");
+        console.log("ssss: " + signatureArea);
+        if (signatureArea) {
+            console.log("Signature area dynamically detected:", signatureArea);
+
+            signatureArea.addEventListener("click", () => {
+                console.log("Signature area clicked");
+                isSignatureModalVisible.value = true; // 서명 모달 열기
+            });
+            observer.disconnect(); // 더 이상 관찰 필요 없음
+        }
+    });
+    // const signatureArea = document.querySelector("#signature-area");
+    // if (signatureArea) {
+    //     console.log("Signature area found:", signatureArea);
+
+    //     // 클릭 이벤트 바인딩
+    //     signatureArea.addEventListener("click", () => {
+    //         console.log("Signature area clicked");
+    //         isSignatureModalVisible.value = true; // 서명 모달 열기
+    //     });
+    // } else {
+    //     console.warn("Signature area not found.");
+    // }
+};
+
+
+const handleEditorReady = (editor) => {
+    console.log("CKEditor is ready");
+    // 래퍼런스에 에디터 저장
+    ckEditorRef.value = editor;
+};
+
+// 서명 모달 열기
+const openSignatureModal = () => {
+    console.log("Signature modal opened.");
+    isSignatureModalVisible.value = true;
+};
+
+const handleSignature = (signatureData) => {
+    console.log("Signature received:", signatureData);
+    const updatedHtml = content.value.replace(
+        '<div id="signature-area" style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;">서명을 클릭하여 추가하세요</div>',
+        `<img src="${signatureData}" alt="서명 이미지" style="max-width: 100%; height: auto;" />`
+    );
+    content.value = updatedHtml;
+    isSignatureModalVisible.value = false;
+};
+
+const editorInstance = ref(null);
+
+const observeDOMChanges = () => {
+    const observer = new MutationObserver(() => {
+        const signatureArea = document.getElementById("signature-area");
+        console.log("ssss: " + signatureArea);
+        if (signatureArea) {
+            console.log("Signature area dynamically detected:", signatureArea);
+            observer.disconnect(); // 더 이상 관찰 필요 없음
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+};
+
+// 호출 시점에 맞춰 실행
+onMounted(() => {
+    nextTick(() => {
+        bindSignatureAreaClick();
+    });
+});
+
+onUpdated(() => {
+    bindSignatureAreaClick();
+});
 
 // 모달 닫기 함수
 function closeModal() {
