@@ -814,28 +814,28 @@ export default {
     color: #333;
 }
 
-::v-deep(.fc .fc-toolbar.fc-header-toolbar) {
+:deep(.fc .fc-toolbar.fc-header-toolbar) {
     margin-bottom: 1rem;
 }
 
-::v-deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)) {
+:deep(.fc-direction-ltr .fc-toolbar > * > :not(:first-child)) {
     margin-left: 0;
 }
 
-::v-deep(.fc-toolbar-title) {
+:deep(.fc-toolbar-title) {
     display: inline-block;
     font-size: 1.4rem;
     margin-top: 0.3rem;
 }
 
-::v-deep(.fc-button-primary) {
+:deep(.fc-button-primary) {
     background-color: white;
     border: none;
     padding: 0rem;
     font-size: 1.2rem;
 }
 
-::v-deep(.fc-button) {
+:deep(.fc-button) {
     border: none !important;
     color: #333 !important;
     box-shadow: none !important;
@@ -844,7 +844,7 @@ export default {
     font-size: 1.2rem;
 }
 
-::v-deep(.fc-today-button) {
+:deep(.fc-today-button) {
     border: 1px solid #333 !important;
     padding: 0.2rem 0.6rem !important;
     border-radius: 4px;
@@ -852,25 +852,25 @@ export default {
 
 }
 
-::v-deep(.fc-button:hover) {
+:deep(.fc-button:hover) {
     background-color: inherit !important;
     color: inherit !important;
 }
 
-::v-deep(.fc-button.fc-button-active) {
+:deep(.fc-button.fc-button-active) {
     border: none !important;
 }
 
-::v-deep(.fc .fc-button-primary:disabled) {
+:deep(.fc .fc-button-primary:disabled) {
     background-color: white;
     border-color: #333;
 }
 
-::v-deep(.fc-button.fc-button-disabled) {
+:deep(.fc-button.fc-button-disabled) {
     cursor: not-allowed;
 }
 
-::v-deep(.fc-daygrid-day-frame) {
+:deep(.fc-daygrid-day-frame) {
     height: 8rem;
     box-sizing: border-box;
 }
@@ -892,13 +892,13 @@ export default {
     padding: 5px;
 }
 
-::v-deep(.fc-toolbar-chunk) {
+:deep(.fc-toolbar-chunk) {
     display: flex;
     gap: 1rem;
 }
 
-::v-deep(.fc-customTagsButton-button),
-::v-deep(.fc-customCalendarButton-button) {
+:deep(.fc-customTagsButton-button),
+:deep(.fc-customCalendarButton-button) {
     background-color: white !important;
     border-radius: 4px;
     display: flex;
@@ -909,20 +909,20 @@ export default {
     padding: 0.6rem !important;
 }
 
-::v-deep(.fc-customCalendarButton-button img),
-::v-deep(.fc-customTagsButton-button img) {
+:deep(.fc-customCalendarButton-button img),
+:deep(.fc-customTagsButton-button img) {
     width: 1.8rem !important;
     height: 1.8rem !important;
     filter: brightness(0) !important;
     transition: filter 0.2s ease;
 }
 
-::v-deep(.fc-customTagsButton-button:hover img),
-::v-deep(.fc-customCalendarButton-button:hover img) {
+:deep(.fc-customTagsButton-button:hover img),
+:deep(.fc-customCalendarButton-button:hover img) {
     filter: brightness(0.4) !important;
 }
 
-::v-deep(.fc-customAddEventButton-button) {
+:deep(.fc-customAddEventButton-button) {
     background-color: white !important;
     color: #333 !important;
     font-size: 0.875rem !important;
@@ -940,20 +940,20 @@ export default {
     margin-top: 0.32rem;
 }
 
-::v-deep(.fc-customAddEventButton-button)::before {
+:deep(.fc-customAddEventButton-button)::before {
     content: '+';
     font-size: 1.25rem;
     margin-right: 4px;
     font-weight: 400;
 }
 
-::v-deep(.fc-customAddEventButton-button:hover) {
+:deep(.fc-customAddEventButton-button:hover) {
     background-color: #f8f9fa !important;
     box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
         0 2px 6px 2px rgba(60, 64, 67, 0.15) !important;
 }
 
-::v-deep(.fc-customAddEventButton-button:active) {
+:deep(.fc-customAddEventButton-button:active) {
     background-color: #f1f3f4 !important;
     box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3) !important;
 }

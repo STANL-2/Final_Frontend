@@ -12,9 +12,16 @@ import Typography from '../Typography.vue';
 
 <style scoped>
 .loading-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     margin: 64px auto;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 </style>
