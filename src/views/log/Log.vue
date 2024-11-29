@@ -482,5 +482,6 @@ tr:hover {
     display: flex;
     justify-content: right;
     margin-top: 16px;
+    margin-bottom: 24px;
 }
 </style>
