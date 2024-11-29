@@ -36,6 +36,17 @@ const routes = [
         ]
     },
     {
+        path: '/log',
+        component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
+        children: [
+            {
+                path: '',
+                component: () => import ('@/views/log/Log.vue'),
+            }
+        ]
+    },
+    {
         path: '/center',
         component: () => import('@/layouts/MainLayout.vue'),
         meta: { requiresAuth: true, auth: 'GOD' },
