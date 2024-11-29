@@ -195,7 +195,7 @@ const handleSearch = async () => {
     // 검색 파라미터 매핑
     searchParams.value = {
         title: formData.noticeTitle || '',
-        tag: formData.tag === 'ALL' ? '' : formData.tag,
+        tag: formData.tag || '',
         memberId: formData.noticeWriter || '',
         classification: formData.classification || '',
         startDate: formData.NoticeSearchDate_start || null,
@@ -254,10 +254,7 @@ const loadData = async () => {
             console.log(params.endDate);
         }
         const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
-
-        console.log(`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`)
-        console.log('응답 데이터:', response);
-
+        console.log(`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
     } catch (error) {
