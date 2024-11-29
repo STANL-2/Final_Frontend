@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -51,18 +51,10 @@
     import { ref, onMounted, watch } from 'vue';
     import PageLayout from '@/components/common/layouts/PageLayout.vue';
     import ViewTable from '@/components/common/ListTable.vue';
-    import ContractDetail from '@/views/contract/ContractDetail.vue';
     import Modal from '@/components/common/Modal.vue';
-    import SearchForm from '@/components/common/SearchForm.vue';
+    import CSearchForm from '@/components/common/CSearchForm.vue';
     import CommonButton from '@/components/common/Button/CommonButton.vue';
     import { $api } from '@/services/api/api';
-
-    // 모달 테이블 값
-    const headers = ['매장코드', '매장명'];
-    const modalTableData = [
-        { 매장코드: 'A', '매장명': 50 },
-        { 매장코드: 'B', '매장명': 75 },
-    ];
 
     const selectedRows = ref([]);
 
@@ -203,66 +195,142 @@
 
 
     // "조회" button handler
+    // const select = () => {
+    //     console.log(formFields.value); // 반응형 데이터를 출력
+
+    //     // 검색 조건 초기화
+    //     searchCriteria.value = {};
+
+    //     // `formFields.value` 사용
+    //     formFields.value.forEach((group) => {
+    //         group.forEach((field) => {
+    //             if (field.model) {
+    //                 searchCriteria.value[field.model] = field.value || '';
+    //             }
+    //         });
+    //     });
+
+    //     console.log('Updated Search Criteria:', searchCriteria.value);
+
+    //     // 검색 조건으로 데이터 로드
+    //     loadData();
+    // };
+
+    // 조회 버튼 클릭 시
     const select = () => {
-        console.log(formFields.value); // 반응형 데이터를 출력
+        const formData = searchFormRef.value?.formData;
 
-        // 검색 조건 초기화
-        searchCriteria.value = {};
+        console.log('formData', formData);
+        if (!formData) {
+            console.error('formData를 가져올 수 없습니다.');
+            return;
+        }
 
-        // `formFields.value` 사용
-        formFields.value.forEach((group) => {
-            group.forEach((field) => {
-                if (field.model) {
-                    searchCriteria.value[field.model] = field.value || '';
-                }
-            });
-        });
+        console.log('CSearchForm에서 가져온 formData:', formData);
 
-        console.log('Updated Search Criteria:', searchCriteria.value);
+        // 검색 조건 생성
+        searchCriteria.value = Object.fromEntries(
+            Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        );
 
-        // 검색 조건으로 데이터 로드
+        console.log('검색 조건:', searchCriteria.value);
+
+        // 검색 실행
         loadData();
     };
 
+
     // 데이터 로드 함수
+    // const loadData = async () => {
+    //     loading.value = true; // 로딩 시작
+    //     try {
+    //         // 쿼리 파라미터 설정
+    //         const query = {
+    //             page: first.value / rows.value,
+    //             size: rows.value,
+    //             ...Object.fromEntries(
+    //                 Object.entries(searchCriteria.value).filter(
+    //                     ([_, value]) => value !== null && value !== undefined && value !== ''
+    //                 )
+    //             ),
+    //         };
+
+    //         // 쿼리 문자열 생성
+    //         const queryString = `?${new URLSearchParams(query).toString()}`;
+
+    //         // API 호출
+    //         const response = await $api.customer.getParams('search', queryString);
+
+    //         // API 응답 데이터 확인
+    //         console.log("API 응답 데이터:", response);
+
+    //         const result = response?.result; // 응답 데이터 접근
+    //         if (result && Array.isArray(result.content)) {
+    //             tableData.value = result.content; // 테이블 데이터 업데이트
+    //             totalRecords.value = result.totalElements; // 전체 데이터 수
+    //         } else {
+    //             console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+    //             throw new Error("API 응답 데이터 구조 오류");
+    //         }
+    //     } catch (error) {
+    //         console.error("데이터 로드 실패:", error.message);
+    //         alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    //     } finally {
+    //         loading.value = false; // 로딩 종료
+    //     }
+    // };
+
+
     const loadData = async () => {
+        console.log('검색 조건으로 데이터 로드:', searchCriteria.value);
         loading.value = true; // 로딩 시작
         try {
-            // 쿼리 파라미터 설정
+            // 검색 조건 필터링 및 유효한 값만 유지
+            const filteredCriteria = Object.fromEntries(
+                Object.entries(searchCriteria.value).filter(([key, value]) => {
+                    // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
+                    if (value === null || value === undefined || value === '') return false;
+                    if (Array.isArray(value) && value.length === 0) return false;
+                    if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+                    return true;
+                })
+            );
+
+            console.log('필터링된 검색 조건:', filteredCriteria);
+
+            // 쿼리 파라미터 생성
             const query = {
-                page: first.value / rows.value,
-                size: rows.value,
-                ...Object.fromEntries(
-                    Object.entries(searchCriteria.value).filter(
-                        ([_, value]) => value !== null && value !== undefined && value !== ''
-                    )
-                ),
+                page: first.value / rows.value, // 현재 페이지
+                size: rows.value, // 페이지 크기
+                ...filteredCriteria // 필터링된 검색 조건 병합
             };
 
-            // 쿼리 문자열 생성
             const queryString = `?${new URLSearchParams(query).toString()}`;
+
+            console.log('생성된 쿼리 문자열:', queryString);
 
             // API 호출
             const response = await $api.customer.getParams('search', queryString);
 
-            // API 응답 데이터 확인
-            console.log("API 응답 데이터:", response);
+            // API 응답 데이터 처리
+            console.log('API 응답 데이터:', response);
 
-            const result = response?.result; // 응답 데이터 접근
+            const result = response?.result; // 응답 데이터
             if (result && Array.isArray(result.content)) {
                 tableData.value = result.content; // 테이블 데이터 업데이트
                 totalRecords.value = result.totalElements; // 전체 데이터 수
             } else {
-                console.warn("API 응답이 예상한 구조와 다릅니다:", response);
-                throw new Error("API 응답 데이터 구조 오류");
+                console.warn('API 응답이 예상한 구조와 다릅니다:', response);
+                throw new Error('API 응답 데이터 구조 오류');
             }
         } catch (error) {
-            console.error("데이터 로드 실패:", error.message);
-            alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+            console.error('데이터 로드 실패:', error.message);
+            alert('데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.');
         } finally {
             loading.value = false; // 로딩 종료
         }
     };
+
 
     onMounted(() => {
         loadData();

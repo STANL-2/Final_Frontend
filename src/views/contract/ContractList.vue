@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
 
         <div class="flex-row content-between">
@@ -85,7 +85,7 @@ import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import ContractDetail from '@/views/contract/ContractDetail.vue';
 import Modal from '@/components/common/Modal.vue';
-import SearchForm from '@/components/common/SearchForm.vue';
+import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import EContractRegister from './edit/EContractRegister.vue';
