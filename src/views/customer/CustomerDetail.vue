@@ -1,4 +1,6 @@
 <template>
+    <Toast />
+    <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <!-- 기초 정보 -->
         <div>
@@ -20,7 +22,7 @@
                 <div class="value">{{ item.thirdValue }}</div>
             </div>
 
-            <div class="flex-row items-center mb-s content-end">
+            <div class="flex-row items-center mb-s content-end btn">
                 <div class="ml-xs">
                     <CommonButton label="삭제" @click="goDelete" />
                 </div>
@@ -59,27 +61,43 @@
                 </ViewTable>
             </div>
 
+            <Modal v-model="showModifyModal" width="40rem" height="none" header="고객정보 수정">
+                <div class="modal-content">
+                    <div class="form-row" v-for="(item, index) in modifyInfo" :key="index">
 
+                        <!-- 첫 번째 필드 -->
+                        <div class="form-group">
+                            <label class="form-label">{{ item.firstLabel }}</label>
+                            <template v-if="item.type === 'radio'">
+                                <div class="radio-group">
+                                    <label v-for="option in item.options" :key="option" class="radio-option">
+                                        <input type="radio" :value="option" v-model="item.firstValue" />
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <input v-if="item.firstEditable" type="text" v-model="item.firstValue"
+                                    class="form-input" :placeholder="`${item.firstLabel}을(를) 입력하세요`" />
+                                <span v-else class="form-value">{{ item.firstValue }}</span>
+                            </template>
+                        </div>
 
+                        <!-- 두 번째 필드 -->
+                        <div class="form-group" v-if="item.secondLabel">
+                            <label class="form-label">{{ item.secondLabel }}</label>
+                            <input v-if="item.secondEditable" type="text" v-model="item.secondValue" class="form-input"
+                                :placeholder="`${item.secondLabel}을(를) 입력하세요`" />
+                            <span v-else class="form-value">{{ item.secondValue }}</span>
+                        </div>
+                    </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    <div class="modal-actions">
+                        <CommonButton label="저장" class="btn-save" @click="modifyModalBtn" />
+                        <CommonButton label="취소" class="btn-cancel" @click="closemodifyModal" />
+                    </div>
+                </div>
+            </Modal>
         </div>
 
 
@@ -91,20 +109,38 @@
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
-import { ref, onMounted, watchEffect } from 'vue';
+import Modal from '@/components/common/Modal.vue';
+import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
+import { useRoute, useRouter } from 'vue-router';
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import ConfirmDialog from 'primevue/confirmdialog';
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+
+// 현재 페이지 고객
+const customerId = route.query.customerId;
+
+// 수정 모달 열/닫
+const showModifyModal = ref(false);
+
+// 수정 정보
+const modifyInfo = ref([]);
 
 // 기본 정보
 const customerInfo = ref([]);
 
 // 계약 헤더
 const tableHeaders = [
-    { field: 'contractId', label: '계약 번호', width: '' },
-    { field: 'centerName', label: '매장', width: '' },
-    { field: 'contractCarName', label: '모델명', width: '' },
-    { field: 'contractTTL', label: '계약명', width: '' },
-    { field: 'contractTotalSale', label: '계약금', width: '' },
-    { field: 'status', label: '계약상태', width: '' }
+    { field: 'contractId', label: '계약 번호', width: '20%' },
+    { field: 'centerName', label: '매장', width: '20%' },
+    { field: 'contractCarName', label: '모델명', width: '20%' },
+    { field: 'contractTTL', label: '계약명', width: '20%' },
+    { field: 'contractTotalSale', label: '계약금', width: '20%' },
+    { field: 'status', label: '계약상태', width: '20%' }
 ];
 
 const tableData = ref([]); // 테이블 데이터
@@ -116,22 +152,45 @@ const first = ref(0); // 첫 번째 행 위치
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 
+const confirm = useConfirm();
+
 function goDelete() {
-    // 삭제 로직
-    console.log('삭제 버튼 클릭됨');
-    alert('삭제 로직 실행');
+    confirm.require({
+        message: '고객을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                // 고객 id 있는지 체크
+                if (!customerId) {
+                    throw new Error("customerId가 없습니다.");
+                }
+
+                await $api.customer.delete(customerId);
+                toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
+
+                router.push('/customer/list'); // 고객 목록으로 이동
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
 }
 
 function goModify() {
-    // 수정 로직
-    console.log('수정 버튼 클릭됨');
-    alert('수정 로직 실행');
+    showModifyModal.value = true;
 }
 
 function goList() {
-    // 목록으로 이동
-    console.log('목록 버튼 클릭됨');
-    router.push('/customer-list'); // 적절한 경로로 이동
+    router.push('/customer/list');  // 고객 목록으로 이동
 }
 
 function getStatusLabel(status) {
@@ -165,7 +224,7 @@ function getCustomTagClass(status) {
 // 기본 정보
 const getCustomerInfo = async () => {
     try {
-        const response = await $api.customer.get('', 'CUS_000000001');      // 추후에 수정
+        const response = await $api.customer.get('', customerId);      // 추후에 수정
         const result = response.result;
 
         customerInfo.value = [
@@ -176,13 +235,40 @@ const getCustomerInfo = async () => {
             },
             {
                 firstLabel: '성별', firstValue: result.sex,
-                secondLabel: '휴대전화', secondValue: result.phone,
+                secondLabel: '연락처', secondValue: result.phone,
                 thirdLabel: '이메일', thirdValue: result.email
             },
             {
                 firstLabel: '비상연락처', firstValue: result.emergePhone,
                 secondLabel: '', secondValue: '',
                 thirdLabel: '', thirdValue: ''
+            }
+        ];
+
+        modifyInfo.value = [
+            {
+                firstLabel: '고객명',
+                firstValue: result.name || '',
+                firstEditable: true,
+                secondLabel: '나이',
+                secondValue: result.age || '',
+            },
+            {
+                firstLabel: '성별',
+                firstValue: result.sex || '',
+                type: 'radio',
+                options: ['남성', '여성'],
+                secondLabel: '연락처',
+                secondValue: result.phone || '',
+                secondEditable: true,
+            },
+            {
+                firstLabel: '비상연락처',
+                firstValue: result.emergePhone || '',
+                firstEditable: true,
+                secondLabel: '이메일',
+                secondValue: result.email || '',
+                secondEditable: true,
             }
         ];
     } catch (error) {
@@ -193,11 +279,6 @@ const getCustomerInfo = async () => {
 // 고객 계약 정보 로드
 const loadData = async () => {
     try {
-        const page = Math.floor(first.value / rows.value);
-        console.log('alskdjflsjdfoisjdoifjsiodjfiouwdsj');
-        console.log(page);
-        console.log(rows.value);
-
         const query = {
             page: Math.floor(first.value / rows.value),
             size: rows.value,
@@ -205,9 +286,8 @@ const loadData = async () => {
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        console.log('쿼리 스트링: ', queryString);
         const response = await $api.customer.getParams(
-            'contract/' + 'CUS_000000001' + '',                 // 추후에 수정
+            'contract/' + customerId + '',                 // 추후에 수정
             queryString
         );
 
@@ -229,6 +309,58 @@ const loadData = async () => {
         totalRecords.value = response.result.totalElements;
     } catch (error) {
         console.error('고객 계약 정보 요청 실패:', error);
+    }
+};
+
+function closemodifyModal() {
+    showModifyModal.value = false;
+}
+
+const modifyModalBtn = async () => {
+    try {
+        // Construct the payload with the correct field mapping
+        const payload = {
+            name: modifyInfo.value.find(item => {
+                console.log('firstLabel 검사:', item.firstLabel); // 디버깅용 로그
+                return item.firstLabel === '고객명';
+            })?.firstValue || '',
+            age: parseInt(modifyInfo.value.find(item => {
+                console.log('secondLabel 검사:', item.secondLabel); // 디버깅용 로그
+                return item.secondLabel === '나이';
+            })?.secondValue || '0', 10),
+            sex: modifyInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '',
+            phone: modifyInfo.value.find(item => item.secondLabel === '연락처')?.secondValue || '',
+            emergePhone: modifyInfo.value.find(item => item.firstLabel === '비상연락처')?.firstValue || '',
+            email: modifyInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
+        };
+
+
+        const phoneItem = modifyInfo.value.find(item => item.secondLabel === '연락처');
+        console.log('연락처 항목:', phoneItem);
+
+        // Call your API service
+        const response = await $api.customer.put(
+            {
+                "name": payload.name,
+                "age": payload.age,
+                "sex": payload.sex,
+                "phone": payload.phone,
+                "emergePhone": payload.emergePhone,
+                "email": payload.email,
+            },
+            customerId
+        );
+
+        showModifyModal.value = false;
+
+        console.log('modoify전');
+        await getCustomerInfo(); // 고객 정보를 다시 로드
+        await loadData();        // 테이블 데이터를 다시 로드
+        console.log('modoify후');
+
+
+    } catch (error) {
+        console.error('Error during API communication:', error);
     }
 };
 
@@ -285,7 +417,7 @@ onMounted(() => {
 .subtitle {
     display: flex;
     align-items: center;
-    /* 수직 중앙 정렬 */
+    margin-bottom: 24px;
 }
 
 .line {
@@ -342,7 +474,9 @@ onMounted(() => {
     width: 75%;
     color: #000000;
 }
-
+.btn{
+    margin-top: 16px;
+}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -405,5 +539,51 @@ th {
 .custom-tag.info {
     background-color: #d0e1fd;
     color: #295bac;
+}
+
+
+.modal-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.form-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.p-ripple-disabled {
+    height: none;
 }
 </style>

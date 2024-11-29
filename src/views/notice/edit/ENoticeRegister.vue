@@ -99,7 +99,6 @@ const onRegister = async () => {
     };
 
     try {
-
         // API 호출
         const response = await $api.notice.post(
             noticeData,
