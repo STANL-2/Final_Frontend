@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" ref="searchFormRef" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -43,59 +43,59 @@
         <!-- 모달 -->
         <Modal v-model="showModal" width="40rem" height="none" header="로그 상세 보기">
             <Modal v-model="showModal" width="40rem" height="none" header="로그 상세 보기">
-                <div>
+                <div class="log-detail-container">
                     <table class="log-detail-table">
-            <tbody>
-                <tr>
-                    <td><strong>로그 번호:</strong></td>
-                    <td>{{ selectedDetail.logId }}</td>
-                </tr>
-                <tr>
-                    <td><strong>트랜잭션 번호:</strong></td>
-                    <td>{{ selectedDetail.transactionId }}</td>
-                </tr>
-                <tr>
-                    <td><strong>요청 시간:</strong></td>
-                    <td>{{ selectedDetail.requestTime }}</td>
-                </tr>
-                <tr>
-                    <td><strong>요청 메소드:</strong></td>
-                    <td>{{ selectedDetail.method }}</td>
-                </tr>
-                <tr>
-                    <td><strong>URI:</strong></td>
-                    <td>{{ selectedDetail.uri }}</td>
-                </tr>
-                <tr>
-                    <td><strong>쿼리 스트링:</strong></td>
-                    <td>{{ selectedDetail.queryString }}</td>
-                </tr>
-                <tr>
-                    <td><strong>유저 소프트웨어:</strong></td>
-                    <td>{{ selectedDetail.userAgent }}</td>
-                </tr>
-                <tr>
-                    <td><strong>IP 주소:</strong></td>
-                    <td>{{ selectedDetail.ipAddress }}</td>
-                </tr>
-                <tr>
-                    <td><strong>호스트명:</strong></td>
-                    <td>{{ selectedDetail.hostName }}</td>
-                </tr>
-                <tr>
-                    <td><strong>원격포트:</strong></td>
-                    <td>{{ selectedDetail.remotePort }}</td>
-                </tr>
-                <tr>
-                    <td><strong>상태:</strong></td>
-                    <td>{{ getStatusLabel(selectedDetail.status) }}</td>
-                </tr>
-                <tr>
-                    <td><strong>에러 메시지:</strong></td>
-                    <td>{{ selectedDetail.errorMessage }}</td>
-                </tr>
-            </tbody>
-        </table>
+                        <tbody>
+                            <tr>
+                                <td><strong>로그 번호:</strong></td>
+                                <td>{{ selectedDetail.logId || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>트랜잭션 번호:</strong></td>
+                                <td>{{ selectedDetail.transactionId || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>요청 시간:</strong></td>
+                                <td>{{ selectedDetail.requestTime || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>요청 메소드:</strong></td>
+                                <td>{{ selectedDetail.method || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>URI:</strong></td>
+                                <td>{{ selectedDetail.uri || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>쿼리 스트링:</strong></td>
+                                <td>{{ selectedDetail.queryString || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>유저 소프트웨어:</strong></td>
+                                <td>{{ selectedDetail.userAgent || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IP 주소:</strong></td>
+                                <td>{{ selectedDetail.ipAddress || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>호스트명:</strong></td>
+                                <td>{{ selectedDetail.hostName || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>원격포트:</strong></td>
+                                <td>{{ selectedDetail.remotePort || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>상태:</strong></td>
+                                <td>{{ getStatusLabel(selectedDetail.status) || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>에러 메시지:</strong></td>
+                                <td>{{ selectedDetail.errorMessage || 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </Modal>
         </Modal>
@@ -502,35 +502,39 @@ tr:hover {
 
 .log-detail-container {
     padding: 1rem;
-    background-color: #f9f9f9;
+    background-color: #ffffff;
     border-radius: 8px;
+    overflow-x: auto;
 }
 
 .log-detail-container h3 {
     margin-bottom: 1rem;
     font-size: 1.5rem;
     color: #333;
+    text-align: center;
 }
 
 .log-detail-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 1rem;
     background-color: #fff;
     border-radius: 8px;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .log-detail-table td {
-    padding: 0.8rem;
+    padding: 12px 16px;
     border: 1px solid #ddd;
     font-size: 0.9rem;
-    vertical-align: top;
+    word-break: break-word;
 }
 
 .log-detail-table td:first-child {
     background-color: #f5f5f5;
     font-weight: bold;
-    width: 25%;
+    width: 30%;
     text-align: right;
     color: #555;
 }
