@@ -5,77 +5,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineProps } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, defineProps } from 'vue';
 import { Chart, registerables } from 'chart.js';
 
 // Chart.js 모듈 등록
 Chart.register(...registerables);
 
 const chartCanvas = ref(null);
+let chartInstance = null;
 
-// 부모 컴포넌트에서 데이터를 prop으로 받음
 const props = defineProps({
     chartData: {
         type: Array,
-        required: true
-    }
+        required: true,
+    },
 });
 
-onMounted(() => {
+// 데이터 복사본 생성
+const localChartData = ref(JSON.parse(JSON.stringify(props.chartData)));
+
+// 차트 생성 함수
+const createChart = () => {
     const ctx = chartCanvas.value.getContext('2d');
-
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: true,
-            },
-        },
-        events: ['click'], // 클릭 이벤트에만 반응하도록 설정
-        interaction: {
-            mode: 'index',
-            intersect: false, // 교차하지 않더라도 가까운 요소에 반응하도록 설정
-        },
-        scales: {
-            x: {
-                grid: {
-                    display: false,
-                },
-                ticks: {
-                    color: '#A2A3A5',
-                    font: {
-                        family: 'Poppins',
-                        size: 14,
-                    },
-                },
-            },
-            y: {
-                grid: {
-                    color: '#ECE9F1',
-                },
-                ticks: {
-                    color: '#A2A3A5',
-                    font: {
-                        family: 'Poppins',
-                        size: 14,
-                    },
-                    stepSize: 400,
-                },
-            },
-        },
-        elements: {
-            line: {
-                borderJoinStyle: 'round',
-            },
-        },
-    };
-
-    new Chart(ctx, {
-        type: 'line',
+    chartInstance = new Chart(ctx, {
+        type: 'bar', // 기본 차트 타입은 bar
         data: {
-            labels: props.chartData[0].labels,
-            datasets: props.chartData.flatMap((data, index) => {
+            labels: localChartData.value[0].labels,
+            datasets: localChartData.value.flatMap((data) => {
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
                 gradient.addColorStop(0, data.gradientColors[0]);
                 gradient.addColorStop(0.3, data.gradientColors[1]);
@@ -84,8 +40,121 @@ onMounted(() => {
                 return data.datasets;
             }),
         },
-        options: chartOptions,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#6B7280', // 범례 텍스트 색상
+                        font: {
+                            family: 'Poppins',
+                            size: 14,
+                        },
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return `${context.dataset.label}: ${context.raw.toLocaleString()}`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false, // X축 격자선 숨김
+                    },
+                    ticks: {
+                        color: '#6B7280', // X축 라벨 색상
+                        font: {
+                            family: 'Poppins',
+                            size: 12,
+                        },
+                    },
+                },
+                y: {
+                    position: 'left',
+                    grid: {
+                        color: 'rgba(82, 77, 249, 0.2)', // 수당 축 격자선 색상
+                    },
+                    ticks: {
+                        color: 'rgba(82, 77, 249, 1)', // 수당 축 색상
+                        font: {
+                            family: 'Poppins',
+                            size: 12,
+                        },
+                    },
+                },
+                y1: {
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false, // 실적 축의 격자선 숨김
+                    },
+                    ticks: {
+                        color: 'rgba(52, 152, 219, 1)', // 실적 축 색상
+                        font: {
+                            family: 'Poppins',
+                            size: 12,
+                        },
+                    },
+                },
+                y2: {
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false, // 매출액 축의 격자선 숨김
+                    },
+                    ticks: {
+                        color: 'rgba(46, 204, 113, 1)', // 매출액 축 색상
+                        font: {
+                            family: 'Poppins',
+                            size: 12,
+                        },
+                    },
+                },
+            },
+        },
     });
+};
+
+
+// 차트 업데이트 함수
+const updateChart = () => {
+    if (chartInstance) {
+        chartInstance.data.labels = localChartData.value[0].labels;
+        chartInstance.data.datasets = localChartData.value.flatMap((data) => {
+            const ctx = chartCanvas.value.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, data.gradientColors[0]);
+            gradient.addColorStop(0.3, data.gradientColors[1]);
+            gradient.addColorStop(1, data.gradientColors[2]);
+            data.datasets[0].backgroundColor = gradient;
+            return data.datasets;
+        });
+        chartInstance.update();
+    }
+};
+
+// `props.chartData` 변경 감지
+watch(
+    () => props.chartData,
+    (newData) => {
+        localChartData.value = JSON.parse(JSON.stringify(newData));
+        updateChart();
+    },
+    { deep: true }
+);
+
+onMounted(() => {
+    createChart();
+});
+
+onBeforeUnmount(() => {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
 });
 </script>
 
