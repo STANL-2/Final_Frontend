@@ -18,7 +18,8 @@
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh"/>
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
                 </div>
             </div>
         </div>
@@ -27,8 +28,8 @@
         <div class="component-wrapper table-container">
             <LogViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
                 :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
-                @update:selection="updateSelectedRows" buttonField="code" @page="onPage" @sort="onSort"
-                @filter="onFilter">
+                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" @update:selection="updateSelectedRows"
+                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
                     <div class="custom-tag-wrapper">
                         <div :class="['custom-tag', getCustomTagClass(data.status)]">
@@ -38,6 +39,66 @@
                 </template>
             </LogViewTable>
         </div>
+
+        <!-- 모달 -->
+        <Modal v-model="showModal" width="40rem" height="none" header="로그 상세 보기">
+            <Modal v-model="showModal" width="40rem" height="none" header="로그 상세 보기">
+                <div>
+                    <table class="log-detail-table">
+            <tbody>
+                <tr>
+                    <td><strong>로그 번호:</strong></td>
+                    <td>{{ selectedDetail.logId }}</td>
+                </tr>
+                <tr>
+                    <td><strong>트랜잭션 번호:</strong></td>
+                    <td>{{ selectedDetail.transactionId }}</td>
+                </tr>
+                <tr>
+                    <td><strong>요청 시간:</strong></td>
+                    <td>{{ selectedDetail.requestTime }}</td>
+                </tr>
+                <tr>
+                    <td><strong>요청 메소드:</strong></td>
+                    <td>{{ selectedDetail.method }}</td>
+                </tr>
+                <tr>
+                    <td><strong>URI:</strong></td>
+                    <td>{{ selectedDetail.uri }}</td>
+                </tr>
+                <tr>
+                    <td><strong>쿼리 스트링:</strong></td>
+                    <td>{{ selectedDetail.queryString }}</td>
+                </tr>
+                <tr>
+                    <td><strong>유저 소프트웨어:</strong></td>
+                    <td>{{ selectedDetail.userAgent }}</td>
+                </tr>
+                <tr>
+                    <td><strong>IP 주소:</strong></td>
+                    <td>{{ selectedDetail.ipAddress }}</td>
+                </tr>
+                <tr>
+                    <td><strong>호스트명:</strong></td>
+                    <td>{{ selectedDetail.hostName }}</td>
+                </tr>
+                <tr>
+                    <td><strong>원격포트:</strong></td>
+                    <td>{{ selectedDetail.remotePort }}</td>
+                </tr>
+                <tr>
+                    <td><strong>상태:</strong></td>
+                    <td>{{ getStatusLabel(selectedDetail.status) }}</td>
+                </tr>
+                <tr>
+                    <td><strong>에러 메시지:</strong></td>
+                    <td>{{ selectedDetail.errorMessage }}</td>
+                </tr>
+            </tbody>
+        </table>
+                </div>
+            </Modal>
+        </Modal>
     </PageLayout>
 </template>
 
@@ -47,6 +108,7 @@ import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import LogViewTable from '@/components/common/LogListTable.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
+import Modal from '@/components/common/Modal.vue';
 import { $api } from '@/services/api/api';
 
 // SearchForm.vue 검색조건 값
@@ -56,12 +118,6 @@ const formFields = [
             label: '로그 번호',
             type: 'input',
             model: 'logId',
-            showDivider: false
-        },
-        {
-            label: '트랜잭션 번호',
-            type: 'input',
-            model: 'transactionId',
             showDivider: false
         },
         {
@@ -88,35 +144,9 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '쿼리 스트링',
-            type: 'input',
-            model: 'queryString',
-            showDivider: false
-        },
-        {
-            label: '유저 소프트웨어',
-            type: 'input',
-            model: 'userAgent',
-            showDivider: false
-        },
-        {
             label: 'IP 주소',
             type: 'input',
             model: 'ipAddress',
-            showDivider: false
-        }
-    ],
-    [
-        {
-            label: '호스트명',
-            type: 'input',
-            model: 'hostName',
-            showDivider: false
-        },
-        {
-            label: '원격포트',
-            type: 'input',
-            model: 'remotePort',
             showDivider: false
         },
         {
@@ -125,33 +155,22 @@ const formFields = [
             model: 'status',
             options: ['SUCCESS', 'ERROR'],
             showDivider: false
-        },
-        {
-            label: '에러 메시지',
-            type: 'input',
-            model: 'errorMessage',
-            showDivider: false
         }
     ]
 ];
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'logId', label: '로그 번호', width: '8%' }, // 짧고 고유한 ID
-    { field: 'transactionId', label: '트랜잭션 번호', width: '12%' }, // 중간 길이의 ID
-    { field: 'requestTime', label: '요청 시간', width: '10%' }, // 날짜 형식
-    { field: 'method', label: '요청메소드', width: '8%' }, // HTTP 메서드 (GET, POST 등)
-    { field: 'uri', label: 'URI', width: '15%' }, // 상대적으로 긴 문자열
-    { field: 'queryString', label: '쿼리 스트링', width: '12%' }, // URI의 부가정보
-    { field: 'userAgent', label: '유저 소프트웨어', width: '10%' }, // 유저 에이전트
-    { field: 'ipAddress', label: 'IP 주소', width: '8%' }, // 짧은 문자열
-    { field: 'hostName', label: '호스트명', width: '8%' }, // 짧은 문자열
-    { field: 'remotePort', label: '원격포트', width: '5%' }, // 숫자 값
-    { field: 'status', label: '상태', width: '4%' }, // 숫자 값
-    { field: 'errorMessage', label: '에러 메시지', width: '10%' } // 에러 상세
+    { field: 'logId', label: '로그 번호', width: '12%' }, // 짧고 고유한 ID
+    { field: 'requestTime', label: '요청 시간', width: '18%' }, // 날짜 형식
+    { field: 'method', label: '요청메소드', width: '12%' }, // HTTP 메서드 (GET, POST 등)
+    { field: 'uri', label: 'URI', width: '30%' }, // 상대적으로 긴 문자열
+    { field: 'ipAddress', label: 'IP 주소', width: '15%' }, // 짧은 문자열
+    { field: 'status', label: '상태', width: '10%' } // 숫자 값
 ]);
 
 // 상태 변수
+const selectedDetail = ref(null); // 선택된 상세 데이터
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
@@ -171,9 +190,9 @@ const refresh = () => {
 function getStatusLabel(status) {
     switch (status) {
         case "SUCCESS":
-            return "성공";
+            return "SUCCESS";
         case "ERROR":
-            return "에러";
+            return "ERROR";
         default:
             return "알 수 없음";
     }
@@ -254,10 +273,6 @@ const loadData = async () => {
         loading.value = false; // 로딩 종료
     }
 };
-
-onMounted(() => {
-    loadData();
-});
 
 const exportCSV = async () => {
     loading.value = true;
@@ -375,16 +390,16 @@ function onFilter(event) {
     loadData(); // 데이터 다시 로드
 }
 
-
-// 검색창 모달
 const showModal = ref(false);
-const searchFormRef = ref(null);
-const selectedFieldIndex = ref(null);
 
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
+function handleView(rowData) {
+    selectedDetail.value = rowData; // 클릭된 행 데이터를 전달
+    showModal.value = true; // 모달 열기
 }
+
+onMounted(() => {
+    loadData();
+});
 </script>
 
 <style scoped>
@@ -455,7 +470,7 @@ tr:hover {
     font-size: 12px;
     font-weight: bold;
     color: white;
-    width: 50px;
+    width: 70px;
 }
 
 .custom-tag.success {
@@ -483,5 +498,40 @@ tr:hover {
     justify-content: right;
     margin-top: 16px;
     margin-bottom: 24px;
+}
+
+.log-detail-container {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.log-detail-container h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.log-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.log-detail-table td {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    vertical-align: top;
+}
+
+.log-detail-table td:first-child {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    width: 25%;
+    text-align: right;
+    color: #555;
 }
 </style>
