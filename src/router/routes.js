@@ -40,17 +40,17 @@ const routes = [
         component: () => import('@/layouts/MainLayout.vue'),
         meta: { requiresAuth: true },
         children: [
-            {
-                path: 'schedule',
-                component: () => import('@/views/alarm/AlarmScheduleDetail.vue')
-            },
-            {
-                path: 'contract',
-                component: () => import('@/views/alarm/AlarmContractDetail.vue')
-            },
+            // {
+            //     path: 'schedule',
+            //     component: () => import('@/views/alarm/AlarmScheduleDetail.vue')
+            // },
+            // {
+            //     path: 'contract',
+            //     component: () => import('@/views/alarm/AlarmContractDetail.vue')
+            // },
             {
                 path: 'notice',
-                component: () => import('@/views/alarm/AlarmNoticeDetail.vue')
+                component: () => import('@/views/alarm/AlarmScheduleDetail.vue')
             }
         ]
     },
