@@ -30,7 +30,7 @@ export default class ApiService extends BaseApiService {
             }
 
             // fetch options 설정
-            const fetchOptions = { 
+            const fetchOptions = {
                 ...options,
                 headers: myHeaders
             };
@@ -38,6 +38,11 @@ export default class ApiService extends BaseApiService {
             // blob 요청인 경우 responseType 설정
             if (options?.responseType === 'blob') {
                 fetchOptions.responseType = 'blob';
+            }
+
+            // Last-Event-ID 헤더 추가
+            if (options?.lastEventId) {
+                myHeaders.append('Last-Event-ID', options.lastEventId);
             }
 
             const response = await fetch(url, fetchOptions);
@@ -105,7 +110,7 @@ export default class ApiService extends BaseApiService {
         }
 
         const response = await this.#callApi(url);
-
+        console.log(url);
         return response;
     }
 
@@ -118,18 +123,18 @@ export default class ApiService extends BaseApiService {
         let requestBody;
 
         // JSON 요청 생성
-        if(file) {
-            requestBody = new FormData();        
+        if (file) {
+            requestBody = new FormData();
 
             requestBody.append('file', file);
-            requestBody.append('dto', 
-                new Blob([JSON.stringify(data)], 
-                { type: 'application/json'})
+            requestBody.append('dto',
+                new Blob([JSON.stringify(data)],
+                    { type: 'application/json' })
             );
 
         } else {
             requestBody = JSON.stringify(data);
-        }   
+        }
 
         const options = {
             method: 'POST',

@@ -1,46 +1,33 @@
 <template>
-    <Modal
-        v-model="isVisible"
-        header="계약서 등록"
-        width="80rem"
-        height="100rem"
-        @cancel="resetModalState"
-    >
+    <Modal v-model="isVisible" header="계약서 등록" width="80rem" height="100rem">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">계약서 제목:</Typography>
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor 
-            v-model="content" 
-            :initial-html="initialHtml"
-            @update:model-value="handleEditorUpdate" 
-        />
+        <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+
+        <div class="flex-row content-between ml-l mr-xl">
+            <button class="custom-button" @click="openSignatureModal('buyer')">매수인 서명</button>
+            <button class="custom-button" @click="openSignatureModal('seller')"> 매도인 서명</button>
+        </div>
+        <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
         <template #footer>
-            <CommonButton 
-                label="취소" 
-                color="#F1F1FD" 
-                textColor="#6360AB" 
-                @click="closeModal" 
-            />
-            <CommonButton 
-                label="등록" 
-                color="#6360AB" 
-                textColor="#FFFFFF" 
-                @click="onRegister" 
-            />
+            <CommonButton label="취소" color="#F1F1FD" textColor="#6360AB" @click="closeModal" />
+            <CommonButton label="등록" color="#6360AB" textColor="#FFFFFF" @click="onRegister" />
         </template>
     </Modal>
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, watch, defineProps, defineEmits, nextTick } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import Typography from '@/components/Typography.vue';
+import SignatureModal from '@/components/common/signatureCanvas/SignatureModal.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
 
 // 부모에서 전달받는 props
@@ -56,6 +43,8 @@ const emit = defineEmits(['update:visible', 'close']);
 
 // 내부 상태 변수
 const isVisible = ref(props.visible);
+const isSignatureModalVisible = ref(false);
+const currentSignatureRole = ref(''); // 현재 서명 역할 (buyer/seller)
 const content = ref(''); // CKEditor의 현재 내용
 const title = ref('');
 const initialHtml = `
@@ -201,8 +190,20 @@ const initialHtml = `
         <section style="margin-top: 20px;">
             <p style="margin-top: 30px;">본 계약서 주요 내용을 확인하고 계약을 체결하였음을 확인합니다.</p>
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <div>매수인 (서명):유혜진</div>
-                <div>매도인 (서명):강남</div>
+                <div>매수인:
+            <div
+            id="buyer-signature-area"
+            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
+        >
+            (서명)
+        </div></div>
+                <div>매도인:
+                    <div
+            id="seller-signature-area"
+            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
+        >
+            (서명)
+                </div>
             </div>
         </section>
     </div>
@@ -222,11 +223,10 @@ watch(
     }
 );
 
-
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
-    
+
     const doc = parser.parseFromString(html, "text/html");
 
     // 고객 사항
@@ -309,7 +309,13 @@ const onRegister = async () => {
         console.log("POST 응답:", response);
 
         alert("계약서가 성공적으로 등록되었습니다.");
-        emit('refresh');
+
+        // 필드 초기화
+        title.value = "";
+        content.value = initialHtml; // 에디터 초기화
+        isVisible.value = false; // 모달 닫기
+        emit('update:visible', false); // 부모에 모달 상태 전달
+        emit('refresh'); // 부모에 데이터 갱신 요청
         closeModal();
     } catch (error) {
         console.error("등록 중 오류:", error);
@@ -317,14 +323,51 @@ const onRegister = async () => {
     }
 };
 
-
-
 // 모달 닫기 함수
 function closeModal() {
     isVisible.value = false;
     emit('update:visible', false); // 부모 컴포넌트에 상태 전달
     emit('close'); // 부모 컴포넌트에 close 이벤트 전달
 }
+
+const openSignatureModal = (role) => {
+    currentSignatureRole.value = role;
+    isSignatureModalVisible.value = true;
+    console.log('모달 열림:', isSignatureModalVisible.value); // 디버깅 로그
+};
+
+const handleSignature = async (signatureImage) => {
+
+    if (!signatureImage.startsWith("data:image/")) {
+        console.error("잘못된 서명 이미지 데이터:", signatureImage);
+        return;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+
+    console.log("HTML 변환 결과:", doc); // 디버깅용 로그
+
+    if (currentSignatureRole.value === "buyer") {
+        const buyerSignatureArea = doc.querySelector('#buyer-signature-area');
+        console.log("매수인 서명 영역:", buyerSignatureArea); // 디버깅 로그
+        if (buyerSignatureArea) {
+            buyerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매수인 서명 이미지" style="width: 8rem; height: auto;">`;
+        }
+    } else if (currentSignatureRole.value === "seller") {
+        const sellerSignatureArea = doc.querySelector('#seller-signature-area'); // 고유 ID 사용
+        console.log("매도인 서명 영역:", sellerSignatureArea); // 디버깅 로그
+        if (sellerSignatureArea) {
+            sellerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매도인 서명 이미지" style="width: 8rem; height: auto;">`;
+        }
+    }
+
+    content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
+    console.log("업데이트된 HTML:", content.value); // 디버깅 로그
+
+    isSignatureModalVisible.value = false; // 모달 닫기
+};
+
 </script>
 
 <style scoped>
@@ -372,5 +415,16 @@ function closeModal() {
     border-top: none;
     border-left: none;
     border-right: none;
+}
+
+.custom-button {
+    margin-left: 8px;
+    padding: 4px 12px;
+    background-color: #FFF;
+    color: #6360AB;
+    border: 1px solid #6360AB;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
 }
 </style>

@@ -2,7 +2,10 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter ="select"/>
+            <div class="select">
+                <CommonButton label="조회" @click="select" />
+            </div>
         </div>
 
         <div class="flex-row content-between">
@@ -18,7 +21,7 @@
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh"/>
                 </div>
             </div>
         </div>
@@ -103,13 +106,13 @@ const formFields = [
         {
             label: '사원 검색',
             type: 'inputWithButton',
-            model: 'employeeSearch',
+            model: 'searchMemberId',
             showDivider: false
         },
         {
             label: '매장 검색',
             type: 'inputWithButton',
-            model: 'storeSearch',
+            model: 'centerId',
             showDivider: false
         },
         {
@@ -121,7 +124,7 @@ const formFields = [
         {
             type: 'select',
             label: '승인여부',
-            model: 'approvalStatus',
+            model: 'status',
             options: ['대기', '승인', '취소']
         }
 
@@ -136,21 +139,21 @@ const formFields = [
         {
             label: '고객 구분',
             type: 'radio',
-            model: 'customerType',
+            model: 'customerClassifcation',
             options: ['개인', '법인'],
             showDivider: false
         },
         {
             label: '구매 조건',
             type: 'radio',
-            model: 'purchaseCondition',
+            model: 'customerPurchaseCondition',
             options: ['일시불', '할부', '리스'],
             showDivider: false
         },
         {
             label: '고객 상호',
             type: 'input',
-            model: 'customerBusinessName',
+            model: 'companyName',
             showDivider: false
         }
     ],
@@ -158,7 +161,7 @@ const formFields = [
         {
             label: '계약서명',
             type: 'input',
-            model: 'contractName',
+            model: 'title',
             showDivider: true
         },
         {
@@ -200,7 +203,7 @@ function getStatusLabel(status) {
     switch (status) {
         case "WAIT":
             return "대기";
-        case "APPROVE":
+        case "APPROVED":
             return "승인";
         case "CANCEL":
             return "취소";
@@ -214,7 +217,7 @@ function getCustomTagClass(status) {
     switch (status) {
         case "WAIT":
             return "success"; // 노란색
-        case "APPROVE":
+        case "APPROVED":
             return "info"; // 초록색
         case "CANCEL":
             return "danger"; // 빨간색
@@ -222,6 +225,32 @@ function getCustomTagClass(status) {
             return "warning"; // 기본 색상
     }
 }
+
+const searchCriteria = ref({});
+
+const refresh = () => {
+    searchCriteria.value = ref({});
+    loadData();
+}
+
+// 조회 버튼 클릭 시
+const select = () => {
+    const formData = searchFormRef.value?.formData;
+
+    console.log("ddd: " + formData);
+
+    if (!formData) {
+        console.error('formData를 가져올 수 없습니다.');
+        return;
+    }
+
+    // 검색 조건 생성
+    searchCriteria.value = Object.fromEntries(
+        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+    );
+    // 검색 실행
+    loadData();
+};
 
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
@@ -233,12 +262,24 @@ function handleView(rowData) {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
+        // 검색 조건 필터링 및 유효한 값만 유지
+        const filteredCriteria = Object.fromEntries(
+            Object.entries(searchCriteria.value).filter(([key, value]) => {
+                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
+                if (value === null || value === undefined || value === '') return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+                return true;
+            })
+        );
+
         // 쿼리 파라미터 설정
         const query = {
             page: first.value / rows.value, // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
             sortField: sortField.value || null, // 정렬 필드
             sortOrder: sortOrder.value || null, // 정렬 순서
+            ...filteredCriteria // 필터링된 검색 조건 병합
         };
 
         // 쿼리 문자열 생성
@@ -246,7 +287,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('', queryString);
+        const response = await $api.contract.getParams('search', queryString);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
@@ -540,5 +581,10 @@ tr:hover {
 .custom-tag.info {
     background-color: #d0e1fd;
     color: #295bac;
+}
+.select {
+    display: flex;
+    justify-content: right;
+    margin-top: 16px;
 }
 </style>

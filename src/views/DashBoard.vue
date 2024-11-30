@@ -42,64 +42,74 @@ import Card from '@/components/common/Card.vue';
 import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
 import DashTimeLine from '@/components/common/DashTimeLine.vue';
+import { ref, onMounted } from 'vue';
+import { $api } from '@/services/api/api';
 
 
-const bigCardChartData = {
-    labels: Array.from({ length: 30 }, (_, i) => i + 1), // 1일부터 30일까지
-    datasets: [
-        {
-            label: '영업 실적',
-            data: [1400, 1500, 1600, 1800, 2000, 2300, 2400, 2600, 2500, 2400, 2200, 2100, 2000, 2200, 2300, 2200, 1800, 1700, 1600, 1900, 2100, 2200, 2100, 2000, 1900, 1800, 1700, 1600, 1800, 1500],
-            borderColor: 'rgba(82, 77, 249, 0.8)',
-            backgroundColor: 'rgba(82, 77, 249, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: 'rgba(66, 47, 138, 0.5)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 0,
-            borderWidth: 3,
-        },
-    ],
-    gradientColors: ['rgba(82, 77, 249, 0.7)', 'rgba(82, 77, 249, 0.1)', 'rgba(255, 255, 255, 0)'],
-};
+const chartData = ref([]);
+const loading = ref(false);
 
-const secondChartData = {
-    labels: Array.from({ length: 30 }, (_, i) => i + 1),
-    datasets: [
-        {
-            label: '판매 내역',
-            data: [1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000, 4100],
-            borderColor: 'rgba(52, 152, 219, 0.8)',
-            backgroundColor: 'rgba(52, 152, 219, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: 'rgba(41, 128, 185, 0.5)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 0,
-            borderWidth: 3,
-        },
-    ],
-    gradientColors: ['rgba(52, 152, 219, 0.7)', 'rgba(52, 152, 219, 0.1)', 'rgba(255, 255, 255, 0)'],
-};
 
-const thirdChartData = {
-    labels: Array.from({ length: 30 }, (_, i) => i + 1),
+const bigCardChartData = ref({
+    labels: [],
     datasets: [
         {
             label: '수당',
-            data: [50, 60, 55, 70, 80, 75, 85, 90, 95, 100, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205],
-            borderColor: 'rgba(46, 204, 113, 0.8)',
-            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+            data: [],
+            yAxisID: 'y',
+            borderColor: 'rgba(82, 77, 249, 0.8)',
+            backgroundColor: 'rgba(82, 77, 249, 0.3)',
+            pointBackgroundColor: 'rgba(82, 77, 249, 1)',
+            pointBorderColor: '#FFFFFF',
+            pointRadius: 5,
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: 'rgba(39, 174, 96, 0.5)',
+            type: 'line', // 라인 차트
+        },
+    ],
+    gradientColors: ['rgba(82, 77, 249, 0.7)', 'rgba(82, 77, 249, 0.1)', 'rgba(255, 255, 255, 0)'],
+});
+
+const secondChartData = ref({
+    labels: [],
+    datasets: [
+        {
+            label: '실적',
+            data: [],
+            yAxisID: 'y1',
+            borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루
+            backgroundColor: 'rgba(52, 115, 235, 0.2)', // 블루 배경색
+
+            type: 'bar', // 바 차트
+            barThickness: 15, // 바의 두께
+        },
+    ],
+    gradientColors: [
+        'rgba(52, 115, 235, 0.8)', // 상단 진한 블루
+        'rgba(52, 115, 235, 0.3)', // 중간 블루
+        'rgba(52, 115, 235, 0)',   // 하단 투명
+    ],
+});
+
+const thirdChartData = ref({
+    labels: [],
+    datasets: [
+        {
+            label: '매출액',
+            data: [],
+            yAxisID: 'y2',
+            borderColor: 'rgba(46, 204, 113, 1)',
+            backgroundColor: 'rgba(46, 204, 113, 0.6)',
+            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
             pointBorderColor: '#FFFFFF',
-            pointRadius: 0,
-            borderWidth: 3,
+            pointRadius: 5,
+            type: 'line', // 라인 차트
+            tension: 0.4,
         },
     ],
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-};
+});
+
 
 // 1번 차트 그림 value
 const gaugeChartValue = 40; // Gauge Chart에 전달할 값
@@ -125,6 +135,100 @@ const customers = [
     { name: '송의혁' },
     { name: '유혜진' },
 ];
+
+const loadData = async () => {
+    loading.value = true; // 로딩 시작
+    try {
+
+        let currentTime = new Date();
+        let startTime = new Date();
+        startTime.setFullYear(startTime.getFullYear() - 1);
+
+        const searchParams = ref({
+            startDate: startTime.toISOString(),
+            endDate: currentTime.toISOString(),
+        });
+
+        const query = {
+            "startDate": searchParams.value.startDate || '',
+            "endDate": searchParams.value.endDate || '',
+        };
+
+        // API 호출
+        const response = await $api.salesHistory.post(
+            {
+                "startDate": searchParams.value.startDate || '',
+                "endDate": searchParams.value.endDate || '',
+            }
+            ,'statistics/all/month',
+
+        );
+
+        const result = response?.result; // 응답 데이터 접근
+
+        console.log(response?.result);
+        console.log(result.content);        
+
+
+        if (result && Array.isArray(result.content)) {
+            chartData.value = result.content;
+
+            // 데이터 매핑
+            bigCardChartData.value = {
+                ...bigCardChartData.value,
+                labels: chartData.value.map((item) => item.month || ''),
+                datasets: [
+                    {
+                        ...bigCardChartData.value.datasets[0],
+                        data: chartData.value.map((item) => item.totalIncentive || 0),
+                    },
+                ],
+            };
+            
+            secondChartData.value = {
+                ...secondChartData.value,
+                labels: chartData.value.map((item) => item.month || ''),
+                datasets: [
+                    {
+                        ...secondChartData.value.datasets[0],
+                        data: chartData.value.map((item) => item.totalPerformance || 0),
+                    },
+                ],
+            };
+
+            thirdChartData.value = {
+                ...thirdChartData.value,
+                labels: chartData.value.map((item) => item.month || ''),
+                datasets: [
+                    {
+                        ...thirdChartData.value.datasets[0],
+                        data: chartData.value.map((item) => item.totalSales || 0),
+                    },
+                ],
+            };
+
+            console.log("bigCardChartData:", bigCardChartData.value);
+            console.log("secondChartData:", secondChartData.value);
+            console.log("thirdChartData:", thirdChartData.value);
+
+
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
+        }
+    } catch (error) {
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    } finally {
+        loading.value = false; // 로딩 종료
+    }
+
+
+};
+
+onMounted(() => {
+    loadData();
+});
 </script>
 
 <style scoped>
