@@ -140,6 +140,11 @@ const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
 
+        const responseMember = await $api.member.get('','');
+
+        const myCenter = responseMember?.result?.centerId;
+
+
         let currentTime = new Date();
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
@@ -150,6 +155,7 @@ const loadData = async () => {
         });
 
         const query = {
+            "centerList": myCenter || '',
             "startDate": searchParams.value.startDate || '',
             "endDate": searchParams.value.endDate || '',
         };
@@ -157,10 +163,11 @@ const loadData = async () => {
         // API 호출
         const response = await $api.salesHistory.post(
             {
+                "centerList": [myCenter],
                 "startDate": searchParams.value.startDate || '',
                 "endDate": searchParams.value.endDate || '',
             }
-            ,'statistics/all/month',
+            ,'statistics/center/search/month',
 
         );
 
