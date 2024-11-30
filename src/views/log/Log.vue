@@ -291,7 +291,7 @@ const loadData = async () => {
 const exportCSV = async () => {
     loading.value = true;
     try {
-        const blob = await $api.contract.get('excel', '', {
+        const blob = await $api.log.get('excel', '', {
             responseType: 'blob'
         });
 
