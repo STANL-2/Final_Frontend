@@ -23,7 +23,7 @@
                         <div v-if="showAlarmDropdown" class="alarm-dropdown">
                             <div class="alarm-categories">
                                 <div v-for="(category, index) in alarmCategories" :key="index" class="alarm-category"
-                                    @click="showAlarmModal(category.name)">
+                                    @click="navigateToAlarmCategory(category.name)">
                                     <div class="category-info">
                                         <span class="category-name">{{ category.name }}</span>
                                         <span v-if="category.unreadCount > 0" class="category-unread-count">
@@ -56,35 +56,6 @@
         </div>
     </Modal>
 
-    <Modal v-model="showAlarmChart" header="알림" width="70rem" height="100rem">
-  <div class="modal-container">
-    <div class="category-list">
-      <h3>카테고리</h3>
-      <ul>
-        <li v-for="category in categories" :key="category.id" @click="selectCategory(category)">
-          {{ category.name }}
-        </li>
-      </ul>
-    </div>
-    <div class="alarm-list">
-      <h3>알림 목록</h3>
-      <div v-for="alarm in filteredAlarms" :key="alarm.id" @click="showAlarmDetail(alarm)">
-        <h4>{{ alarm.title }}</h4>
-        <p>{{ alarm.description }}</p>
-        <p>{{ alarm.timestamp }}</p>
-      </div>
-    </div>
-    <div class="alarm-detail">
-      <h3>알림 상세</h3>
-      <template v-if="selectedAlarm">
-        <h4>{{ selectedAlarm.title }}</h4>
-        <p>{{ selectedAlarm.description }}</p>
-        <p>{{ selectedAlarm.timestamp }}</p>
-      </template>
-    </div>
-  </div>
-</Modal>
-
 </template>
 
 <script setup>
@@ -107,7 +78,6 @@ const organizationId = ref('ORG_000000001');
 const apiService = new ApiService('api/v1/organization');
 const apiAlarmService = new ApiService('api/v1/alarm');
 
-const showAlarmChart = ref(false);
 const showAlarmDropdown = ref(false);
 const totalUnreadAlarms = ref(0);
 const alarmCategories = ref([]);
@@ -201,15 +171,6 @@ const fetchAlarmTypes = async () => {
     } catch (error) {
         console.error('알림 타입 요청 실패: ', error);
     }
-};
-
-const showAlarmModal = async (categoryName) => {
-    showAlarmChart.value = true;
-    await navigateToAlarmCategory(categoryName);
-};
-
-const closeAlarmModal = () => {
-    showOrganizationChart.value = false;
 };
 
 const navigateToAlarmCategory = (categoryName) => {

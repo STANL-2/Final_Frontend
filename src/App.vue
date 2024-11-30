@@ -18,14 +18,11 @@ import Toast from 'primevue/toast';
 import { useUserStore } from '@/stores/user';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 
-
-// pinia에 있는 유저 정보
-const userStore = useUserStore();   
 const eventSource = ref(null);
 
 // SSE 연결 함수
-const connectToSSE = () => {
-  const jwtToken = userStore.accessToken;
+const connectToSSE = (accessToken) => {
+  const jwtToken = accessToken;
 
   // SSE 연결 생성
   eventSource.value = new EventSourcePolyfill('http://localhost:8080/api/v1/alarm/connect', {
@@ -60,11 +57,12 @@ const disconnectFromSSE = () => {
 
 // 로그인 상태 확인 후 SSE 연결
 const checkLoginStatus = () => {
+  const userStore = useUserStore();   
   const accessToken = userStore.accessToken;
 
   if (accessToken) {
     console.log('로그인 상태 성공!');
-    connectToSSE(); // 로그인된 사용자 ID로 SSE 연결
+    connectToSSE(accessToken); // 로그인된 사용자 ID로 SSE 연결
   } else {
     console.log('로그인 상태 실패!');
     disconnectFromSSE(); // 로그인 안 됐을 경우 SSE 해제
