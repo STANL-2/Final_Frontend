@@ -181,6 +181,7 @@ const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 const selectedRows = ref([]);
 const searchCriteria = ref({});
+const searchFormRef = ref(null);
 
 const refresh = () => {
     searchCriteria.value = ref({});
@@ -239,17 +240,30 @@ const select = () => {
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
+        // 검색 조건 필터링 및 유효한 값만 유지
+        const filteredCriteria = Object.fromEntries(
+            Object.entries(searchCriteria.value).filter(([key, value]) => {
+                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
+                if (value === null || value === undefined || value === '') return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+                return true;
+            })
+        );
+
         // 쿼리 파라미터 설정
         const query = {
             page: first.value / rows.value, // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
             // sortField: sortField.value || null, // 정렬 필드
             // sortOrder: sortOrder.value || null, // 정렬 순서
+            ...filteredCriteria // 필터링된 검색 조건 병합
 
         };
 
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
+        
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
