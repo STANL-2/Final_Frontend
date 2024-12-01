@@ -14,6 +14,10 @@ export const useUserStore = defineStore(
         const remainingTime = ref(0); // 30분 (밀리초 단위)
         let timer = null; // 타이머 변수 추가
 
+        function refreshTheToken(newToken) {
+            accessToken.value = newToken;
+        }
+
         function startTimer() {
             if (timer) clearInterval(timer); // 기존 타이머 중단
             timer = setInterval(() => {
@@ -124,7 +128,8 @@ export const useUserStore = defineStore(
             saveUserInfo,
             resetRemainingTime,
             startTimer,
-            stopTimer
+            stopTimer,
+            refreshTheToken
         };
     },
     {

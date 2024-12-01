@@ -223,9 +223,27 @@ const formattedTime = computed(() => {
 
 // 남은 시간 연장 함수
 const extendTime = () => {
-    
-    alert('남은 시간이 30분 연장되었습니다.');
+    refreshTokenBtn();
 };
+
+const apiAuth = new ApiService('api/v1/auth');
+
+const refreshTokenBtn = async () => {
+    try {
+        
+        const response = await apiAuth.post(
+            {
+                refreshToken: userStore.refreshToken
+            },
+            'refresh'
+        );
+
+        userStore.refreshTheToken(response.result.newAccessToken);
+
+    } catch (error) {
+        alert('로그인 연장 실패하셨습니다.');
+    }
+}
 
 // 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
 watchEffect(() => {
@@ -483,7 +501,7 @@ onUnmounted(() => {
     font-size: 12px;
 }
 
-.left-time{
+.left-time {
     margin-right: 16px;
 }
 
