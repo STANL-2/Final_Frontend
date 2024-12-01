@@ -124,12 +124,12 @@
 
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { $api } from '@/services/api/api';
 
 const route = useRoute();
-const employeeId = route.query.employeeId;
+const employeeId = ref(route.query.employeeId);
 
 // 기본 정보
 const memberInfo = ref([]);
@@ -153,40 +153,40 @@ const familyData = ref([]);
 // 기본 정보
 const getMemberInfo = async () => {
     try {
-        const response = await $api.member.get('info', employeeId);
+        const response = await $api.member.get('info', employeeId.value);
         const result = response.result;
 
         memberInfo.value = {
             imageUrl: result.imageUrl, // 이미지 URL 추가
             details: [
                 {
-                    firstLabel: '사원번호', firstValue: result.centerId,
-                    secondLabel: '성명', secondValue: result.name,
-                    thirdLabel: '주민등록번호', thirdValue: result.identNo
+                    firstLabel: '사원번호', firstValue: result.loginId || 'N/A',
+                    secondLabel: '성명', secondValue: result.name || 'N/A',
+                    thirdLabel: '주민등록번호', thirdValue: result.identNo || 'N/A'
                 },
                 {
-                    firstLabel: '이메일', firstValue: result.email,
-                    secondLabel: '휴대전화', secondValue: result.phone,
-                    thirdLabel: '성별', thirdValue: result.sex
+                    firstLabel: '이메일', firstValue: result.email || 'N/A',
+                    secondLabel: '휴대전화', secondValue: result.phone || 'N/A',
+                    thirdLabel: '성별', thirdValue: result.sex || 'N/A'
                 },
                 {
-                    firstLabel: '입사일', firstValue: '-', // 입사일 정보 없음
-                    secondLabel: '발령일', secondValue: '-', // 발령일 정보 없음
-                    thirdLabel: '병역구분', thirdValue: result.military
+                    firstLabel: '입사일', firstValue: result.createdAt || 'N/A', // 입사일 정보 없음
+                    secondLabel: '발령일', secondValue: result.updatedAt || 'N/A', // 발령일 정보 없음
+                    thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
                 },
                 {
-                    firstLabel: '비상연락처', firstValue: result.emergePhone || '-',
-                    secondLabel: '직책', secondValue: result.position,
-                    thirdLabel: '학력구분', thirdValue: result.grade
+                    firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
+                    secondLabel: '직책', secondValue: result.position || 'N/A',
+                    thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
                 },
                 {
-                    firstLabel: '은행명', firstValue: result.bankName,
-                    secondLabel: '계좌번호', secondValue: result.account,
-                    thirdLabel: '주소', thirdValue: result.address
+                    firstLabel: '은행명', firstValue: result.bankName || 'N/A',
+                    secondLabel: '계좌번호', secondValue: result.account || 'N/A',
+                    thirdLabel: '주소', thirdValue: result.address || 'N/A'
                 },
                 {
-                    firstLabel: '고용형태', firstValue: result.jobType,
-                    secondLabel: '비고', secondValue: result.note || '-'
+                    firstLabel: '고용형태', firstValue: result.jobType || 'N/A',
+                    secondLabel: '비고', secondValue: result.note || 'N/A'
                 },
             ]
         };
@@ -198,7 +198,7 @@ const getMemberInfo = async () => {
 // 학력 정보 API 호출
 const getEducationData = async () => {
     try {
-        const response = await $api.education.get('other', employeeId);
+        const response = await $api.education.get('other', employeeId.value);
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
@@ -217,7 +217,7 @@ const getEducationData = async () => {
 // 자격증/외국어 정보 API 호출
 const getCertificationData = async () => {
     try {
-        const response = await $api.certification.get('other', employeeId);
+        const response = await $api.certification.get('other', employeeId.value);
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
@@ -234,7 +234,7 @@ const getCertificationData = async () => {
 
 const getCareerData = async () => {
     try {
-        const response = await $api.career.get('other', employeeId);
+        const response = await $api.career.get('other', employeeId.value);
         const result = response.result;
 
         careerData.value = result.map((career) => ({
@@ -250,7 +250,7 @@ const getCareerData = async () => {
 
 const getFamilyData = async () => {
     try {
-        const response = await $api.family.get('other', employeeId);
+        const response = await $api.family.get('other', employeeId.value);
         const result = response.result;
 
         familyData.value = result.map((family) => ({
@@ -268,6 +268,19 @@ const getFamilyData = async () => {
         console.error('가족 구성원 정보 요청 실패:', error);
     }
 };
+
+// watch로 query 변경 감지
+watch(
+    () => route.query.employeeId,
+    (newEmployeeId) => {
+        employeeId.value = newEmployeeId;
+        getMemberInfo();
+        getEducationData();
+        getCertificationData();
+        getCareerData();
+        getFamilyData();
+    }
+);
 
 onMounted(() => {
     getMemberInfo();

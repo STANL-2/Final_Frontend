@@ -37,6 +37,7 @@ const props = defineProps({
 const emit = defineEmits(['closeModal']);
 
 const router = useRouter();
+const forceReload = ref(false); // forceReload 변수 정의
 
 const goProfile = (member) => {
     router.push({path: '/employee/detail', query: { employeeId: member.loginId}});  

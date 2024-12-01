@@ -157,33 +157,33 @@ const getMemberInfo = async () => {
 
         memberInfo.value = [
             {
-                firstLabel: '사원번호', firstValue: result.centerId,
-                secondLabel: '성명', secondValue: result.name,
-                thirdLabel: '주민등록번호', thirdValue: result.identNo
+                firstLabel: '사원번호', firstValue: result.loginId || 'N/A',
+                secondLabel: '성명', secondValue: result.name || 'N/A',
+                thirdLabel: '주민등록번호', thirdValue: result.identNo || 'N/A'
             },
             {
-                firstLabel: '이메일', firstValue: result.email,
-                secondLabel: '휴대전화', secondValue: result.phone,
-                thirdLabel: '성별', thirdValue: result.sex
+                firstLabel: '이메일', firstValue: result.email || 'N/A',
+                secondLabel: '휴대전화', secondValue: result.phone || 'N/A',
+                thirdLabel: '성별', thirdValue: result.sex || 'N/A'
             },
             {
-                firstLabel: '입사일', firstValue: '-', // 입사일 정보 없음
-                secondLabel: '발령일', secondValue: '-', // 발령일 정보 없음
-                thirdLabel: '병역구분', thirdValue: result.military
+                firstLabel: '입사일', firstValue: result.createdAt|| 'N/A', // 입사일 정보 없음
+                secondLabel: '발령일', secondValue: result.updatedAt || 'N/A', // 발령일 정보 없음
+                thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
             },
             {
-                firstLabel: '비상연락처', firstValue: result.emergePhone || '-',
-                secondLabel: '직책', secondValue: result.position,
-                thirdLabel: '학력구분', thirdValue: result.grade
+                firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
+                secondLabel: '직책', secondValue: result.position || 'N/A',
+                thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
             },
             {
-                firstLabel: '은행명', firstValue: result.bankName,
-                secondLabel: '계좌번호', secondValue: result.account,
-                thirdLabel: '주소', thirdValue: result.address
+                firstLabel: '은행명', firstValue: result.bankName || 'N/A',
+                secondLabel: '계좌번호', secondValue: result.account || 'N/A',
+                thirdLabel: '주소', thirdValue: result.address || 'N/A',
             },
             {
-                firstLabel: '고용형태', firstValue: result.jobType,
-                secondLabel: '비고', secondValue: result.note || '-'
+                firstLabel: '고용형태', firstValue: result.jobType || 'N/A',
+                secondLabel: '비고', secondValue: result.note || 'N/A'
             },
         ];
     } catch (error) {
