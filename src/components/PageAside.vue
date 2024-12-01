@@ -71,6 +71,20 @@ const onNodeUnselect = (event) => {
     margin-top: 10px;
 }
 
+/* 트리 노드 스타일 */
+:deep(.tree-component .p-treenode-children) {
+    background-color: #f3f3f3; /* 하위 노드 배경색 */
+    border-radius: 8px; /* 둥근 모서리 */
+    padding: 10px; /* 안쪽 여백 */
+    margin: 5px 0; /* 노드 간 여백 */
+}
+
+/* 하위 노드 텍스트 스타일 */
+:deep(.tree-component .p-treenode-children .p-treenode-content) {
+    background-color: transparent; /* 텍스트 자체는 배경 없음 */
+    color: #555; /* 텍스트 색상 */
+}
+
 /* 버튼 크기 */
 .expand-button,
 .collapse-button {
