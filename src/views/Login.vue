@@ -65,6 +65,7 @@ const login = async () => {
 
         userStore.saveTokens(userTokens.result);
         userStore.saveUserInfo(userTokens.result);
+        userStore.resetRemainingTime();
         goHome();
     } catch (error) {
         // 서버에서 오류가 발생했을 때 메시지 표시
