@@ -81,6 +81,7 @@ export const useUserStore = defineStore(
             role.value = '';
             auth.value = '';
             isLoggined.value = false;
+            remainingTime.value = 0;
         }
 
         function saveTokens(userToken) {

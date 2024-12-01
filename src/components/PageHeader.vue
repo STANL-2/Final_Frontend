@@ -9,11 +9,13 @@
                 </RouterLink>
             </div>
 
-            <div class="left-time">
 
-            </div>
 
             <div class="end">
+                <div class="left-time">
+                    <i class="pi pi-clock" style="margin-right: 8px; color: #ff4d4f;">{{ blank }}{{ formattedTime }}</i>
+                    <button class="extend-button" @click="extendTime">연장</button>
+                </div>
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
@@ -62,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watchEffect } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import Modal from './common/Modal.vue';
@@ -73,6 +75,7 @@ import AlarmScheduleDetail from '@/views/alarm/AlarmScheduleDetail.vue';
 import AlarmContractDetail from '@/views/alarm/AlarmContractDetail.vue';
 import AlarmNoticeDetail from '@/views/alarm/AlarmNoticeDetail.vue';
 
+const blank = ' ';
 const userStore = useUserStore();
 const router = useRouter();
 
@@ -209,6 +212,28 @@ const handleClickOutside = (event) => {
         showAlarmDropdown.value = false;
     }
 };
+
+// 로그인 남은 시간 로직
+// 남은 시간을 MM:SS 형식으로 변환
+const formattedTime = computed(() => {
+    const minutes = Math.floor(userStore.remainingTime / (1000 * 60));
+    const seconds = Math.floor((userStore.remainingTime % (1000 * 60)) / 1000);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+});
+
+// 남은 시간 연장 함수
+const extendTime = () => {
+    
+    alert('남은 시간이 30분 연장되었습니다.');
+};
+
+// 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
+watchEffect(() => {
+    if (userStore.remainingTime <= 0) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        logout();
+    }
+});
 
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
@@ -456,5 +481,25 @@ onUnmounted(() => {
     border-radius: 50%;
     padding: 2px 8px;
     font-size: 12px;
+}
+
+.left-time{
+    margin-right: 16px;
+}
+
+.extend-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #F1F1FD;
+    color: #6360AB;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.extend-button:hover {
+    background-color: #4a48a2;
 }
 </style>
