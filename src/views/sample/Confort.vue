@@ -26,7 +26,10 @@ const router = useRouter();
 const sections = ref([
     {
         label: "로그인",
-        routes: [{ path: "/", label: "Login" }],
+        routes: [
+            { path: "/", label: "Login" },
+            { path: "/log", label: "LOG"}
+        ],
     },
     {
         label: "대시보드",
