@@ -67,6 +67,19 @@
                                 </label>
                             </div>
                         </template>
+
+                        <template v-else-if="field.type === 'button'">
+                            <div class="button-group">
+                                <label v-for="(option, idx) in field.options" :key="idx" class="button-label">
+                                    <input
+                                        type="button"
+                                        :value="option"
+                                        @click="onButtonClick(field, option, rowIndex, index)"
+                                    />
+                                    {{ option }}
+                                </label>
+                            </div>
+                        </template>
                     </div>
                 </template>
             </div>
@@ -103,6 +116,14 @@ function initializeFormData() {
     console.log('시작 폼 데이터:', formData.value);
 }
 
+// 버튼 클릭 이벤트 핸들러 추가
+function onButtonClick(field, option, rowIndex, index) {
+    // 버튼 클릭 시 formData 업데이트
+    const fieldModel = `${field.model}_${rowIndex}_${index}`;
+    formData.value[fieldModel] = option;
+    console.log(`Button clicked: ${option}`);
+    console.log('Updated formData:', formData.value);
+}
 
 // 모달 열기 메서드
 function openModal(rowIndex, index) {

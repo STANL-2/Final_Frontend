@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <SSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -39,7 +39,7 @@
 import { ref, onMounted, watch } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import CSearchForm from '@/components/common/SSearchForm.vue';
+import SSearchForm from '@/components/common/SSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 
@@ -118,31 +118,47 @@ const printSelectedRows = () => {
 const formFields = ref([
     [
         {
-            label: '고객 번호',
-            type: 'input',
-            model: 'customerId',
+            label: '분류',
+            type: 'select',
+            model: 'orderBy',
+            value: '',
+            options: ['일별', '월별', '연도별'],
+            showDivider: false
+        },
+        {
+            label: '조회기간',
+            type: 'calendar', // 쌍으로 처리
+            model: 'salesHistorySearchDate', // 시작과 종료를 모두 포함
+            showIcon: true,
+            manualInput: false,
+        }
+    ],
+    [
+        {
+            label: '판매내역',
+            type: 'button',
+            model: 'salesHistory',
             value: '',
             showDivider: false
         },
         {
-            label: '고객명',
-            type: 'input',
-            model: 'name',
+            label: '수당',
+            type: 'button',
+            model: 'incentive',
             value: '',
             showDivider: false
         },
         {
-            label: '연락처',
-            type: 'input',
-            model: 'phone',
+            label: '실적',
+            type: 'button',
+            model: 'performance',
             value: '',
             showDivider: false
         },
         {
-            label: '성별',
-            type: 'radio',
-            model: 'sex',
-            options: ['남성', '여성'],
+            label: '매출액',
+            type: 'button',
+            model: 'totalSales',
             value: '',
             showDivider: false
         }
@@ -151,11 +167,16 @@ const formFields = ref([
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'customerId', label: '고객 번호', width: '25%' },
-    { field: 'name', label: '고객명', width: '20%' },
-    { field: 'sex', label: '성별', width: '15%' },
-    { field: 'phone', label: '연락처', width: '20%' },
-    { field: 'memberId', label: '담당자', width: '20%' }
+    { field: 'salesHistoryId', label: '판매내역 번호', width: '25%' },
+    { field: 'salesHistoryIncentive', label: '수당', width: '20%' },
+    { field: 'salesHistoryNumberOfVehicles', label: '차량 판매 대수', width: '15%' },
+    { field: 'salesHistoryTotalSales', label: '매출액', width: '20%' },
+    { field: 'createdAt', label: '작성 일시', width: '20%' },
+    { field: 'contractId', label: '계약서 번호', width: '25%' },
+    { field: 'customerId', label: '고객명', width: '20%' },
+    { field: 'productId', label: '제품 번호', width: '15%' },
+    { field: 'centerId', label: '매장명', width: '20%' },
+    // { field: 'memberId', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
@@ -218,17 +239,34 @@ const loadData = async () => {
             })
         );
 
+        let currentTime = new Date();
+        let startTime = new Date();
+        startTime.setFullYear(startTime.getFullYear() - 1);
+
+        const searchParams = ref({
+            startDate: startTime.toISOString(),
+            endDate: currentTime.toISOString(),
+        });
+
         // 쿼리 파라미터 생성
         const query = {
             page: first.value / rows.value, // 현재 페이지
             size: rows.value, // 페이지 크기
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
             ...filteredCriteria // 필터링된 검색 조건 병합
         };
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
-
+        console.log("API 호출 URL:", queryString); // 디버깅용
         // API 호출
-        const response = await $api.salesHistory.getParams('search', queryString);
+        const response = await $api.salesHistory.post(
+            {
+                "startDate": searchParams.value.startDate || '',
+                "endDate": searchParams.value.endDate || '',
+            }
+            ,'employee/search' + queryString,
+        );
 
         // 응답 데이터
         const result = response?.result; 
