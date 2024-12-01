@@ -24,17 +24,6 @@ const nodes = ref(asideMenu);
 const expandedKeys = ref({});
 const router = useRouter();
 
-// 모두 열기
-const expandAll = () => {
-    nodes.value.forEach(expandNode);
-    expandedKeys.value = { ...expandedKeys.value };
-};
-
-// 모두 닫기
-const collapseAll = () => {
-    expandedKeys.value = {};
-};
-
 // 재귀적으로 노드 확장
 const expandNode = (node) => {
     if (node.children && node.children.length) {
