@@ -40,6 +40,7 @@
                     <div class="right-buttons">
                         <button class="button delete-button" @click="deleteProblem">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
+                        <button class="button status-button" @click="updateProblemStatus">상태 변경</button>
                     </div>
                 </div>
             </div>
@@ -99,6 +100,26 @@ const deleteProblem = async () => {
     } catch (error) {
         console.error('삭제 중 오류 발생:', error);
         alert('삭제에 실패했습니다.');
+    }
+};
+
+const updateProblemStatus = async () => {
+    try {
+        // `putParams`를 사용하여 상태 변경 API 호출
+        const response = await $api.problem.putParams(
+            'status',problemId // 경로에 problemId 포함
+        );
+        
+        console.log('Response:', response); // 응답 확인
+        
+        if (response.status === 200) {
+            alert('문제 상태가 변경되었습니다.');
+        } else {
+            alert('상태 변경에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('상태 변경 중 오류 발생:', error);
+        alert('상태 변경에 실패했습니다.');
     }
 };
 
