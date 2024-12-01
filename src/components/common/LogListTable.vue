@@ -15,6 +15,9 @@
                 sortable :style="{ width: header.width || 'auto' }"
                 :headerStyle="{ width: header.width || 'auto', textAlign: 'center' }"
                 :bodyStyle="{ width: header.width || 'auto', textAlign: 'center', verticalAlign: 'middle' }">
+                <!-- <template #body="{ data }">
+                    {{ data[header.field] }}
+                </template> -->
                 <template #body="slotProps">
                     <slot :name="`body-${header.field}`" :data="slotProps.data">
                         {{ slotProps.data[header.field] }}
