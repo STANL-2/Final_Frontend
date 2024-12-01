@@ -55,7 +55,7 @@ const loading = ref(false); // 로딩 상태 변수
 const selectedDetail = ref(null);
 
 const navigateToRegisterPage = () => {
-    router.push({ name: 'EPromotionRegister' }); // 라우터 이름을 이용해 이동
+    router.push({ name: 'EProblemRegister' }); // 라우터 이름을 이용해 이동
 };
 
 const searchParams = ref({
