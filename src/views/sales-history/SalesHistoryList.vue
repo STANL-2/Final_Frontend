@@ -39,7 +39,7 @@
 import { ref, onMounted, watch } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import CSearchForm from '@/components/common/CSearchForm.vue';
+import CSearchForm from '@/components/common/SSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 
