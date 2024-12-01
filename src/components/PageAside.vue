@@ -1,13 +1,5 @@
 <template>
     <aside class="side-bar">
-        <!-- 버튼 그룹 -->
-        <div class="button-group">
-            <Button type="button" icon="pi-plus" class="expand-button" @click="expandAll">
-                열기</Button>
-            <Button type="button" icon="pi-minus" class="collapse-button" @click="collapseAll">
-                닫기</Button>
-        </div>
-
         <!-- 검색 필드와 트리 컴포넌트 -->
         <Tree 
             v-model:expandedKeys="expandedKeys" 
@@ -31,17 +23,6 @@ import { useRouter } from 'vue-router';
 const nodes = ref(asideMenu);
 const expandedKeys = ref({});
 const router = useRouter();
-
-// 모두 열기
-const expandAll = () => {
-    nodes.value.forEach(expandNode);
-    expandedKeys.value = { ...expandedKeys.value };
-};
-
-// 모두 닫기
-const collapseAll = () => {
-    expandedKeys.value = {};
-};
 
 // 재귀적으로 노드 확장
 const expandNode = (node) => {
@@ -90,14 +71,18 @@ const onNodeUnselect = (event) => {
     margin-top: 10px;
 }
 
-/* 버튼 그룹 스타일 */
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    width: 90%;
-    gap: 10px;
-    margin-bottom: -10px;   /* 버튼과 tree 사이 간격 */
-    margin-top: -10px;
+/* 트리 노드 스타일 */
+:deep(.tree-component .p-treenode-children) {
+    background-color: #f3f3f3; /* 하위 노드 배경색 */
+    border-radius: 8px; /* 둥근 모서리 */
+    padding: 10px; /* 안쪽 여백 */
+    margin: 5px 0; /* 노드 간 여백 */
+}
+
+/* 하위 노드 텍스트 스타일 */
+:deep(.tree-component .p-treenode-children .p-treenode-content) {
+    background-color: transparent; /* 텍스트 자체는 배경 없음 */
+    color: #555; /* 텍스트 색상 */
 }
 
 /* 버튼 크기 */

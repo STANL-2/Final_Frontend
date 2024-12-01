@@ -191,9 +191,6 @@ const putRequest = async () => {
             putMemId.value
         );
 
-        console.log('PUT 요청 응답 결과');
-        console.log(response);
-
     }catch(error){
         console.error('PUT 요청 실패: ', error);
     }

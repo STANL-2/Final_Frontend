@@ -10,14 +10,14 @@
 
                         <!-- Input field -->
                         <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
-                                class="form-input" />
+                            <input type="text" v-model="formData[field.model]"
+                                :placeholder="field.placeholder" class="form-input" />
                         </template>
 
                         <!-- Select field -->
                         <template v-else-if="field.type === 'select'">
                             <div class="select-container">
-                                <select v-model="formData[field.model]" class="form-select">
+                                <select v-model="formData[`${field.model}_${rowIndex}_${index}`]" class="form-select">
                                     <option v-for="(option, idx) in field.options" :key="idx" :value="option">
                                         {{ option }}
                                     </option>
@@ -30,29 +30,29 @@
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_start_${rowIndex}_${index}`]"
+                                    class="form-date" />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_end_${rowIndex}_${index}`]"
+                                    class="form-date" />
                             </div>
                         </template>
 
                         <template v-if="field.type === 'inputWithButton'">
                             <div class="search-input">
-                                <input type="text" disabled v-model="formData[field.model]"
+                                <input type="text" disabled v-model="formData[`${field.model}_${rowIndex}_${index}`]"
                                     :placeholder="field.placeholder" class="form-input" />
-                                <button class="search-button" @click="openModal(field.model)">
+                                <button class="search-button" @click="openModal(rowIndex, index)">
                                     <span class="search-icon pi pi-search"></span>
                                 </button>
                             </div>
                         </template>
 
-
                         <!-- Radio field -->
                         <template v-else-if="field.type === 'radio'">
                             <div class="radio-group">
                                 <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                    <input type="radio" :name="field.model" :value="option"
-                                        v-model="formData[field.model]" />
+                                    <input type="radio" :name="field.model" :value="option" v-model="formData[field.model]" />
                                     {{ option }}
                                 </label>
                             </div>
@@ -63,6 +63,19 @@
                                 <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
                                     <input type="checkbox" :value="option"
                                         v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
+                                    {{ option }}
+                                </label>
+                            </div>
+                        </template>
+
+                        <template v-else-if="field.type === 'button'">
+                            <div class="button-group">
+                                <label v-for="(option, idx) in field.options" :key="idx" class="button-label">
+                                    <input
+                                        type="button"
+                                        :value="option"
+                                        @click="onButtonClick(field, option, rowIndex, index)"
+                                    />
                                     {{ option }}
                                 </label>
                             </div>
@@ -103,6 +116,14 @@ function initializeFormData() {
     console.log('시작 폼 데이터:', formData.value);
 }
 
+// 버튼 클릭 이벤트 핸들러 추가
+function onButtonClick(field, option, rowIndex, index) {
+    // 버튼 클릭 시 formData 업데이트
+    const fieldModel = `${field.model}_${rowIndex}_${index}`;
+    formData.value[fieldModel] = option;
+    console.log(`Button clicked: ${option}`);
+    console.log('Updated formData:', formData.value);
+}
 
 // 모달 열기 메서드
 function openModal(rowIndex, index) {
@@ -172,8 +193,7 @@ body {
 }
 
 .form-group.placeholder {
-    visibility: hidden;
-    /* 빈 칸 숨김 */
+    visibility: hidden; /* 빈 칸 숨김 */
 }
 
 .label {

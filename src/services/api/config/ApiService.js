@@ -170,6 +170,26 @@ export default class ApiService extends BaseApiService {
         return responseData;
     }
 
+    async putParams(subUrl, queryParams) {
+        let url = `${this.baseUrl}/${this.resource}`;
+
+        if (subUrl) {
+            url += `/${subUrl}`;
+        }
+
+        if (queryParams) {
+            url += `?${queryParams}`;
+        }
+
+        const options = {
+            method: 'PUT'
+        };
+
+        const response = await this.#callApi(url, options);
+        
+        return response;
+    }
+
     async delete(subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {
