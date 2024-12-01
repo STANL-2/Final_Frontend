@@ -1,13 +1,5 @@
 <template>
     <aside class="side-bar">
-        <!-- 버튼 그룹 -->
-        <div class="button-group">
-            <Button type="button" icon="pi-plus" class="expand-button" @click="expandAll">
-                열기</Button>
-            <Button type="button" icon="pi-minus" class="collapse-button" @click="collapseAll">
-                닫기</Button>
-        </div>
-
         <!-- 검색 필드와 트리 컴포넌트 -->
         <Tree 
             v-model:expandedKeys="expandedKeys" 
@@ -88,16 +80,6 @@ const onNodeUnselect = (event) => {
     align-items: center;
     gap: 20px;
     margin-top: 10px;
-}
-
-/* 버튼 그룹 스타일 */
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    width: 90%;
-    gap: 10px;
-    margin-bottom: -10px;   /* 버튼과 tree 사이 간격 */
-    margin-top: -10px;
 }
 
 /* 버튼 크기 */
