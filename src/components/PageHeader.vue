@@ -19,7 +19,9 @@
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
                 <div class="right-logo">
-                    <i class="pi pi-user profile" @click="goMypage"></i>
+                    <img v-if="userStore.imageUrl" :src="userStore.imageUrl" alt="User Profile" class="profile-image"
+                        @click="goMypage" />
+                    <i v-else="userStore.imageurl" class="pi pi-user profile" @click="goMypage"></i>
                     <div class="alarm-container">
                         <i class="pi pi-bell alarm" @click="toggleAlarmDropdown"></i>
                         <span v-if="totalUnreadAlarms > 0" class="alarm-badge">
@@ -230,7 +232,7 @@ const apiAuth = new ApiService('api/v1/auth');
 
 const refreshTokenBtn = async () => {
     try {
-        
+
         const response = await apiAuth.post(
             {
                 refreshToken: userStore.refreshToken
@@ -258,6 +260,11 @@ onMounted(() => {
 
     // Initial fetch of alarm types
     fetchAlarmTypes();
+
+    // 남은 시간이 0보다 크면 타이머 재시작
+    if (userStore.remainingTime > 0) {
+        userStore.startTimer();
+    }
 });
 
 onUnmounted(() => {
@@ -316,6 +323,8 @@ onUnmounted(() => {
 
 .right-logo {
     display: flex;
+    align-items: center; /* 세로 중심 정렬 */
+    justify-content: center; /* 가로 중심 정렬 */
     gap: 20px;
     flex-direction: row;
 }
@@ -328,6 +337,20 @@ onUnmounted(() => {
     justify-content: center;
     cursor: pointer;
     color: #777777 !important;
+}
+
+.profile {
+    cursor: pointer;
+}
+
+.profile-image {
+    width: 30px; /* 이미지 크기 */
+    height: 30px; /* 동일한 높이 */
+    border-radius: 50%; /* 원형 이미지 */
+    object-fit: cover; /* 이미지가 잘 맞도록 조정 */
+    cursor: pointer; /* 클릭 가능 */
+    border: 2px solid #e4e4e4; /* 테두리 추가 */
+    transition: transform 0.2s ease; /* 마우스 오버 시 부드러운 확대 효과 */
 }
 
 .alarm {
