@@ -12,6 +12,7 @@ export const useUserStore = defineStore(
         const auth = ref('');
         const isLoggined = ref(false);
         const remainingTime = ref(0); // 30분 (밀리초 단위)
+        const imageUrl = ref('');
         let timer = null; // 타이머 변수 추가
 
         function refreshTheToken(newToken) {
@@ -46,6 +47,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesRep';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 사원 이미지';
         }
 
         function loginByADMIN() {
@@ -56,6 +58,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesManager';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 관리자 이미지';
         }
 
         function loginByDIRECTOR() {
@@ -66,6 +69,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesAdmin';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 담당자 이미지';
         }
 
         function loginByGOD() {
@@ -76,6 +80,7 @@ export const useUserStore = defineStore(
             role.value = 'SystemAdmin';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '시스템 관리자 이미지';
         }
 
         function logout() {
@@ -85,6 +90,7 @@ export const useUserStore = defineStore(
             refreshToken.value = '';
             role.value = '';
             auth.value = '';
+            imageUrl.value = '';
             isLoggined.value = false;
             remainingTime.value = 0;
         }
@@ -100,6 +106,7 @@ export const useUserStore = defineStore(
             name.value = userInfo.name;
             role.value = userInfo.role;
             auth.value = userInfo.auth;
+            imageUrl.value = userInfo.imageUrl;
         }
 
         function resetRemainingTime() {
@@ -120,6 +127,7 @@ export const useUserStore = defineStore(
             auth,
             isLoggined,
             remainingTime,
+            imageUrl,
             loginByEMPLOYEE,
             loginByADMIN,
             loginByDIRECTOR,
