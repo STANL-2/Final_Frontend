@@ -69,11 +69,10 @@
                 <div v-if="alarms.length === 0 && !loading" class="no-alarms">
                     해당 카테고리에 알림이 없습니다.
                 </div>
-                <div v-for="alarm in alarms" :key="alarm.redirectUrl" class="alarm-item" @click="showAlarmDetail(alarm)"
-                    style="cursor: pointer;">
+                <div v-for="alarm in alarms" :key="alarm.redirectUrl" :class="['alarm-item', { read: alarm.readStatus }]"
+                    @click="showAlarmDetail(alarm)" style="cursor: pointer;">
                     <span class="tag" :style="{
                         backgroundColor: getTagColor(alarm.tag),
-                        color: alarm.tag === 'important' ? '#fff' : '#333'
                     }">
                         {{ alarm.tag }}
                     </span>
@@ -127,10 +126,15 @@ const selectedCategory = ref('');
 const selectedAlarm = ref(null)
 
 const tagColors = [
-    { name: 'MEETING', color: '#AEC6CF' },
-    { name: 'TRAINING', color: '#FFDAB9' },
-    { name: 'VACATION', color: '#B0E57C' },
-    { name: 'SESSION', color: '#FFB7C5' }
+    { name: '미팅', color: '#AEC6CF' },
+    { name: '교육', color: '#FFDAB9' },
+    { name: '휴가', color: '#B0E57C' },
+    { name: '회의', color: '#FFB7C5' },
+    { name: '계약서', color: '#A7D8DE' },
+    { name: '발주서', color: '#FFE4E1' },
+    { name: '수주서', color: '#B9E4C9' },
+    { name: '중요', color: '#FF6666' }, 
+    { name: '일반', color: '#66FF66' },
 ];
 
 const getTagColor = (tag) => {
@@ -257,7 +261,6 @@ const fetchAlarmsByType = async () => {
     loading.value = true;
 
     try {
-
         const query = {
             page: currentPage.value,
             size: 8,
@@ -266,26 +269,30 @@ const fetchAlarmsByType = async () => {
         const queryString = `?${new URLSearchParams(query).toString()}`;
         const response = await apiAlarmService.getParams(`${selectedCategory.value}`, queryString);
 
-        console.log("response", response);
-
         if (response && response.result) {
+            // Append new alarms to the list
             alarms.value.push(...response.result.content);
+
+            // Sort alarms by createdAt in descending order
+            alarms.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
             if (response.result.last) {
-                totalPages.value = currentPage.value + 1; // 마지막 페이지를 기준으로 고정
+                totalPages.value = currentPage.value + 1; // Fix total pages
             }
             currentPage.value += 1;
         }
 
-        // 알람이 없는 경우 처리
+        // Handle no alarms case
         if (alarms.value.length === 0) {
             console.log(`${selectedCategory.value} 카테고리에 알람이 없습니다.`);
         }
     } catch (error) {
         console.error('알림 요청 실패: ', error);
     } finally {
-        loading.value = false; // 요청 완료 후 상태 해제
+        loading.value = false; // Reset loading state
     }
 };
+
 
 const handleScroll = (event) => {
     const { scrollTop, clientHeight, scrollHeight } = event.target;
@@ -306,10 +313,6 @@ const showAlarmModal = async (categoryName) => {
     await showAlarms(categoryName);
 };
 
-const closeAlarmModal = () => {
-    showAlarmChart.value = false; // 모달 닫기
-};
-
 const toggleAlarmDropdown = async () => {
     showAlarmDropdown.value = !showAlarmDropdown.value;
 
@@ -323,6 +326,36 @@ const handleClickOutside = (event) => {
     const alarmContainer = document.querySelector('.alarm-container');
     if (alarmContainer && !alarmContainer.contains(event.target)) {
         showAlarmDropdown.value = false;
+    }
+};
+
+// 알림 클릭 핸들러
+const showAlarmDetail = async (alarm) => {
+
+    try {
+        // Call API to mark the alarm as read
+        const response = await apiAlarmService.put(
+            '',
+            `${alarm.alarmId}`
+        );
+        
+        // Update the selected alarm
+        selectedAlarm.value = { ...alarm, read: true };
+        
+        // Update the alarms list to reflect the read status
+        alarms.value = alarms.value.map(a => 
+            a.alarmId === alarm.alarmId 
+                ? { ...a, read: true } 
+                : a
+        );
+        
+        if (alarm.redirectUrl) {
+            showAlarmChart.value = false;
+            router.push(alarm.redirectUrl);
+            await fetchAlarmTypes();
+        }
+    } catch (error) {
+        console.error('Failed to mark alarm as read:', error);
     }
 };
 
@@ -343,7 +376,7 @@ const apiAuth = new ApiService('api/v1/auth');
 
 const refreshTokenBtn = async () => {
     try {
-        
+
         const response = await apiAuth.post(
             {
                 refreshToken: userStore.refreshToken
@@ -358,6 +391,10 @@ const refreshTokenBtn = async () => {
     }
 }
 
+const closeAlarmModal = () => {
+    showAlarmChart.value = false; // 모달 닫기
+};
+
 // 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
 watchEffect(() => {
     if (userStore.remainingTime <= 0) {
@@ -365,12 +402,6 @@ watchEffect(() => {
         logout();
     }
 });
-
-// 알림 상세 조회
-const showAlarmDetail = (alarm) => {
-    selectedAlarm.value = alarm
-    console.log("selectedAlarm", selectedAlarm);
-}
 
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
@@ -657,12 +688,23 @@ onUnmounted(() => {
     transition: background-color 0.2s ease;
 }
 
+.alarm-item.read {
+    background-color: #f0f0f0;
+    /* 회색 배경 */
+}
+
 .alarm-item:hover {
-    background-color: #f5f5f5;  /* 살짝 확대 */
+    background-color: #f5f5f5;
+}
+
+.alarm-item:hover {
+    background-color: #f5f5f5;
+    /* 살짝 확대 */
 }
 
 .alarm-item:active {
-    transform: scale(1.01); /* 클릭 시 조금만 확대 */
+    transform: scale(1.01);
+    /* 클릭 시 조금만 확대 */
 }
 
 .alarm-item:last-child {
@@ -749,6 +791,9 @@ onUnmounted(() => {
     font-size: 12px;
     font-weight: bold;
     margin-bottom: 8px;
-    width: 4.5rem;
+    width: 3.2rem;
+    text-align: center; /* 텍스트 가로 정렬 */
+    line-height: 1.5; /* 수직 정렬을 위한 줄 높이 */
+    vertical-align: middle;
 }
 </style>
