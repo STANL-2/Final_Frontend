@@ -132,9 +132,6 @@ const searchParams = ref({
     endDate: null
 });
 
-// 차트 데이터
-const chartData = ref([]);
-
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달    
@@ -184,33 +181,26 @@ const handleButtonClick = async (field) => {
     // API 요청 방법 설정
     method = field.model === 'salesHistory' ? 'POST' : 'GET';
 
-    // 검색 타입 설정 (일별, 월별, 연도별 등)
-    const searchType = firstRowFields.value[0]?.options?.includes(formData.period) ? formData.period.toLowerCase() : null;
+    const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
+    const searchTypeMap = {
+        '일별': '',
+        '월별': 'month',
+        '연도별': 'year',
+    };
+
+    const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
 
     console.log('searchCriteria:', searchCriteria.value);
     console.log('searchType:', searchType);
 
-    // 데이터 로드 호출
-    await loadData(method, searchType);
+    // 데이터 로드 및 차트 업데이트
+    await loadData(method, searchType, field.model, field.label);
 };
 
 
-const loadData = async (method = 'POST', searchType = null) => {
+const loadData = async (method = 'POST', searchType = null, fieldModel = null, fieldLabel = null) => {
     loading.value = true; // 로딩 시작
     try {
-
-        console.log("넘오온 다음 값: " + searchCriteria.value.period)
-        console.log("넘오온 다음 값: " + searchCriteria.value.salesHistorySearchDate_start);
-        // 검색 조건 필터링 및 유효한 값만 유지
-        // const filteredCriteria = Object.fromEntries(
-        //     Object.entries(searchCriteria.value).filter(([key, value]) => {
-        //         if (value === null || value === undefined || value === '') return false;
-        //         if (Array.isArray(value) && value.length === 0) return false;
-        //         if (typeof value === 'object' && Object.keys(value).length === 0) return false;
-        //         return true;
-        //     })
-        // );
-
         searchParams.value = {
             startDate: searchCriteria.value.salesHistorySearchDate_start || null,
             endDate: searchCriteria.value.salesHistorySearchDate_end || null,
@@ -223,31 +213,46 @@ const loadData = async (method = 'POST', searchType = null) => {
             // POST 요청
             const queryString = `?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
             response = await $api.salesHistory.post(searchParams.value, 'employee/search' + queryString);
-            console.log("searchParams: " + searchParams.value.startDate);
-            console.log("queryString: " + queryString);
-            console.log("response1: " + response.result.content);
 
             if (response && response.result) {
                 tableData.value = response.result.content || [];
                 totalRecords.value = response.result.totalElements || 0;
             }
-        } else if (method === 'GET') {
+        }  else if (method === 'GET') {
             // GET 요청
-            const subUrl = `employee/statistics/search/${searchType || 'default'}`;
-            const queryString = `?startDate=${encodeURIComponent(filteredCriteria.startDate)}&endDate=${encodeURIComponent(filteredCriteria.endDate)}`;
+            const subUrl = `employee/statistics/search/${searchType}`;
+            const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
             response = await $api.salesHistory.getParams(subUrl, queryString);
+            
+            console.log("queryString: "+ queryString);
+            console.log("subUrl" + subUrl);
 
             if (response && response.result) {
-                chartData.value = response.result;
+                const result = response.result;
 
-                // 차트 데이터 업데이트
-                if (searchType === 'month') updateBigCardChart();
-                else if (searchType === 'year') updateSecondChart();
-                else updateThirdChart();
+                // 확인 로그 추가
+                console.log("response.result 확인:", result);
+                console.log("result.map 작동 여부 테스트");
+
+
+                if (response && response.result) {
+                    const result = response.result;
+
+                    // 데이터 매핑
+                    const mappedData = result.map((item) => ({
+                        label: item.month || item.year || item.date || '',
+                        value: item[fieldModel] || 0,
+                    }));
+
+                    console.log("mappedData:", mappedData);
+
+                    // 차트 업데이트
+                    updateChartData(mappedData, fieldLabel);
+                    }
+                } else {
+                    throw new Error('Unsupported method');
+                }
             }
-        } else {
-            throw new Error('Unsupported method');
-        }
     } catch (error) {
         console.error('데이터 로드 실패:', error.message);
     } finally {
@@ -256,45 +261,32 @@ const loadData = async (method = 'POST', searchType = null) => {
 };
 
 
-// 각 차트 업데이트 함수
-const updateBigCardChart = () => {
+const updateChartData = (mappedData, fieldLabel) => {
+    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, data =`, mappedData);
+
+    const labels = mappedData.map((item) => item.label);
+    const data = mappedData.map((item) => item.value);
+
     bigCardChartData.value = {
-        labels: chartData.value.map((item) => item.month || ''),
+        labels,
         datasets: [
             {
-                label: '수당',
-                data: chartData.value.map((item) => item.incentive || 0),
+                label: fieldLabel, // 버튼 라벨에 따라 동적으로 설정
+                data,
+                borderColor: 'rgba(82, 77, 249, 0.8)',
+                backgroundColor: 'rgba(82, 77, 249, 0.3)',
+                pointBackgroundColor: 'rgba(82, 77, 249, 1)',
+                pointBorderColor: '#FFFFFF',
+                pointRadius: 5,
+                fill: true,
+                tension: 0.4,
+                type: 'line',
             },
         ],
     };
+
+    console.log("Updated Chart Data:", bigCardChartData.value);
 };
-
-const updateSecondChart = () => {
-    secondChartData.value = {
-        labels: chartData.value.map((item) => item.year || ''),
-        datasets: [
-            {
-                label: '실적',
-                data: chartData.value.map((item) => item.performance || 0),
-            },
-        ],
-    };
-};
-
-const updateThirdChart = () => {
-    thirdChartData.value = {
-        labels: chartData.value.map((item) => item.date || ''),
-        datasets: [
-            {
-                label: '매출액',
-                data: chartData.value.map((item) => item.totalSales || 0),
-            },
-        ],
-    };
-};
-
-
-
 
 onMounted(() => {
     loadData('POST');
