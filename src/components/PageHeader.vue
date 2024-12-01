@@ -9,6 +9,10 @@
                 </RouterLink>
             </div>
 
+            <div class="left-time">
+
+            </div>
+
             <div class="end">
                 <!-- 로그인 유저 -->
                 <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>

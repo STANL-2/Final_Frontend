@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 export const useUserStore = defineStore(
     'user',
@@ -11,6 +11,27 @@ export const useUserStore = defineStore(
         const role = ref('');
         const auth = ref('');
         const isLoggined = ref(false);
+        const remainingTime = ref(0); // 30분 (밀리초 단위)
+        let timer = null; // 타이머 변수 추가
+
+        function startTimer() {
+            if (timer) clearInterval(timer); // 기존 타이머 중단
+            timer = setInterval(() => {
+                if (remainingTime.value > 0) {
+                    remainingTime.value -= 1000; // 1초 감소
+                } else {
+                    clearInterval(timer);
+                    remainingTime.value = 0; // 시간이 끝나면 0으로 고정
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
 
         function loginByEMPLOYEE() {
             id.value = 0;
@@ -75,6 +96,15 @@ export const useUserStore = defineStore(
             auth.value = userInfo.auth;
         }
 
+        function resetRemainingTime() {
+            remainingTime.value = 30 * 60 * 1000; // 로그인 시 30분 초기화
+            startTimer(); // 타이머 시작
+        }
+
+        onUnmounted(() => {
+            stopTimer();
+        });
+
         return {
             id,
             name,
@@ -83,13 +113,17 @@ export const useUserStore = defineStore(
             role,
             auth,
             isLoggined,
+            remainingTime,
             loginByEMPLOYEE,
             loginByADMIN,
             loginByDIRECTOR,
             loginByGOD,
             logout,
             saveTokens,
-            saveUserInfo
+            saveUserInfo,
+            resetRemainingTime,
+            startTimer,
+            stopTimer
         };
     },
     {
