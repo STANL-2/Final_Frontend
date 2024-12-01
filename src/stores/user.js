@@ -16,6 +16,7 @@ export const useUserStore = defineStore(
 
         function refreshTheToken(newToken) {
             accessToken.value = newToken;
+            resetRemainingTime();
         }
 
         function startTimer() {
