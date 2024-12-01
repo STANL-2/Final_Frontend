@@ -11,7 +11,7 @@
             <div class="user-image-container" v-if="userStore.imageUrl">
                     <img :src="userStore.imageUrl" alt="User Profile" class="user-profile-image" />
                 </div>
-                <div v-else="userStore.imageUrl" class="user-image-container">
+                <div v-else class="user-image-container">
                     <i class="user-profile-image" @click="goMypage"></i>
                 </div>
 
