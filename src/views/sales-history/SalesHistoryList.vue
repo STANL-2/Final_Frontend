@@ -9,6 +9,12 @@
                 <SCommonButton v-for="field in secondRowFields" :key="field.model" :label="field.label"
                     @click="handleButtonClick(field)" />
             </div>
+
+            <!-- 세 번째 행: 버튼 -->
+            <div class="form-row button-row">
+                <SCommonButton v-for="field2 in thirdRowFields" :key="field2.model" :label="field2.label"
+                    @click="handleButtonComparisonClick(field2)" />
+            </div>
         </div>
 
         <!-- 조회 버튼 -->
@@ -38,8 +44,12 @@
 
         <!-- 차트: GET 요청 데이터 -->
         <div v-if="method === 'GET'">
-            <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+            <BigCard :chart-data="[bigCardChartData]" />
+            <div v-if="isComparison == true">
+                <BigCard :chart-data="[secondChartData]" />
+            </div>
         </div>
+
     </PageLayout>
 </template>
 
@@ -99,6 +109,21 @@ const secondRowFields = ref([
     },
 ]);
 
+const thirdRowFields = ref([
+    {
+        label: '최고',
+        type: 'button',
+        model: 'best',
+        value: '',
+    },
+    {
+        label: '평균',
+        type: 'button',
+        model: 'average',
+        value: '',
+    },
+]);
+
 // table 헤더 값
 const tableHeaders = ref([
     { field: 'salesHistoryId', label: '판매내역 번호', width: '20%' },
@@ -132,6 +157,7 @@ const searchParams = ref({
     endDate: null
 });
 
+
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달    
@@ -145,23 +171,41 @@ const refresh = () => {
     loadData();
 }
 
-// 조회 버튼 클릭 시
-const handleSearch = () => {
+const handleButtonComparisonClick = async (field2) => {
+    console.log(`${field2.model} 비교 버튼 클릭됨`);
+
     const formData = searchFormRef.value?.formData;
 
     if (!formData) {
-        console.error('formData를 가져올 수 없습니다.');
+        console.error('FormData를 가져올 수 없습니다.');
         return;
     }
 
-    // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
         Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
     );
 
-    // 검색 실행
-    loadData('POST');
+    const period = formData.period || '';
+    const searchTypeMap = {
+        '일별': null,
+        '월별': 'month',
+        '연도별': 'year',
+    };
+    const searchType = searchTypeMap[period];
+
+    const requestBody = {
+        groupBy: 'employee',
+        month: searchType === 'month' ? 'month' : null,
+        year: searchType === 'year' ? 'year' : null,
+        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
+        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+    };
+
+    console.log("Comparison Request Body:", requestBody);
+
+    await loadComparisonData(requestBody, field2.label);
 };
+
 
 
 const handleButtonClick = async (field) => {
@@ -261,21 +305,23 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
 };
 
 
-const updateChartData = (mappedData, fieldLabel) => {
-    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, data =`, mappedData);
+const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
+    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
 
     const labels = mappedData.map((item) => item.label);
     const data = mappedData.map((item) => item.value);
 
-    bigCardChartData.value = {
+    const targetChartData = isComparison ? secondChartData : bigCardChartData;
+
+    targetChartData.value = {
         labels,
         datasets: [
             {
-                label: fieldLabel, // 버튼 라벨에 따라 동적으로 설정
+                label: fieldLabel,
                 data,
-                borderColor: 'rgba(82, 77, 249, 0.8)',
-                backgroundColor: 'rgba(82, 77, 249, 0.3)',
-                pointBackgroundColor: 'rgba(82, 77, 249, 1)',
+                borderColor: isComparison ? 'rgba(46, 204, 113, 0.8)' : 'rgba(82, 77, 249, 0.8)',
+                backgroundColor: isComparison ? 'rgba(46, 204, 113, 0.3)' : 'rgba(82, 77, 249, 0.3)',
+                pointBackgroundColor: isComparison ? 'rgba(46, 204, 113, 1)' : 'rgba(82, 77, 249, 1)',
                 pointBorderColor: '#FFFFFF',
                 pointRadius: 5,
                 fill: true,
@@ -285,8 +331,41 @@ const updateChartData = (mappedData, fieldLabel) => {
         ],
     };
 
-    console.log("Updated Chart Data:", bigCardChartData.value);
+    console.log("Updated Chart Data:", targetChartData.value);
 };
+
+const loadComparisonData = async (requestBody, fieldLabel) => {
+    loading.value = true;
+    try {
+        const response = await $api.salesHistory.post(requestBody, 'statistics/average/employee');
+
+        if (response && response.result) {
+            const result = response.result;
+
+            console.log("Response Result:", result);
+
+            // result가 배열이 아니므로 배열 형태로 데이터를 변환
+            const mappedData = [
+                {
+                    label: result.month || result.year || '',
+                    value: result.averageTotalIncentive || result.averageTotalPerformance || result.averageTotalSales,
+                },
+            ];
+
+            console.log("Mapped Comparison Data:", mappedData);
+
+            // 비교 차트 데이터 업데이트
+            updateChartData(mappedData, fieldLabel, true);
+        } else {
+            console.warn("Response 결과가 비어 있습니다.");
+        }
+    } catch (error) {
+        console.error('Comparison 데이터 로드 실패:', error.message);
+    } finally {
+        loading.value = false;
+    }
+};
+
 
 onMounted(() => {
     loadData('POST');
