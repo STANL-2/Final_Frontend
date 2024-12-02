@@ -125,7 +125,7 @@ const onRegister = async () => {
         const response = await $api.notice.post(
             noticeData,
             '',
-            file.value || null
+            file.value || " "
         );
 
         alert("등록되었습니다.");
