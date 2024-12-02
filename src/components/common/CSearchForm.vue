@@ -91,6 +91,10 @@ const props = defineProps({
 // formData를 ref 객체로 정의
 const formData = ref({});
 
+function resetForm() {
+    formData.value = {};
+}
+
 // 컴포넌트 초기화 시 모든 필드 초기화
 function initializeFormData() {
     formData.value = {};
@@ -99,8 +103,6 @@ function initializeFormData() {
             formData.value[field.model] = field.default || ''; // 모델 이름만 사용
         });
     });
-
-    console.log('시작 폼 데이터:', formData.value);
 }
 
 
@@ -114,10 +116,8 @@ function openModal(rowIndex, index) {
 
 // 부모 컴포넌트에서 호출하여 input 필드 값을 업데이트하는 메서드
 function updateFieldValue(fieldModel, value) {
-    console.log(`Updating field ${fieldModel} with value:`, value);
     if (formData.value[fieldModel] !== undefined) {
         formData.value[fieldModel] = value; // 필드 값 업데이트
-        console.log('Updated formData:', formData.value);
     } else {
         console.error(`Field ${fieldModel} not found in formData.`);
     }
@@ -127,6 +127,7 @@ function updateFieldValue(fieldModel, value) {
 // expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
     formData,
+    resetForm,
     updateFieldValue
 });
 
