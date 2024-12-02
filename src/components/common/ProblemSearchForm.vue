@@ -1,137 +1,92 @@
 <template>
     <div class="search-container">
-        <!-- 행 단위 렌더링 -->
         <template v-for="(fieldGroup, rowIndex) in fields" :key="rowIndex">
             <div class="form-row">
-                <!-- 필드 그룹 렌더링 -->
                 <template v-for="(field, index) in fieldGroup" :key="`${rowIndex}_${index}`">
                     <div class="form-group">
                         <div class="label">{{ field.label }}</div>
 
-                        <!-- Input field -->
                         <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
-                                class="form-input" />
+                            <input
+                                type="text"
+                                v-model="formData[field.model]"
+                                :placeholder="field.placeholder"
+                                class="form-input"
+                            />
                         </template>
 
-                        <!-- Select field -->
                         <template v-else-if="field.type === 'select'">
-                            <div class="select-container">
-                                <select v-model="formData[field.model]" class="form-select">
-                                    <option v-for="(option, idx) in field.options" :key="idx" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
-                                <span class="select-icon">
-                                    <img src="@/assets/body/chevron-down.png" />
-                                </span>
-                            </div>
+                            <select
+                                v-model="formData[field.model]"
+                                class="form-select"
+                            >
+                                <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
                         </template>
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" />
+                                <input
+                                    type="date"
+                                    v-model="formData[`${field.model}_start`]"
+                                    class="form-date"
+                                />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
-                            </div>
-                        </template>
-
-                        <template v-if="field.type === 'inputWithButton'">
-                            <div class="search-input">
-                                <input type="text" disabled v-model="formData[field.model]"
-                                    :placeholder="field.placeholder" class="form-input" />
-                                <button class="search-button" @click="openModal(field.model)">
-                                    <span class="search-icon pi pi-search"></span>
-                                </button>
-                            </div>
-                        </template>
-
-
-                        <!-- Radio field -->
-                        <template v-else-if="field.type === 'radio'">
-                            <div class="radio-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                    <input type="radio" :name="field.model" :value="option"
-                                        v-model="formData[field.model]" />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </template>
-
-                        <template v-else-if="field.type === 'checkbox'">
-                            <div class="checkbox-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
-                                    <input type="checkbox" :value="option"
-                                        v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
-                                    {{ option }}
-                                </label>
+                                <input
+                                    type="date"
+                                    v-model="formData[`${field.model}_end`]"
+                                    class="form-date"
+                                />
                             </div>
                         </template>
                     </div>
                 </template>
             </div>
-            <!-- 행 아래 선 -->
-            <div v-if="rowIndex < fields.length - 1" class="row-divider"></div>
         </template>
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
+import { ref, defineProps, defineExpose, onMounted } from 'vue';
 
-const emit = defineEmits(['open-modal']);
 const props = defineProps({
     fields: {
         type: Array,
         required: true,
-        default: () => []
-    }
+    },
 });
 
-// formData를 ref 객체로 정의
-const formData = ref({});
+const formData = ref({}); // formData 정의
 
-function resetForm() {
-    formData.value = {};
-}
-
-// 컴포넌트 초기화 시 모든 필드 초기화
+// formData 초기화
 function initializeFormData() {
     formData.value = {};
     props.fields.forEach((fieldGroup) => {
         fieldGroup.forEach((field) => {
-            formData.value[field.model] = field.default || ''; // 모델 이름만 사용
+            if (field.type === 'calendar') {
+                formData.value[`${field.model}_start`] = null;
+                formData.value[`${field.model}_end`] = null;
+            } else {
+                formData.value[field.model] = '';
+            }
         });
     });
+    console.log('초기화된 formData:', formData.value);
 }
 
-
-// 모달 열기 메서드
-function openModal(rowIndex, index) {
-    const field = props.fields[rowIndex][index]; // 해당 필드 가져오기
-    emit('open-modal', field.model); // 부모 컴포넌트로 모델 이름만 전달
+// 부모 컴포넌트에서 호출할 데이터 반환 메서드
+function getFormData() {
+    console.log('getFormData 호출됨:', formData.value);
+    return formData.value;
 }
 
-
-
-// 부모 컴포넌트에서 호출하여 input 필드 값을 업데이트하는 메서드
-function updateFieldValue(fieldModel, value) {
-    if (formData.value[fieldModel] !== undefined) {
-        formData.value[fieldModel] = value; // 필드 값 업데이트
-    } else {
-        console.error(`Field ${fieldModel} not found in formData.`);
-    }
-}
-
-
-// expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
-    formData,
-    resetForm,
-    updateFieldValue
+    getFormData,
+    initializeFormData,
 });
 
-// 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
     initializeFormData();
 });
@@ -150,10 +105,12 @@ body {
 }
 
 .search-container {
+    cursor: pointer;
     max-width: 100%;
     overflow-x: hidden;
     border: 1.5px solid #EEEEEE;
     background-color: #F8F8F8;
+    margin-bottom: 0.5rem;
 }
 
 .form-row {
@@ -173,8 +130,7 @@ body {
 }
 
 .form-group.placeholder {
-    visibility: hidden;
-    /* 빈 칸 숨김 */
+    visibility: hidden; /* 빈 칸 숨김 */
 }
 
 .label {
@@ -193,7 +149,6 @@ body {
     padding: 0 8px;
     font-size: 13px;
     box-sizing: border-box;
-    border-radius: 0px;
 }
 
 .form-input {
@@ -201,6 +156,7 @@ body {
 }
 
 .date-range {
+    width: 100px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -236,14 +192,17 @@ body {
 .form-input:focus,
 .form-select:focus {
     outline: none;
+    
 }
 
 .select-container {
     position: relative;
     display: inline-block;
+    
 }
 
-.form-select {
+.form-select {/*태그 CSS */
+    cursor: pointer; 
     width: 10.5rem;
     appearance: none;
     /* 기본 브라우저 화살표 제거 */
@@ -263,10 +222,10 @@ body {
 .select-icon {
     position: absolute;
     right: 0.5rem;
-    top: 50%;
+    top: 60%;
+    cursor: pointer;
     transform: translateY(-50%);
     pointer-events: none;
-    /* 아이콘 클릭 방지 */
     font-size: 14px;
     color: #888;
 }
@@ -320,7 +279,7 @@ body {
     box-sizing: border-box;
     border-radius: 0px;
     background-color: white;
-    width: 10px;
+    width: 8rem;
 }
 
 .date-range {
