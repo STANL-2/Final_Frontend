@@ -44,7 +44,8 @@
 
 
             <ContractDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                @close="showDetailModal = false" @refresh="loadData" />
+                @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
+                :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
 
         <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
@@ -73,21 +74,23 @@
         <Modal v-model="showModal" :header="modalType === 'centerId' ? '매장 검색' : '사원 검색'" width="30rem" height="none"
             @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
-                <label class="mr-m">매장명: </label>
+                <label class="mr-m">{{ modalType === 'centerId' ? '매장명:' : '사원명:' }}</label>
                 <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
-                <button @click="searchStore">검색</button>
+                <button class="search-button" @click="searchStore">
+                    <span class="search-icon pi pi-search"></span>
+                </button>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in headers" :key="header">{{ header }}</th>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ row.centerId }}</td>
-                        <td>{{ row.name }}</td>
+                        <td>{{ modalType === 'centerId' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerId' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -102,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import ContractDetail from '@/views/contract/ContractDetail.vue';
@@ -111,9 +114,6 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import EContractRegister from './edit/EContractRegister.vue';
-
-// 모달 테이블 값
-const headers = ['매장코드', '매장명'];
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -162,7 +162,7 @@ const formFields = [
             label: '구매 조건',
             type: 'radio',
             model: 'customerPurchaseCondition',
-            options: ['일시불', '할부', '리스'],
+            options: ['현금', '할부', '리스'],
             showDivider: false
         },
         {
@@ -251,8 +251,6 @@ const refresh = () => {
 // 조회 버튼 클릭 시
 const select = () => {
     const formData = searchFormRef.value?.formData;
-
-    console.log("ddd: " + formData);
 
     if (!formData) {
         console.error('formData를 가져올 수 없습니다.');
@@ -472,11 +470,20 @@ const selectedCode = ref('');
 const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 
+const dynamicHeaders = computed(() => {
+    if (modalType.value === 'centerId') {
+        return ['매장코드', '매장명'];
+    } else {
+        return ['사원코드', '사원명'];
+    }
+    return [];
+});
+
 // 모달 열기
 function handleOpenModal(fieldModel) {
-    modalType.value = fieldModel;
-    showModal.value = true;
-    selectedRow.value = null; // 초기화
+    modalType.value = fieldModel; // 'centerId' 또는 'employeeId' 값 설정
+    showModal.value = true; // 모달 열기
+    selectedRow.value = null; // 선택 초기화
 }
 
 // 테이블 행 선택
@@ -492,8 +499,20 @@ function confirmSelection() {
         alert('항목을 선택하세요.');
         return;
     }
+
+    // 선택된 데이터를 가져오기
     const selectedData = modalTableData.value[selectedRow.value];
-    searchFormRef.value.updateFieldValue(modalType.value, selectedData.centerId || selectedData.employeeId);
+
+    // 부모 컴포넌트의 inputWithButton 필드 업데이트
+    if (modalType.value === 'centerId') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('centerId', selectedData.centerId);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberId', selectedData.memberId);
+    }
+
+    // 모달 닫기
     showModal.value = false;
 }
 
@@ -504,13 +523,6 @@ function resetModalState() {
     searchQuery.value = ''; // 검색어 초기화
     modalTableData.value = []; // 모달 테이블 데이터 초기화
     selectedStoreCode.value = ''; // 선택된 매장 코드 초기화
-}
-
-
-function closeModal() {
-    showModal.value = false;
-    selectedRow.value = null;
-    selectedCode.value = '';
 }
 
 async function searchStore() {
@@ -532,9 +544,15 @@ async function searchStore() {
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
 
-        // `result.content` 접근하여 데이터 추출
-        const result = response.result.content; // API에서 가져온 데이터
-        console.log("result.content:", result); // 응답 데이터 확인
+        // `modalType`에 따라 다른 응답 구조 처리
+        let result = [];
+        if (modalType.value === 'centerId') {
+            // center의 경우
+            result = response.result.content || []; // content 내부 데이터 추출
+        } else {
+            // member의 경우
+            result = response.result || []; // result 자체를 사용
+        }
 
         // 데이터가 배열인지 확인 후 modalTableData 업데이트
         if (Array.isArray(result)) {
@@ -653,5 +671,23 @@ tr:hover {
     display: flex;
     justify-content: right;
     margin-top: 16px;
+}
+
+.search-button {
+    right: 0;
+    top: 0;
+    width: 27px;
+    height: 27px;
+    background: #6360AB !important;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-icon {
+    color: white;
+    font-size: 14px;
 }
 </style>

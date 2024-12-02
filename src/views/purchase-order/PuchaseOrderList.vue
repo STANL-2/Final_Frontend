@@ -208,8 +208,6 @@ const refresh = () => {
 const select = () => {
     const formData = searchFormRef.value?.formData;
 
-    console.log("ddd: " + formData);
-
     if (!formData) {
         console.error('formData를 가져올 수 없습니다.');
         return;
