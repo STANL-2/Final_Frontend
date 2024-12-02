@@ -170,6 +170,50 @@ export default class ApiService extends BaseApiService {
         return responseData;
     }
 
+    async putParams(data = {}, subUrl, file = null) {
+        let url = `${this.baseUrl}/${this.resource}`;
+        if (subUrl) {
+            url += `/${subUrl}`;
+        }
+
+        let requestBody;
+
+        // JSON 요청 생성
+        if (file) {
+            console.log("1")
+            requestBody = new FormData();
+
+            requestBody.append('file', file);
+            requestBody.append('dto',
+                new Blob([JSON.stringify(data)],
+                    { type: 'application/json' })
+            );
+
+        } else {
+            console.log("2")
+            requestBody = new FormData();
+
+            requestBody.append('file', file);
+            requestBody.append('dto',
+                new Blob([JSON.stringify(data)],
+                    { type: 'application/json' })
+            );
+        }
+
+        const options = {
+            method: 'PUT',
+            body: requestBody
+        };
+        const responseData = await this.#callApi(url, options);
+        // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
+        if (responseData) {
+            return responseData;
+        } else {
+            const errorData = await response.text();
+            return null;
+        }
+    }
+
     async delete(subUrl) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {

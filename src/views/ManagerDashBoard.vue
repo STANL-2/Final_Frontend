@@ -154,12 +154,6 @@ const loadData = async () => {
             endDate: currentTime.toISOString(),
         });
 
-        const query = {
-            "centerList": myCenter || '',
-            "startDate": searchParams.value.startDate || '',
-            "endDate": searchParams.value.endDate || '',
-        };
-
         // API 호출
         const response = await $api.salesHistory.post(
             {
@@ -168,7 +162,6 @@ const loadData = async () => {
                 "endDate": searchParams.value.endDate || '',
             }
             ,'statistics/center/search/month',
-
         );
 
         const result = response?.result; // 응답 데이터 접근

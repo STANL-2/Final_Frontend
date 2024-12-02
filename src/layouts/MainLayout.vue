@@ -2,14 +2,7 @@
     <div class="header">
         <PageHeader />
     </div>
-
-    <!-- 사이드바 열고 닫기 버튼 -->
-    <!-- <button class="toggle-button" @click="toggleSidebar">Toggle Sidebar</button> -->
-
     <main class="main">
-        <!-- <div class="aside">
-        <PageAside />
-        </div> -->
         <div class="aside" :class="{ hidden: isSidebarCollapsed }">
             <PageAside />
         </div>

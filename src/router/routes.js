@@ -36,6 +36,17 @@ const routes = [
         ]
     },
     {
+        path: '/log',
+        component: () => import('@/layouts/MainLayout.vue'),
+        meta: { requiresAuth: true, auth: 'GOD' },
+        children: [
+            {
+                path: '',
+                component: () => import ('@/views/log/Log.vue'),
+            }
+        ]
+    },
+    {
         path: '/alarm',
         component: () => import('@/layouts/MainLayout.vue'),
         meta: { requiresAuth: true },
@@ -221,14 +232,17 @@ const routes = [
             },
             {
                 path: 'detail',
+                name: 'ProblemDetail',
                 component: () => import('@/views/problem/ProblemDetail.vue')
             },
             {
                 path: 'modify',
+                name: 'EProblemModify',
                 component: () => import('@/views/problem/ProblemModify.vue')
             },
             {
                 path: 'register',
+                name: 'EProblemRegister',
                 component: () => import('@/views/problem/ProblemRegister.vue')
             }
         ]

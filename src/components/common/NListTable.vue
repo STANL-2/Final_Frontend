@@ -3,7 +3,7 @@
         <DataTable lazy paginator :value="data" :rows="rows" :rowsPerPageOptions="rowsPerPageOptions" :loading="loading"
             tableStyle="min-width: 100%" showGridlines :selection="selectedItems" selectionMode="multiple"
             :totalRecords="totalRecords" @update:selection="selectedItems = $event"
-            @selection-change="onSelectionChange" @page="onPage" @sort="onSort" @filter="onFilter">
+            @selection-change="onSelectionChange" @page="onPage" @filter="onFilter">
 
             <!-- 첫 번째 체크박스 컬럼 조건부 추가 -->
             <Column v-if="selectable" selectionMode="multiple" headerStyle="width: 3rem; text-align: center"
@@ -12,7 +12,7 @@
 
             <!-- 동적 컬럼 생성 -->
             <Column v-for="(header, index) in headers" :key="index" :field="header.field" :header="header.label"
-                sortable :style="{ width: header.width || 'auto' }"
+                :style="{ width: header.width || 'auto' }"
                 :headerStyle="{ width: header.width || 'auto', textAlign: 'center' }"
                 :bodyStyle="{ width: header.width || 'auto', textAlign: 'center', verticalAlign: 'middle' }">
                 <template #body="slotProps">

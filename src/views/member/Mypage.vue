@@ -5,18 +5,29 @@
             <div class="section-title">
                 <div class="section-text">마이페이지</div>
             </div>
-            <div class="memberInfo">
-                <div class="row" v-for="(item, index) in memberInfo" :key="index">
-                <div class="label">{{ item.firstLabel }}</div>
-                <div class="value">{{ item.firstValue }}</div>
-                <div class="label">{{ item.secondLabel }}</div>
-                <div class="value">{{ item.secondValue }}</div>
-                <div class="label">{{ item.thirdLabel }}</div>
-                <div class="value">{{ item.thirdValue }}</div>
-            </div>
+
+            <div class="infomation">
+                <!-- 사용자 이미지 -->
+                <div class="user-image-container" v-if="userStore.imageUrl">
+                    <img :src="userStore.imageUrl" alt="User Profile" class="user-profile-image" />
+                </div>
+                <div v-else class="user-image-container">
+                    <i class="user-profile-image" @click="goMypage"></i>
+                </div>
+
+                <div class="memberInfo">
+                    <!-- 사용자 정보 -->
+                    <div class="row" v-for="(item, index) in memberInfo" :key="index">
+                        <div class="label">{{ item.firstLabel }}</div>
+                        <div class="value">{{ item.firstValue }}</div>
+                        <div class="label">{{ item.secondLabel }}</div>
+                        <div class="value">{{ item.secondValue }}</div>
+                        <div class="label">{{ item.thirdLabel }}</div>
+                        <div class="value">{{ item.thirdValue }}</div>
+                    </div>
+                </div>
             </div>
         </div>
-
 
         <!-- 학력 정보 -->
         <div class="section">
@@ -29,16 +40,15 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in educationHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in educationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in educationData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in educationHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
-
         </div>
 
         <!-- 외국어/자격증 정보 -->
@@ -52,12 +62,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in certificationHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in certificationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in certificationData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in certificationHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -74,12 +84,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in careerHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in careerHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in careerData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in careerHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -96,17 +106,16 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in familyHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in familyHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in familyData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in familyHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-
     </PageLayout>
 </template>
 
@@ -122,19 +131,47 @@ const userStore = useUserStore();
 const memberInfo = ref([]);
 
 // 학력 정보
-const educationHeaders = ['입학일', '졸업일', '학력', '전공', '점수', '비고'];
+const educationHeaders = [
+    { field: 'entranceDate', label: '입학일', width: '15%' },
+    { field: 'graduationDate', label: '졸업일', width: '15%' },
+    { field: 'name', label: '학력', width: '20%' },
+    { field: 'major', label: '전공', width: '20%' },
+    { field: 'score', label: '점수', width: '15%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const educationData = ref([]);
 
 // 자격증/외국어 정보
-const certificationHeaders = ['취득 날짜', '시행기관', '자격증/외국어', '등급', '비고'];
+const certificationHeaders = [
+    { field: 'acquisitionDate', label: '취득 날짜', width: '20%' },
+    { field: 'agency', label: '시행기관', width: '20%' },
+    { field: 'name', label: '자격증/외국어', width: '25%' },
+    { field: 'score', label: '등급', width: '20%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const certificationData = ref([]);
 
 // 경력 정보
-const careerHeaders = ['입사일', '퇴사일', '경력 정보', '비고'];
+const careerHeaders = [
+    { field: 'emplDate', label: '입사일', width: '25%' },
+    { field: 'resignDate', label: '퇴사일', width: '25%' },
+    { field: 'name', label: '경력 정보', width: '35%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const careerData = ref([]);
 
 // 가족 구성원
-const familyHeaders = ['관계', '이름', '생년월일', '주민등록번호', '연락처', '성별', '장애인 여부', '사망 여부', '비고'];
+const familyHeaders = [
+    { field: 'relation', label: '관계', width: '10%' },
+    { field: 'name', label: '이름', width: '10%' },
+    { field: 'birth', label: '생년월일', width: '15%' },
+    { field: 'identNo', label: '주민등록번호', width: '15%' },
+    { field: 'phone', label: '연락처', width: '15%' },
+    { field: 'sex', label: '성별', width: '10%' },
+    { field: 'disability', label: '장애인 여부', width: '10%' },
+    { field: 'die', label: '사망 여부', width: '10%' },
+    { field: 'note', label: '비고', width: '5%' }
+];
 const familyData = ref([]);
 
 // 기본 정보
@@ -145,33 +182,33 @@ const getMemberInfo = async () => {
 
         memberInfo.value = [
             {
-                firstLabel: '사원번호', firstValue: result.centerId,
-                secondLabel: '성명', secondValue: result.name,
-                thirdLabel: '주민등록번호', thirdValue: result.identNo
+                firstLabel: '사원번호', firstValue: result.loginId || 'N/A',
+                secondLabel: '성명', secondValue: result.name || 'N/A',
+                thirdLabel: '주민등록번호', thirdValue: result.identNo || 'N/A'
             },
             {
-                firstLabel: '이메일', firstValue: result.email,
-                secondLabel: '휴대전화', secondValue: result.phone,
-                thirdLabel: '성별', thirdValue: result.sex
+                firstLabel: '이메일', firstValue: result.email || 'N/A',
+                secondLabel: '휴대전화', secondValue: result.phone || 'N/A',
+                thirdLabel: '성별', thirdValue: result.sex || 'N/A'
             },
             {
-                firstLabel: '입사일', firstValue: '-', // 입사일 정보 없음
-                secondLabel: '발령일', secondValue: '-', // 발령일 정보 없음
-                thirdLabel: '병역구분', thirdValue: result.military
+                firstLabel: '입사일', firstValue: result.createdAt || 'N/A',
+                secondLabel: '발령일', secondValue: result.updatedAt || 'N/A',
+                thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
             },
             {
-                firstLabel: '비상연락처', firstValue: result.emergePhone || '-',
-                secondLabel: '직책', secondValue: result.position,
-                thirdLabel: '학력구분', thirdValue: result.grade
+                firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
+                secondLabel: '직책', secondValue: result.position || 'N/A',
+                thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
             },
             {
-                firstLabel: '은행명', firstValue: result.bankName,
-                secondLabel: '계좌번호', secondValue: result.account,
-                thirdLabel: '주소', thirdValue: result.address
+                firstLabel: '은행명', firstValue: result.bankName || 'N/A',
+                secondLabel: '계좌번호', secondValue: result.account || 'N/A',
+                thirdLabel: '주소', thirdValue: result.address || 'N/A',
             },
             {
-                firstLabel: '고용형태', firstValue: result.jobType,
-                secondLabel: '비고', secondValue: result.note || '-'
+                firstLabel: '고용형태', firstValue: result.jobType || 'N/A',
+                secondLabel: '비고', secondValue: result.note || 'N/A'
             },
         ];
     } catch (error) {
@@ -182,16 +219,16 @@ const getMemberInfo = async () => {
 // 학력 정보 API 호출
 const getEducationData = async () => {
     try {
-        const response = await $api.education.get('', ''); 
+        const response = await $api.education.get('', '');
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
-            입학일: edu.entranceDate,
-            졸업일: edu.graduationDate,
-            학력: edu.name,
-            전공: edu.major || '-',
-            점수: edu.score || '-',
-            비고: edu.note || '-',
+            entranceDate: edu.entranceDate,
+            graduationDate: edu.graduationDate,
+            name: edu.name,
+            major: edu.major || '-',
+            score: edu.score || '-',
+            note: edu.note || '-',
         }));
     } catch (error) {
         console.error('학력 정보 요청 실패: ', error);
@@ -201,15 +238,15 @@ const getEducationData = async () => {
 // 자격증/외국어 정보 API 호출
 const getCertificationData = async () => {
     try {
-        const response = await $api.certification.get('', ''); 
+        const response = await $api.certification.get('', '');
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
-            '취득 날짜': cert.acquisitionDate,
-            시행기관: cert.agency,
-            '자격증/외국어': cert.name,
-            등급: cert.score || '-',
-            비고: cert.note || '-',
+            acquisitionDate: cert.acquisitionDate,
+            agency: cert.agency,
+            name: cert.name,
+            score: cert.score || '-',
+            note: cert.note || '-',
         }));
     } catch (error) {
         console.error('자격증/외국어 정보 요청 실패: ', error);
@@ -218,14 +255,14 @@ const getCertificationData = async () => {
 
 const getCareerData = async () => {
     try {
-        const response = await $api.career.get('', ''); 
+        const response = await $api.career.get('', '');
         const result = response.result;
 
         careerData.value = result.map((career) => ({
-            입사일: career.emplDate,
-            퇴사일: career.resignDate || '-',
-            '경력 정보': career.name,
-            비고: career.note || '-',
+            emplDate: career.emplDate,
+            resignDate: career.resignDate || '-',
+            name: career.name,
+            note: career.note || '-',
         }));
     } catch (error) {
         console.error('경력 정보 요청 실패:', error);
@@ -234,19 +271,19 @@ const getCareerData = async () => {
 
 const getFamilyData = async () => {
     try {
-        const response = await $api.family.get('', ''); 
+        const response = await $api.family.get('', '');
         const result = response.result;
 
         familyData.value = result.map((family) => ({
-            관계: family.relation,
-            이름: family.name,
-            생년월일: family.birth,
-            주민등록번호: family.identNo,
-            연락처: family.phone,
-            성별: family.sex === 'MALE' ? '남성' : '여성',
-            '장애인 여부': family.disability ? 'O' : 'X',
-            '사망 여부': family.die ? 'O' : 'X',
-            비고: family.note || '-',
+            relation: family.relation,
+            name: family.name,
+            birth: family.birth,
+            identNo: family.identNo,
+            phone: family.phone,
+            sex: family.sex === 'MALE' ? '남성' : '여성',
+            disability: family.disability ? 'O' : 'X',
+            die: family.die ? 'O' : 'X',
+            note: family.note || '-',
         }));
     } catch (error) {
         console.error('가족 구성원 정보 요청 실패:', error);
@@ -264,18 +301,15 @@ onMounted(() => {
 
 <style scoped>
 .section {
-    margin-bottom: 30px; /* 각 섹션 간 간격 */
+    margin-bottom: 30px;
+    /* 각 섹션 간 간격 */
 }
 
 .section-text {
     font-size: 16px;
     font-weight: bold;
     color: #000000;
-}
-
-.memberInfo{
-    margin-top: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
 }
 
 .subtitle {
@@ -294,6 +328,47 @@ onMounted(() => {
     font-size: 16px;
     font-weight: bold;
     color: #000;
+}
+
+.infomation {
+    display: flex;
+    flex-wrap: wrap; /* 화면 크기에 따라 자동 줄바꿈 */
+    gap: 20px; /* 이미지와 정보 사이 간격 */
+    align-items: center; /* 수직 정렬 */
+    justify-content: flex-start; /* 좌측 정렬 */
+    padding: 20px; /* 내부 여백 */
+    border: 1px solid #838383; /* 외곽선 추가 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    background-color: #fdfdfd; /* 배경색 추가 */
+    margin-bottom: 24px;
+}
+
+/* 사용자 이미지 컨테이너 */
+.user-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px; /* 이미지 컨테이너 고정 너비 */
+    height: 120px; /* 이미지 컨테이너 고정 높이 */
+    flex-shrink: 0; /* 컨테이너 크기 고정 */
+}
+
+/* 사용자 프로필 이미지 */
+.user-profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* 원형 이미지 */
+    object-fit: cover; /* 이미지 크기에 맞게 잘라내기 */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.memberInfo {
+    flex: 1; /* 남은 공간을 채우도록 설정 */
+    display: flex;
+    flex-direction: column; /* 세로 정렬 */
+    gap: 10px; /* 행 사이 간격 */
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .row {
@@ -322,7 +397,7 @@ onMounted(() => {
 /* 각 label 셀의 스타일 */
 .label {
     width: 25%;
-    color: #777777;
+    color: #545454;
     background: #F8F8F8;
     display: flex;
     justify-content: center;
