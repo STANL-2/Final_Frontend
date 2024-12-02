@@ -64,7 +64,7 @@
         </div>
     </Modal>
 
-    <Modal v-model="showAlarmChart" header="알림" width="70rem">
+    <Modal v-model="showAlarmChart" header="알림" width="63rem" height="37rem" class="alarm-modal-header">
         <div class="alarm-modal-container" @click.self="closeAlarmModal">
             <div class="sidebar-container">
                 <Sidebar @menu-clicked="showAlarms" />
@@ -101,10 +101,7 @@
             </div>
 
             <div v-if="selectedAlarm" class="alarm-detail-container">
-                <div v-if="selectedAlarm" class="alarm-detail-container">
-                    <AlarmScheduleDetail :alarm="selectedAlarm" @close="selectedAlarm = null"
-                        @navigate="navigateFromAlarm" />
-                </div>
+                <AlarmScheduleDetail :alarm="selectedAlarm" @close="selectedAlarm = null" />
             </div>
         </div>
     </Modal>
@@ -383,6 +380,7 @@ const showAlarmDetail = async (alarm) => {
                 ? { ...a, readStatus: true }
                 : a
         );
+
         alarms.value = updatedAlarms;
         selectedAlarm.value = { ...alarm, readStatus: true };
 
@@ -394,14 +392,8 @@ const showAlarmDetail = async (alarm) => {
 
         await fetchAlarmTypes();
         // Update the selected alarm
-        selectedAlarm.value = { ...alarm, read: true };
+        // selectedAlarm.value = { ...alarm, read: true };/
 
-        // Update the alarms list to reflect the read status
-        // alarms.value = alarms.value.map(a => 
-        //     a.alarmId === alarm.alarmId 
-        //         ? { ...a, read: true } 
-        //         : a
-        // );
     } catch (error) {
         alarms.value = alarms.value.map(a =>
             a.alarmId === alarm.alarmId
@@ -411,14 +403,6 @@ const showAlarmDetail = async (alarm) => {
         selectedAlarm.value = null;
         console.error('Failed to mark alarm as read:', error);
     }
-};
-
-const navigateFromAlarm = async (redirectUrl) => {
-    if (redirectUrl) {
-        showAlarmChart.value = false;
-        router.push(redirectUrl);
-    }
-    selectedAlarm.value = null;
 };
 
 // 로그인 남은 시간 로직
@@ -797,8 +781,8 @@ onUnmounted(() => {
     padding-left: 15px;
     border-bottom: 1px solid #e4e4e4;
     background-color: #ffffff;
-    width: 430px;
-    height: 122px;
+    width: 380px;
+    height: 120px;
     box-sizing: border-box;
     transition: background-color 0.2s ease;
 }
@@ -848,14 +832,14 @@ onUnmounted(() => {
 
 .alarm-modal-container {
     display: flex;
-    height: 550px;
+    height: 100%;
     width: 100%;
 }
 
 .alarm-list-container {
     overflow-y: auto;
     overflow-x: hidden;
-    height: 100%;
+    height: 480px;
     border-left: 1px solid #e4e4e4;
     border-right: 1px solid #e4e4e4;
 }
@@ -909,5 +893,13 @@ onUnmounted(() => {
     text-align: center;
     color: #777;
     font-size: 16px;
+}
+
+:global(.p-dialog .p-dialog-header) {
+    padding-bottom: 0.7rem !important;
+}
+
+:global(.p-dialog .p-dialog-content) {
+    padding-bottom: 1rem !important;
 }
 </style>
