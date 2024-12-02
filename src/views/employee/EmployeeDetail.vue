@@ -41,12 +41,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in educationHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in educationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in educationData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in educationHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -64,12 +64,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in certificationHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in certificationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in certificationData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in certificationHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -86,12 +86,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in careerHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in careerHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in careerData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in careerHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -108,12 +108,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in familyHeaders" :key="header">{{ header }}</th>
+                        <th v-for="header in familyHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in familyData" :key="index">
-                        <td v-for="(value, key) in row" :key="key">{{ value }}</td>
+                        <td v-for="header in familyHeaders" :key="header.field">{{ row[header.field] }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -135,19 +135,47 @@ const employeeId = ref(route.query.employeeId);
 const memberInfo = ref([]);
 
 // 학력 정보
-const educationHeaders = ['입학일', '졸업일', '학력', '전공', '점수', '비고'];
+const educationHeaders = [
+    { field: 'entranceDate', label: '입학일', width: '15%' },
+    { field: 'graduationDate', label: '졸업일', width: '15%' },
+    { field: 'name', label: '학력', width: '20%' },
+    { field: 'major', label: '전공', width: '20%' },
+    { field: 'score', label: '점수', width: '15%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const educationData = ref([]);
 
 // 자격증/외국어 정보
-const certificationHeaders = ['취득 날짜', '시행기관', '자격증/외국어', '등급', '비고'];
+const certificationHeaders = [
+    { field: 'acquisitionDate', label: '취득 날짜', width: '20%' },
+    { field: 'agency', label: '시행기관', width: '20%' },
+    { field: 'name', label: '자격증/외국어', width: '25%' },
+    { field: 'score', label: '등급', width: '20%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const certificationData = ref([]);
 
 // 경력 정보
-const careerHeaders = ['입사일', '퇴사일', '경력 정보', '비고'];
+const careerHeaders = [
+    { field: 'emplDate', label: '입사일', width: '25%' },
+    { field: 'resignDate', label: '퇴사일', width: '25%' },
+    { field: 'name', label: '경력 정보', width: '35%' },
+    { field: 'note', label: '비고', width: '15%' }
+];
 const careerData = ref([]);
 
 // 가족 구성원
-const familyHeaders = ['관계', '이름', '생년월일', '주민등록번호', '연락처', '성별', '장애인 여부', '사망 여부', '비고'];
+const familyHeaders = [
+    { field: 'relation', label: '관계', width: '10%' },
+    { field: 'name', label: '이름', width: '10%' },
+    { field: 'birth', label: '생년월일', width: '15%' },
+    { field: 'identNo', label: '주민등록번호', width: '15%' },
+    { field: 'phone', label: '연락처', width: '15%' },
+    { field: 'sex', label: '성별', width: '10%' },
+    { field: 'disability', label: '장애인 여부', width: '10%' },
+    { field: 'die', label: '사망 여부', width: '10%' },
+    { field: 'note', label: '비고', width: '5%' }
+];
 const familyData = ref([]);
 
 // 기본 정보
@@ -202,12 +230,12 @@ const getEducationData = async () => {
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
-            입학일: edu.entranceDate,
-            졸업일: edu.graduationDate,
-            학력: edu.name,
-            전공: edu.major || '-',
-            점수: edu.score || '-',
-            비고: edu.note || '-',
+            entranceDate: edu.entranceDate,
+            graduationDate: edu.graduationDate,
+            name: edu.name,
+            major: edu.major || '-',
+            score: edu.score || '-',
+            note: edu.note || '-',
         }));
     } catch (error) {
         console.error('학력 정보 요청 실패: ', error);
@@ -221,11 +249,11 @@ const getCertificationData = async () => {
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
-            '취득 날짜': cert.acquisitionDate,
-            시행기관: cert.agency,
-            '자격증/외국어': cert.name,
-            등급: cert.score || '-',
-            비고: cert.note || '-',
+            acquisitionDate: cert.acquisitionDate,
+            agency: cert.agency,
+            name: cert.name,
+            score: cert.score || '-',
+            note: cert.note || '-',
         }));
     } catch (error) {
         console.error('자격증/외국어 정보 요청 실패: ', error);
@@ -238,10 +266,10 @@ const getCareerData = async () => {
         const result = response.result;
 
         careerData.value = result.map((career) => ({
-            입사일: career.emplDate,
-            퇴사일: career.resignDate || '-',
-            '경력 정보': career.name,
-            비고: career.note || '-',
+            emplDate: career.emplDate,
+            resignDate: career.resignDate || '-',
+            name: career.name,
+            note: career.note || '-',
         }));
     } catch (error) {
         console.error('경력 정보 요청 실패:', error);
@@ -254,15 +282,15 @@ const getFamilyData = async () => {
         const result = response.result;
 
         familyData.value = result.map((family) => ({
-            관계: family.relation,
-            이름: family.name,
-            생년월일: family.birth,
-            주민등록번호: family.identNo,
-            연락처: family.phone,
-            성별: family.sex === 'MALE' ? '남성' : '여성',
-            '장애인 여부': family.disability ? 'O' : 'X',
-            '사망 여부': family.die ? 'O' : 'X',
-            비고: family.note || '-',
+            relation: family.relation,
+            name: family.name,
+            birth: family.birth,
+            identNo: family.identNo,
+            phone: family.phone,
+            sex: family.sex === 'MALE' ? '남성' : '여성',
+            disability: family.disability ? 'O' : 'X',
+            die: family.die ? 'O' : 'X',
+            note: family.note || '-',
         }));
     } catch (error) {
         console.error('가족 구성원 정보 요청 실패:', error);
@@ -301,6 +329,7 @@ onMounted(() => {
     font-size: 16px;
     font-weight: bold;
     color: #000000;
+    margin-bottom: 24px;
 }
 
 .subtitle {
