@@ -106,13 +106,14 @@ const deleteProblem = async () => {
 const updateProblemStatus = async () => {
     try {
         // `putParams`를 사용하여 상태 변경 API 호출
-        const response = await $api.problem.putParams(
-            'status',problemId // 경로에 problemId 포함
+        const response = await $api.problem.put(
+            '',
+            `status/${problemId}`
         );
         
         console.log('Response:', response); // 응답 확인
         
-        if (response.status === 200) {
+        if (response.httpStatus === 200) {
             alert('문제 상태가 변경되었습니다.');
         } else {
             alert('상태 변경에 실패했습니다.');
