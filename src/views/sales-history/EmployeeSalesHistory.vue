@@ -4,10 +4,6 @@
             <!-- 첫 번째 행: 검색 조건 -->
             <SSearchForm :fields="[firstRowFields]" ref="searchFormRef" />
 
-            <!-- SearchForm -->
-            <div class="component-wrapper">
-                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"/>
-            </div>
             <!-- 두 번째 행: 버튼 -->
             <div class="form-row button-row">
                 <SCommonButton v-for="field in secondRowFields" :key="field.model" :label="field.label"
@@ -50,7 +46,6 @@
         <div v-if="method === 'GET'">
             <BigCard :chart-data="[bigCardChartData, secondChartData]" />
         </div>
-
     </PageLayout>
 </template>
 
@@ -63,7 +58,6 @@ import SSearchForm from '@/components/common/SSearchForm.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
-import CSearchForm from '@/components/common/CSearchForm.vue';
 
 // SearchForm.vue 검색조건 값
 const firstRowFields = ref([
@@ -83,43 +77,6 @@ const firstRowFields = ref([
         manualInput: false,
     },
 ]);
-
-const formFields = [
-    [
-        {
-            label: '매장명',
-            type: 'inputWithButton',
-            model: 'centerId',
-            showDivider: false,
-        },
-        {
-            label: '제품명',
-            type: 'inputWithButton',
-            model: 'productId',
-            showDivider: false,
-        },
-        {
-            label: '담당자명',
-            type: 'inputWithButton',
-            model: 'memberId',
-            showDivier: false,
-        }
-    ],
-    [
-        {
-            label: '고객명',
-            type: 'input',
-            model: 'customerId',
-            showDivider: true,
-        },
-        {
-            label: '계약서명',
-            type: 'inputWithButton',
-            model: 'constractId',
-            showDivider: true,
-        }
-    ]
-]
 
 const secondRowFields = ref([
     {
@@ -174,7 +131,7 @@ const tableHeaders = ref([
     { field: 'customerId', label: '고객명', width: '10%' },
     { field: 'productId', label: '제품 번호', width: '20%' },
     { field: 'centerId', label: '매장명', width: '20%' },
-    { field: 'memberId', label: '담당자', width: '20%' },
+    // { field: 'memberId', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
@@ -290,22 +247,19 @@ const handleButtonClick = async (field) => {
 
 const loadData = async (method = 'POST', searchType = null, fieldModel = null, fieldLabel = null) => {
     loading.value = true; // 로딩 시작
-
     try {
         searchParams.value = {
             startDate: searchCriteria.value.salesHistorySearchDate_start || null,
             endDate: searchCriteria.value.salesHistorySearchDate_end || null,
         }
 
+
         let response;
 
         if (method === 'POST') {
             // POST 요청
-            const queryString = `search?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
-
-            console.log("queryString: ", queryString);
-            console.log("searchParams.value", searchParams.value);
-            response = await $api.salesHistory.post(searchParams.value, queryString);
+            const queryString = `?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
+            response = await $api.salesHistory.post(searchParams.value, 'employee/search' + queryString);
 
             if (response && response.result) {
                 tableData.value = response.result.content || [];
