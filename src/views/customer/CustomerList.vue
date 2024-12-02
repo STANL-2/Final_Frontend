@@ -347,6 +347,8 @@ const loadData = async () => {
         const query = {
             page: first.value / rows.value, // 현재 페이지
             size: rows.value, // 페이지 크기
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
             ...filteredCriteria // 필터링된 검색 조건 병합
         };
 
