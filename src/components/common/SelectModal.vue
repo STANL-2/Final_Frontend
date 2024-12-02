@@ -2,40 +2,15 @@
   <Dialog v-model:visible="localVisible" modal :header="header" :style="{ width: '40rem' }" @hide="handleHide">
     <!-- 검색 텍스트 입력 및 버튼 -->
     <div class="search-input">
-      <input
-        type="text"
-        v-model="searchText"
-        :placeholder="`검색 ${header}`"
-        class="form-input"
-      />
+      <input type="text" v-model="searchText" :placeholder="`검색 ${header}`" class="form-input" />
       <button class="search-button" @click="searchItems">
         <span class="search-icon pi pi-search"></span>
       </button>
     </div>
 
-    <!-- 검색 결과 목록 -->
-    <div v-if="items.length > 0" class="search-results">
-      <ul>
-        <li v-for="(item, index) in items" :key="index" @click="selectItem(item)">
-          {{ item.name }} <!-- 아이템 이름을 표시한다고 가정 -->
-        </li>
-      </ul>
-    </div>
-
-    <!-- 검색 결과 목록 테이블 -->
-    <div v-if="items.length > 0" class="search-results">
-      <p>검색 결과</p>
-      <DataTable :value="items" :paginator="true" :rows="5" :loading="loading" :showGridlines="true">
-        <!-- 컬럼 정의 -->
-        <Column field="name" header="매장명" sortable></Column>
-        <Column field="centerId" header="매장 번호" sortable></Column>
-        <template #body="slotProps">
-          <tr @click="selectItem(slotProps.data)">
-            <td>{{ slotProps.data.name }}</td>
-            <td>{{ slotProps.data.centerId }}</td>
-          </tr>
-        </template>
-      </DataTable>
+    <div class="table-wrapper width-s ml-m">
+      <ViewTable :headers="modalHeaders" :data="modalData" :selectable="true" :selection="selectedRows"
+        @update:selection="updateSelectedRows"></ViewTable>
     </div>
     <!-- 부모에서 정의한 footer 슬롯 -->
     <template #footer>
@@ -48,6 +23,7 @@
 <script setup>
 import { ref, defineEmits, watch } from 'vue';
 import Dialog from 'primevue/dialog';
+import ViewTable from '@/components/common/ListTable.vue';
 
 const props = defineProps({
   modelValue: Boolean,
@@ -61,6 +37,8 @@ const searchText = ref(''); // 검색어
 const items = ref([]); // 검색 결과
 const selectedItem = ref(null); // 선택된 항목
 const loading = ref(false);
+const modalData = ref([]);
+const selectedRows = ref([]);
 
 // props.modelValue가 변경될 때 localVisible을 업데이트
 watch(() => props.modelValue, (newVal) => {
@@ -72,6 +50,11 @@ function handleHide() {
   emit('cancel');
 }
 
+const modalHeaders = ref([
+  { field: 'centerId', label: '매장번호', width: '50%' },
+  { field: 'name', label: '매장명', width: '50%' },
+]);
+
 // 검색 버튼 클릭 시 API 호출
 const searchItems = async () => {
   if (searchText.value.trim()) {
@@ -79,17 +62,20 @@ const searchItems = async () => {
     try {
       // API 호출
       const response = await props.fetchItemsApi(searchText.value);
-      items.value = response.data || []; // API 응답의 데이터에 맞게 설정
+      items.value = response.result || []; // API 응답의 데이터에 맞게 설정
+      modalData.value = response.result || [];
+      console.log(items.value);
+      console.log(modalData.value);
     } catch (error) {
       console.error('API 요청 실패:', error);
-    }finally{
+    } finally {
       loading.value = false;
     }
   }
 };
 
 // 아이템 선택 시 선택된 항목을 부모 컴포넌트로 전달
-const selectItem = (item) => {
+const updateSelectedRows = (item) => {
   selectedItem.value = item;
 };
 

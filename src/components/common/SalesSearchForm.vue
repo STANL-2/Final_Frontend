@@ -39,6 +39,7 @@
       required: true,
       default: () => [],
     },
+    placeholder: String
   });
   
   // formData는 검색폼의 값들을 저장하는 객체

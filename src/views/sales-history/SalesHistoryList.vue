@@ -108,6 +108,7 @@ const formFields = [
             label: '매장명',
             type: 'inputWithButton',
             model: 'centerName',
+            placeholder: '',
             showDivider: false,
         },
         {
@@ -526,7 +527,15 @@ const fetchMembers = async (searchTerm) => {
 const handleCenterSelection = (selectedItem) => {
   console.log('선택된 매장:', selectedItem);
   selectedCenter.value = selectedItem;  // 선택된 매장 저장
-  // 필요한 추가 작업을 진행할 수 있습니다.
+
+  // formFields가 올바르게 초기화되었는지 확인하고 placeholder 업데이트
+  if (formFields.value && formFields.value[0] && formFields.value[0][0]) {
+    formFields.value[0][0].placeholder = selectedCenter.value[0]?.name || '매장명을 선택하세요'; // placeholder에 매장명 설정
+  } else {
+    console.error('formFields 배열이 올바르지 않거나 비어 있습니다.');
+  }
+
+  console.log("선택된 매장명 확인:", selectedCenter.value[0]?.name);
 };
 
 // 담당자 선택 후 처리
