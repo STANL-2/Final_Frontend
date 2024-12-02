@@ -1,12 +1,10 @@
 <template>
     <div v-if="alarm" class="alarm-detail-container">
         <div class="alarm-detail-header">
-            <span class="tag" :style="{ backgroundColor: getTagColor(alarm.tag) }">
-                {{ alarm.tag }}
-            </span>
-            <button class="close-button" @click="$emit('close')">
-                <i class="pi pi-times"></i>
-            </button>
+            <div class="member-info">
+                <img v-if="member.profileImageUrl" :src="member.profileImageUrl" alt="Profile" class="profile-image" />
+                <span class="member-name">{{ member.name || "이름 없음" }}</span>
+            </div>
         </div>
 
         <div class="alarm-detail-content">
@@ -32,8 +30,9 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { ref, watch, defineProps, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
+import { $api } from '@/services/api/api';
 
 const router = useRouter();
 
@@ -44,7 +43,29 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['close']);
+const member = ref({
+    name: '',
+    profileImageUrl: ''
+});
+
+watch(
+    () => props.alarm,
+    async (newAlarm) => {
+        if (newAlarm && newAlarm.memberId) {
+            try {
+
+                const response = $api.member.get(
+                    ''
+                )
+            } catch (error) {
+                console.error('Failed to fetch member info:', error);
+            }
+        } else {
+            member.value = { name: '', profileImageUrl: '' };
+        }
+    },
+    { immediate: true }
+);
 
 const getTagColor = (tag) => {
     const tagColors = {
@@ -72,11 +93,10 @@ const formatDate = (dateString) => {
 };
 
 const formatKey = (key) => {
-    // Convert camelCase or snake_case to readable text
     return key
         .replace(/([A-Z])/g, ' $1')
         .replace(/_/g, ' ')
-        .replace(/^./, str => str.toUpperCase());
+        .replace(/^./, (str) => str.toUpperCase());
 };
 
 const goToRelatedPage = () => {
@@ -89,12 +109,15 @@ const goToRelatedPage = () => {
 <style scoped>
 .alarm-detail-container {
     background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    height: 100%;
+    border-radius: 8px; 
+    width: 550px;
+    height: 500px;
+    padding: 1rem;
+    margin-left: 5px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    border: 2px solid #ddd;
 }
 
 .alarm-detail-header {
@@ -104,21 +127,22 @@ const goToRelatedPage = () => {
     margin-bottom: 15px;
 }
 
-.tag {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
+.member-info {
+    display: flex;
+    align-items: center;
 }
 
-.close-button {
-    background: none;
-    border: none;
-    color: #777;
-    cursor: pointer;
-    font-size: 18px;
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
 }
 
 .alarm-detail-content {

@@ -1,5 +1,3 @@
-
-
 <template>
     <header>
         <nav class="menu-bar">
@@ -50,7 +48,7 @@
     </header>
 
     <Modal v-model="showOrganizationChart" header="조직도" width="70rem" height="100rem">
-        <!-- Custom Modal -->s
+        <!-- Custom Modal -->
         <div v-if="showOrganizationChart" class="modal-overlay">
             <div class="modal">
                 <div class="aside">
@@ -75,18 +73,31 @@
                 <div v-if="alarms.length === 0 && !loading" class="no-alarms">
                     해당 카테고리에 알림이 없습니다.
                 </div>
-                <div v-for="alarm in alarms" :key="alarm.redirectUrl"
-                    :class="['alarm-item', { read: alarm.readStatus }]" @click="showAlarmDetail(alarm)"
-                    style="cursor: pointer;">
-                    <span class="tag" :style="{
-                        backgroundColor: getTagColor(alarm.tag),
-                    }">
-                        {{ alarm.tag }}
-                    </span>
-                    <h4 class="message">{{ alarm.message }}</h4>
-                    <p class="created-at">{{ alarm.createdAt }}</p>
+                <div v-for="alarm in alarms" :key="alarm.redirectUrl || 'no-alarms'" :class="[
+                    'alarm-item',
+                    {
+                        'read': alarm.readStatus,
+                        'no-alarms-message': alarm.isNoAlarmsMessage
+                    }
+                ]" @click="!alarm.isNoAlarmsMessage && showAlarmDetail(alarm)" style="cursor: pointer;">
+                    <!-- Only show tag and other details for actual alarms -->
+                    <template v-if="!alarm.isNoAlarmsMessage">
+                        <span class="tag" :style="{
+                            backgroundColor: getTagColor(alarm.tag),
+                        }">
+                            {{ alarm.tag }}
+                        </span>
+                        <h4 class="message">{{ alarm.message }}</h4>
+                        <p class="created-at">{{ alarm.createdAt }}</p>
+                    </template>
+
+                    <!-- No alarms message -->
+                    <template v-else>
+                        <div class="no-alarms-content">{{ alarm.message }}</div>
+                    </template>
                 </div>
-                <div v-if="loading" class="loading-indicator">로딩 중...</div>
+                <div v-if="loading" class="alarm-item">
+                </div>
             </div>
 
             <div v-if="selectedAlarm" class="alarm-detail-container">
@@ -290,11 +301,24 @@ const fetchAlarmsByType = async () => {
         const response = await apiAlarmService.getParams(`${selectedCategory.value}`, queryString);
 
         if (response && response.result) {
-            // Append new alarms to the list
-            alarms.value.push(...response.result.content);
+            if (currentPage.value === 0 && response.result.content.length === 0) {
+                // Create a "no alarms" item
+                alarms.value = [{
+                    isNoAlarmsMessage: true,
+                    message: '해당 카테고리에 알림이 없습니다.',
+                }];
+            } else {
+                // Append new alarms to the list
+                alarms.value.push(...response.result.content);
+            }
 
             // Sort alarms by createdAt in descending order
-            alarms.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            alarms.value.sort((a, b) => {
+                // Keep the "no alarms" message at the top if it exists
+                if (a.isNoAlarmsMessage) return -1;
+                if (b.isNoAlarmsMessage) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
 
             if (response.result.last) {
                 totalPages.value = currentPage.value + 1; // Fix total pages
@@ -449,8 +473,8 @@ onMounted(() => {
     fetchAlarmTypes();
 
     // 5분마다 알람 타입 자동 업데이트
-    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
-    const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
+    const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
+    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
 
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
@@ -773,9 +797,9 @@ onUnmounted(() => {
     padding-left: 15px;
     border-bottom: 1px solid #e4e4e4;
     background-color: #ffffff;
-    max-width: 100%;
+    width: 430px;
+    height: 122px;
     box-sizing: border-box;
-    min-height: 80px;
     transition: background-color 0.2s ease;
 }
 
@@ -788,10 +812,6 @@ onUnmounted(() => {
     background-color: #f5f5f5;
 }
 
-.alarm-item:hover {
-    background-color: #f5f5f5;
-    /* 살짝 확대 */
-}
 
 .alarm-item:active {
     transform: scale(1.01);
@@ -826,36 +846,22 @@ onUnmounted(() => {
     overflow-wrap: break-word;
 }
 
-.loading-indicator {
-    text-align: center;
-    margin-top: 20px;
-    color: #777;
-}
-
 .alarm-modal-container {
     display: flex;
-    height: 100%;
+    height: 550px;
+    width: 100%;
 }
 
 .alarm-list-container {
-    flex-grow: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     height: 100%;
-    padding: 0.2rem;
-    max-width: 65%;
     border-left: 1px solid #e4e4e4;
     border-right: 1px solid #e4e4e4;
 }
 
-.alarm-modal-container {
-    min-height: 500px;
-    max-height: 500px;
-    min-width: 700px;
-    max-width: 700px;
-}
-
 .no-alarms {
-    text-align: center;
+    /* text-align: center; */
     color: #777;
     padding: 20px;
     font-size: 16px;
@@ -890,28 +896,18 @@ onUnmounted(() => {
     vertical-align: middle;
 }
 
-.alarm-modal-container {
-    display: flex;
-    height: 600px;
-    /* Increased height to accommodate details */
+.no-alarms-message {
+    text-align: center;
+    color: #777;
+    padding: 20px;
+    font-size: 16px;
+    cursor: default !important;
 }
 
-.alarm-list-container {
-    flex: 4;
-    /* Increased width for list */
-    border-right: 1px solid #e4e4e4;
-}
-
-.alarm-detail-container {
-    flex: 3;
-    /* Space for alarm details */
-    overflow-y: auto;
-    padding: 1rem;
-    background-color: #f9f9f9;
-}
-
-.alarm-item.selected-alarm {
-    background-color: #f0f0f0;
-    border-left: 4px solid #6360AB;
+.no-alarms-content {
+    width: 100%;
+    text-align: center;
+    color: #777;
+    font-size: 16px;
 }
 </style>
