@@ -6,7 +6,7 @@
 
             <!-- SearchForm -->
             <div class="component-wrapper">
-                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"/>
+                <SalesSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef2" />
             </div>
             <!-- 두 번째 행: 버튼 -->
             <div class="form-row button-row">
@@ -21,24 +21,22 @@
             </div>
         </div>
 
-        <!-- 조회 버튼 -->
-
         <!-- 테이블: POST 요청 데이터 -->
         <div class="component-wrapper" v-if="method === 'POST'">
             <div class="flex-row content-between">
                 <div>전체목록</div>
-                    <div class="flex-row items-center mb-s">
-                        <div class="ml-xs">
-                            <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
-                        </div>
-                        <div class="ml-xs">
-                            <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                        </div>
-                        <div class="ml-xs">
-                            <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                                @click="refresh" />
-                        </div>
+                <div class="flex-row items-center mb-s">
+                    <div class="ml-xs">
+                        <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                     </div>
+                    <div class="ml-xs">
+                        <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                    </div>
+                    <div class="ml-xs">
+                        <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                </div>
             </div>
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
                 :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
@@ -51,6 +49,25 @@
             <BigCard :chart-data="[bigCardChartData, secondChartData]" />
         </div>
 
+        <!-- 매장명 모달 -->
+        <SelectModal
+        v-if="showCenterModal"
+        :modelValue="showCenterModal"
+        :header="'매장명 선택'"
+        @update:modelValue="showCenterModal = $event"
+        @confirm="handleCenterSelection"
+        :fetchItemsApi="fetchCenters"
+        />
+        
+        <!-- 담당자명 모달 -->
+        <SelectModal
+        v-if="showMemberModal"
+        :modelValue="showMemberModal"
+        :header="'담당자명 선택'"
+        @update:modelValue="showMemberModal = $event"
+        @confirm="handleMemberSelection"
+        :fetchItemsApi="fetchMembers"
+        />
     </PageLayout>
 </template>
 
@@ -63,7 +80,8 @@ import SSearchForm from '@/components/common/SSearchForm.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
-import CSearchForm from '@/components/common/CSearchForm.vue';
+import SalesSearchForm from '@/components/common/SalesSearchForm.vue';
+import SelectModal from '@/components/common/SelectModal.vue';
 
 // SearchForm.vue 검색조건 값
 const firstRowFields = ref([
@@ -89,19 +107,19 @@ const formFields = [
         {
             label: '매장명',
             type: 'inputWithButton',
-            model: 'centerId',
+            model: 'centerName',
             showDivider: false,
         },
         {
-            label: '제품명',
-            type: 'inputWithButton',
-            model: 'productId',
-            showDivider: false,
+            label: '계약서 번호',
+            type: 'input',
+            model: 'constractId',
+            showDivider: true,
         },
         {
-            label: '담당자명',
+            label: '담당자',
             type: 'inputWithButton',
-            model: 'memberId',
+            model: 'memberName',
             showDivier: false,
         }
     ],
@@ -109,15 +127,16 @@ const formFields = [
         {
             label: '고객명',
             type: 'input',
-            model: 'customerId',
+            model: 'customerName',
             showDivider: true,
         },
+
         {
-            label: '계약서명',
-            type: 'inputWithButton',
-            model: 'constractId',
-            showDivider: true,
-        }
+            label: '제품명',
+            type: 'input',
+            model: 'productId',
+            showDivider: false,
+        },
     ]
 ]
 
@@ -173,8 +192,8 @@ const tableHeaders = ref([
     { field: 'contractId', label: '계약서 번호', width: '25%' },
     { field: 'customerId', label: '고객명', width: '10%' },
     { field: 'productId', label: '제품 번호', width: '20%' },
-    { field: 'centerId', label: '매장명', width: '20%' },
-    { field: 'memberId', label: '담당자', width: '20%' },
+    { field: 'centerName', label: '매장명', width: '20%' },
+    { field: 'memberName', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
@@ -189,8 +208,10 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
+
 let method = "POST";
 let saveButton;
+
 const searchParams = ref({
     startDate: null,
     endDate: null
@@ -254,8 +275,9 @@ const handleButtonComparisonClick = async (field2) => {
 
 
 const handleButtonClick = async (field) => {
+
     // FormData 가져오기
-    const formData = searchFormRef.value?.formData;
+    const formData = searchFormRef2.value?.formData;
 
     if (!formData) {
         console.error('FormData를 가져올 수 없습니다.');
@@ -311,13 +333,13 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                 tableData.value = response.result.content || [];
                 totalRecords.value = response.result.totalElements || 0;
             }
-        }  else if (method === 'GET') {
+        } else if (method === 'GET') {
             // GET 요청
             const subUrl = `employee/statistics/search/${searchType}`;
             const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
             response = await $api.salesHistory.getParams(subUrl, queryString);
-            
-            console.log("queryString: "+ queryString);
+
+            console.log("queryString: " + queryString);
             console.log("subUrl" + subUrl);
 
             if (response && response.result) {
@@ -341,11 +363,11 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
 
                     // 차트 업데이트
                     updateChartData(mappedData, fieldLabel);
-                    }
-                } else {
-                    throw new Error('Unsupported method');
                 }
+            } else {
+                throw new Error('Unsupported method');
             }
+        }
     } catch (error) {
         console.error('데이터 로드 실패:', error.message);
     } finally {
@@ -477,6 +499,43 @@ onMounted(() => {
     loadData('POST');
 });
 
+// 모달의 가시성 상태
+const showCenterModal = ref(false);
+const showMemberModal = ref(false);
+
+// 선택된 매장 정보 저장
+const selectedCenter = ref(null);
+
+// 선택된 담당자 정보 저장
+const selectedMember = ref(null);
+
+// 매장 목록을 가져오는 API 호출
+const fetchCenters = async (searchTerm) => {
+  const queryString = `?name=${searchTerm}`;
+  const response = await $api.center.getParams('searchList', queryString);  // 예시로 쿼리스트링 전달
+  return response;  // { data: [...] }
+};
+
+// 담당자 목록을 가져오는 API 호출
+const fetchMembers = async (searchTerm) => {
+  const response = await $api.salesHistory.getMembers(searchTerm);  // API 호출
+  return response;  // { data: [...] }
+};
+
+// 매장 선택 후 처리
+const handleCenterSelection = (selectedItem) => {
+  console.log('선택된 매장:', selectedItem);
+  selectedCenter.value = selectedItem;  // 선택된 매장 저장
+  // 필요한 추가 작업을 진행할 수 있습니다.
+};
+
+// 담당자 선택 후 처리
+const handleMemberSelection = (selectedItem) => {
+  console.log('선택된 담당자:', selectedItem);
+  selectedMember.value = selectedItem;  // 선택된 담당자 저장
+  // 필요한 추가 작업을 진행할 수 있습니다.
+};
+
 
 const exportCSV = async () => {
     loading.value = true;
@@ -529,13 +588,21 @@ const showModal = ref(false);
 const selectedRow = ref(null);
 const selectedCode = ref('');
 const searchFormRef = ref(null);
+const searchFormRef2 = ref(null);
 const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
 
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
-}
+// 모달 열기 처리
+const handleOpenModal = (fieldModel) => {
+    console.log("모달을 여는 필드 모델:", fieldModel);
+    
+    // 모달을 열 때 해당 모델에 맞는 필드를 처리
+    if (fieldModel === 'centerName') {
+        showCenterModal.value = true; // 매장명 모달 열기
+    } else if (fieldModel === 'memberName') {
+        showMemberModal.value = true; // 담당자명 모달 열기
+    }
+};
 
 const selectedRows = ref([]);
 

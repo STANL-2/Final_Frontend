@@ -1,0 +1,134 @@
+<template>
+  <Dialog v-model:visible="localVisible" modal :header="header" :style="{ width: '40rem' }" @hide="handleHide">
+    <!-- 검색 텍스트 입력 및 버튼 -->
+    <div class="search-input">
+      <input
+        type="text"
+        v-model="searchText"
+        :placeholder="`검색 ${header}`"
+        class="form-input"
+      />
+      <button class="search-button" @click="searchItems">
+        <span class="search-icon pi pi-search"></span>
+      </button>
+    </div>
+
+    <!-- 검색 결과 목록 -->
+    <div v-if="items.length > 0" class="search-results">
+      <ul>
+        <li v-for="(item, index) in items" :key="index" @click="selectItem(item)">
+          {{ item.name }} <!-- 아이템 이름을 표시한다고 가정 -->
+        </li>
+      </ul>
+    </div>
+
+    <!-- 검색 결과 목록 테이블 -->
+    <div v-if="items.length > 0" class="search-results">
+      <p>검색 결과</p>
+      <DataTable :value="items" :paginator="true" :rows="5" :loading="loading" :showGridlines="true">
+        <!-- 컬럼 정의 -->
+        <Column field="name" header="매장명" sortable></Column>
+        <Column field="centerId" header="매장 번호" sortable></Column>
+        <template #body="slotProps">
+          <tr @click="selectItem(slotProps.data)">
+            <td>{{ slotProps.data.name }}</td>
+            <td>{{ slotProps.data.centerId }}</td>
+          </tr>
+        </template>
+      </DataTable>
+    </div>
+    <!-- 부모에서 정의한 footer 슬롯 -->
+    <template #footer>
+      <button class="btn btn-primary" @click="confirmSelection">확인</button>
+      <button class="btn btn-secondary" @click="handleHide">취소</button>
+    </template>
+  </Dialog>
+</template>
+
+<script setup>
+import { ref, defineEmits, watch } from 'vue';
+import Dialog from 'primevue/dialog';
+
+const props = defineProps({
+  modelValue: Boolean,
+  header: String,
+  fetchItemsApi: Function, // API 호출 함수
+});
+
+const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
+const localVisible = ref(props.modelValue);
+const searchText = ref(''); // 검색어
+const items = ref([]); // 검색 결과
+const selectedItem = ref(null); // 선택된 항목
+const loading = ref(false);
+
+// props.modelValue가 변경될 때 localVisible을 업데이트
+watch(() => props.modelValue, (newVal) => {
+  localVisible.value = newVal;
+});
+
+function handleHide() {
+  emit('update:modelValue', false);
+  emit('cancel');
+}
+
+// 검색 버튼 클릭 시 API 호출
+const searchItems = async () => {
+  if (searchText.value.trim()) {
+    loading.value = true;
+    try {
+      // API 호출
+      const response = await props.fetchItemsApi(searchText.value);
+      items.value = response.data || []; // API 응답의 데이터에 맞게 설정
+    } catch (error) {
+      console.error('API 요청 실패:', error);
+    }finally{
+      loading.value = false;
+    }
+  }
+};
+
+// 아이템 선택 시 선택된 항목을 부모 컴포넌트로 전달
+const selectItem = (item) => {
+  selectedItem.value = item;
+};
+
+// 선택 완료 후 부모 컴포넌트에 값 전달
+function confirmSelection() {
+  emit('update:modelValue', false);
+  emit('confirm', selectedItem.value); // 선택된 항목을 부모로 전달
+}
+</script>
+
+
+<style scoped>
+.search-input {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.search-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.search-results {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-results ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.search-results li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.search-results li:hover {
+  background-color: #f0f0f0;
+}
+</style>
