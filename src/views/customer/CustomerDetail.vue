@@ -107,7 +107,7 @@
 
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import ViewTable from '@/components/common/ListTable.vue';
+import ViewTable from '@/components/common/NListTable.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
 import { ref, onMounted } from 'vue';
@@ -135,12 +135,12 @@ const customerInfo = ref([]);
 
 // 계약 헤더
 const tableHeaders = [
-    { field: 'contractId', label: '계약 번호', width: '20%' },
+    { field: 'contractId', label: '계약 번호', width: '15%' },
     { field: 'centerName', label: '매장', width: '20%' },
     { field: 'contractCarName', label: '모델명', width: '20%' },
     { field: 'contractTTL', label: '계약명', width: '20%' },
-    { field: 'contractTotalSale', label: '계약금', width: '20%' },
-    { field: 'status', label: '계약상태', width: '20%' }
+    { field: 'contractTotalSale', label: '계약금', width: '15%' },
+    { field: 'status', label: '계약상태', width: '10%' }
 ];
 
 const tableData = ref([]); // 테이블 데이터

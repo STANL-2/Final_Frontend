@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2>개발자 도구</h2>
+        <h2 class="title">개발자 도구</h2>
         <textarea v-model="inputData" @keydown.enter.prevent="handleEnter" placeholder="여러 줄 입력 후 엔터를 누르세요" rows="10"
             class="textarea"></textarea>
 
@@ -122,6 +122,10 @@ const generateXmlOutput = () => {
 </script>
 
 <style scoped>
+.title {
+    margin-bottom: 24px;
+}
+
 .textarea {
     width: 100%;
     margin-bottom: 1rem;
