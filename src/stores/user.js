@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 export const useUserStore = defineStore(
     'user',
@@ -11,6 +11,33 @@ export const useUserStore = defineStore(
         const role = ref('');
         const auth = ref('');
         const isLoggined = ref(false);
+        const remainingTime = ref(0); // 30분 (밀리초 단위)
+        const imageUrl = ref('');
+        let timer = null; // 타이머 변수 추가
+
+        function refreshTheToken(newToken) {
+            accessToken.value = newToken;
+            resetRemainingTime();
+        }
+
+        function startTimer() {
+            if (timer) clearInterval(timer); // 기존 타이머 중단
+            timer = setInterval(() => {
+                if (remainingTime.value > 0) {
+                    remainingTime.value -= 1000; // 1초 감소
+                } else {
+                    clearInterval(timer);
+                    remainingTime.value = 0; // 시간이 끝나면 0으로 고정
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
 
         function loginByEMPLOYEE() {
             id.value = 0;
@@ -20,6 +47,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesRep';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 사원 이미지';
         }
 
         function loginByADMIN() {
@@ -30,6 +58,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesManager';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 관리자 이미지';
         }
 
         function loginByDIRECTOR() {
@@ -40,6 +69,7 @@ export const useUserStore = defineStore(
             role.value = 'SalesAdmin';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '영업 담당자 이미지';
         }
 
         function loginByGOD() {
@@ -50,6 +80,7 @@ export const useUserStore = defineStore(
             role.value = 'SystemAdmin';
             auth.value = 'none';
             isLoggined.value = true;
+            imageUrl.value = '시스템 관리자 이미지';
         }
 
         function logout() {
@@ -59,7 +90,9 @@ export const useUserStore = defineStore(
             refreshToken.value = '';
             role.value = '';
             auth.value = '';
+            imageUrl.value = '';
             isLoggined.value = false;
+            remainingTime.value = 0;
         }
 
         function saveTokens(userToken) {
@@ -73,7 +106,17 @@ export const useUserStore = defineStore(
             name.value = userInfo.name;
             role.value = userInfo.role;
             auth.value = userInfo.auth;
+            imageUrl.value = userInfo.imageUrl;
         }
+
+        function resetRemainingTime() {
+            remainingTime.value = 30 * 60 * 1000; // 로그인 시 30분 초기화
+            startTimer(); // 타이머 시작
+        }
+
+        onUnmounted(() => {
+            stopTimer();
+        });
 
         return {
             id,
@@ -83,13 +126,19 @@ export const useUserStore = defineStore(
             role,
             auth,
             isLoggined,
+            remainingTime,
+            imageUrl,
             loginByEMPLOYEE,
             loginByADMIN,
             loginByDIRECTOR,
             loginByGOD,
             logout,
             saveTokens,
-            saveUserInfo
+            saveUserInfo,
+            resetRemainingTime,
+            startTimer,
+            stopTimer,
+            refreshTheToken
         };
     },
     {

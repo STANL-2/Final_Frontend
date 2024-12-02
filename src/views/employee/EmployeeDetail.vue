@@ -5,15 +5,27 @@
             <div class="section-title">
                 <div class="section-text">기초 정보</div>
             </div>
-            <div class="memberInfo">
-                <div class="row" v-for="(item, index) in memberInfo" :key="index">
-                <div class="label">{{ item.firstLabel }}</div>
-                <div class="value">{{ item.firstValue }}</div>
-                <div class="label">{{ item.secondLabel }}</div>
-                <div class="value">{{ item.secondValue }}</div>
-                <div class="label">{{ item.thirdLabel }}</div>
-                <div class="value">{{ item.thirdValue }}</div>
-            </div>
+
+            <div class="infomation">
+                <!-- 사용자 이미지 -->
+                <div class="user-image-container">
+                    <img v-if="memberInfo.imageUrl" :src="memberInfo.imageUrl" alt="User Profile"
+                        class="user-profile-image" />
+                    <div v-else class="user-image-container">
+                        <i class="user-profile-image" @click="goMypage"></i>
+                    </div>
+                </div>
+                <div class="memberInfo">
+                    <div class="row" v-for="(item, index) in memberInfo.details" :key="index">
+                        <div class="label">{{ item.firstLabel }}</div>
+                        <div class="value">{{ item.firstValue }}</div>
+                        <div class="label">{{ item.secondLabel }}</div>
+                        <div class="value">{{ item.secondValue }}</div>
+                        <div class="label">{{ item.thirdLabel }}</div>
+                        <div class="value">{{ item.thirdValue }}</div>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -112,12 +124,12 @@
 
 <script setup>
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { $api } from '@/services/api/api';
 
 const route = useRoute();
-const employeeId = route.query.employeeId;
+const employeeId = ref(route.query.employeeId);
 
 // 기본 정보
 const memberInfo = ref([]);
@@ -141,40 +153,43 @@ const familyData = ref([]);
 // 기본 정보
 const getMemberInfo = async () => {
     try {
-        const response = await $api.member.get('info', employeeId); 
+        const response = await $api.member.get('info', employeeId.value);
         const result = response.result;
 
-        memberInfo.value = [
-            {
-                firstLabel: '사원번호', firstValue: result.centerId,
-                secondLabel: '성명', secondValue: result.name,
-                thirdLabel: '주민등록번호', thirdValue: result.identNo
-            },
-            {
-                firstLabel: '이메일', firstValue: result.email,
-                secondLabel: '휴대전화', secondValue: result.phone,
-                thirdLabel: '성별', thirdValue: result.sex
-            },
-            {
-                firstLabel: '입사일', firstValue: '-', // 입사일 정보 없음
-                secondLabel: '발령일', secondValue: '-', // 발령일 정보 없음
-                thirdLabel: '병역구분', thirdValue: result.military
-            },
-            {
-                firstLabel: '비상연락처', firstValue: result.emergePhone || '-',
-                secondLabel: '직책', secondValue: result.position,
-                thirdLabel: '학력구분', thirdValue: result.grade
-            },
-            {
-                firstLabel: '은행명', firstValue: result.bankName,
-                secondLabel: '계좌번호', secondValue: result.account,
-                thirdLabel: '주소', thirdValue: result.address
-            },
-            {
-                firstLabel: '고용형태', firstValue: result.jobType,
-                secondLabel: '비고', secondValue: result.note || '-'
-            },
-        ];
+        memberInfo.value = {
+            imageUrl: result.imageUrl, // 이미지 URL 추가
+            details: [
+                {
+                    firstLabel: '사원번호', firstValue: result.loginId || 'N/A',
+                    secondLabel: '성명', secondValue: result.name || 'N/A',
+                    thirdLabel: '주민등록번호', thirdValue: result.identNo || 'N/A'
+                },
+                {
+                    firstLabel: '이메일', firstValue: result.email || 'N/A',
+                    secondLabel: '휴대전화', secondValue: result.phone || 'N/A',
+                    thirdLabel: '성별', thirdValue: result.sex || 'N/A'
+                },
+                {
+                    firstLabel: '입사일', firstValue: result.createdAt || 'N/A', // 입사일 정보 없음
+                    secondLabel: '발령일', secondValue: result.updatedAt || 'N/A', // 발령일 정보 없음
+                    thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
+                },
+                {
+                    firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
+                    secondLabel: '직책', secondValue: result.position || 'N/A',
+                    thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
+                },
+                {
+                    firstLabel: '은행명', firstValue: result.bankName || 'N/A',
+                    secondLabel: '계좌번호', secondValue: result.account || 'N/A',
+                    thirdLabel: '주소', thirdValue: result.address || 'N/A'
+                },
+                {
+                    firstLabel: '고용형태', firstValue: result.jobType || 'N/A',
+                    secondLabel: '비고', secondValue: result.note || 'N/A'
+                },
+            ]
+        };
     } catch (error) {
         console.error('GET 요청 실패: ', error);
     }
@@ -183,7 +198,7 @@ const getMemberInfo = async () => {
 // 학력 정보 API 호출
 const getEducationData = async () => {
     try {
-        const response = await $api.education.get('other', employeeId);
+        const response = await $api.education.get('other', employeeId.value);
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
@@ -202,7 +217,7 @@ const getEducationData = async () => {
 // 자격증/외국어 정보 API 호출
 const getCertificationData = async () => {
     try {
-        const response = await $api.certification.get('other', employeeId); 
+        const response = await $api.certification.get('other', employeeId.value);
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
@@ -219,7 +234,7 @@ const getCertificationData = async () => {
 
 const getCareerData = async () => {
     try {
-        const response = await $api.career.get('other', employeeId); 
+        const response = await $api.career.get('other', employeeId.value);
         const result = response.result;
 
         careerData.value = result.map((career) => ({
@@ -235,7 +250,7 @@ const getCareerData = async () => {
 
 const getFamilyData = async () => {
     try {
-        const response = await $api.family.get('other', employeeId);
+        const response = await $api.family.get('other', employeeId.value);
         const result = response.result;
 
         familyData.value = result.map((family) => ({
@@ -254,6 +269,19 @@ const getFamilyData = async () => {
     }
 };
 
+// watch로 query 변경 감지
+watch(
+    () => route.query.employeeId,
+    (newEmployeeId) => {
+        employeeId.value = newEmployeeId;
+        getMemberInfo();
+        getEducationData();
+        getCertificationData();
+        getCareerData();
+        getFamilyData();
+    }
+);
+
 onMounted(() => {
     getMemberInfo();
     getEducationData();
@@ -265,7 +293,8 @@ onMounted(() => {
 
 <style scoped>
 .section {
-    margin-bottom: 30px; /* 각 섹션 간 간격 */
+    margin-bottom: 30px;
+    /* 각 섹션 간 간격 */
 }
 
 .section-text {
@@ -274,14 +303,10 @@ onMounted(() => {
     color: #000000;
 }
 
-.memberInfo{
-    margin-top: 20px;
-    margin-bottom: 30px;
-}
-
 .subtitle {
     display: flex;
-    align-items: center;    /* 수직 중앙 정렬 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
 }
 
 .line {
@@ -295,6 +320,47 @@ onMounted(() => {
     font-size: 16px;
     font-weight: bold;
     color: #000;
+}
+
+.infomation {
+    display: flex;
+    flex-wrap: wrap; /* 화면 크기에 따라 자동 줄바꿈 */
+    gap: 20px; /* 이미지와 정보 사이 간격 */
+    align-items: center; /* 수직 정렬 */
+    justify-content: flex-start; /* 좌측 정렬 */
+    padding: 20px; /* 내부 여백 */
+    border: 1px solid #838383; /* 외곽선 추가 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    background-color: #fdfdfd; /* 배경색 추가 */
+    margin-bottom: 24px;
+}
+
+/* 사용자 이미지 컨테이너 */
+.user-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px; /* 이미지 컨테이너 고정 너비 */
+    height: 120px; /* 이미지 컨테이너 고정 높이 */
+    flex-shrink: 0; /* 컨테이너 크기 고정 */
+}
+
+/* 사용자 프로필 이미지 */
+.user-profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* 원형 이미지 */
+    object-fit: cover; /* 이미지 크기에 맞게 잘라내기 */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.memberInfo {
+    flex: 1; /* 남은 공간을 채우도록 설정 */
+    display: flex;
+    flex-direction: column; /* 세로 정렬 */
+    gap: 10px; /* 행 사이 간격 */
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .row {
@@ -323,7 +389,7 @@ onMounted(() => {
 /* 각 label 셀의 스타일 */
 .label {
     width: 25%;
-    color: #777777;
+    color: #545454;
     background: #F8F8F8;
     display: flex;
     justify-content: center;
