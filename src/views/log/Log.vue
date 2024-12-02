@@ -255,8 +255,8 @@ const loadData = async () => {
         const query = {
             page: first.value / rows.value, // 현재 페이지 번호
             size: rows.value, // 한 페이지 데이터 수
-            // sortField: sortField.value || null, // 정렬 필드
-            // sortOrder: sortOrder.value || null, // 정렬 순서
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
             ...filteredCriteria // 필터링된 검색 조건 병합
 
         };
