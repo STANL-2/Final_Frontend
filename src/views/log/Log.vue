@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" ref="searchFormRef" :key="formKey" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -112,7 +112,7 @@ import Modal from '@/components/common/Modal.vue';
 import { $api } from '@/services/api/api';
 
 // SearchForm.vue 검색조건 값
-const formFields = [
+const initialFormFields = [
     [
         {
             label: '로그 번호',
@@ -158,6 +158,7 @@ const formFields = [
         }
     ]
 ];
+const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기값 복사
 
 // table 헤더 값
 const tableHeaders = ref([
@@ -182,11 +183,23 @@ const sortOrder = ref(null); // 정렬 순서
 const selectedRows = ref([]);
 const searchCriteria = ref({});
 const searchFormRef = ref(null);
+const formKey = ref(0);
 
 const refresh = () => {
-    searchCriteria.value = ref({});
-    loadData();
-}
+    formFields.value = JSON.parse(JSON.stringify(initialFormFields));
+    formKey.value++; // 강제로 재렌더링
+    if (searchFormRef.value?.resetForm) {
+        searchFormRef.value.resetForm(); // 검색창 초기화
+    }
+
+
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+
+    searchCriteria.value = {};
+    loadData(); // 데이터 로드
+};
 
 function getStatusLabel(status) {
     switch (status) {
@@ -215,21 +228,17 @@ function getCustomTagClass(status) {
 
 const select = () => {
     const formData = searchFormRef.value?.formData;
-    console.log('1');
-    console.log(formData);
 
     if (!formData) {
         console.error('formData를 가져올 수 없습니다.');
         return;
     }
-    console.log('2');
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
         Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
     );
-    console.log('3');
-    console.log(searchCriteria.value);
+
     // 검색 실행
     loadData();
 };
@@ -263,16 +272,12 @@ const loadData = async () => {
 
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
-        
-        console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
         const response = await $api.log.getParams('', queryString);
 
-        // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response);
-
         const result = response?.result; // 응답 데이터 접근
+
         if (result && Array.isArray(result.content)) {
             tableData.value = result.content; // 테이블 데이터 업데이트
             totalRecords.value = result.totalElements; // 전체 데이터 수

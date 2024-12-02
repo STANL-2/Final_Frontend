@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" :key="formKey" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -240,7 +240,7 @@ const printSelectedRows = () => {
 };
 
 // SearchForm.vue 검색조건 값
-const formFields = ref([
+const initialFormFields = [
     [
         {
             label: '고객 번호',
@@ -272,7 +272,8 @@ const formFields = ref([
             showDivider: false
         }
     ]
-]);
+];
+const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기값 복사
 
 // table 헤더 값
 const tableHeaders = ref([
@@ -303,9 +304,20 @@ function handleView(rowData) {
 }
 
 const searchCriteria = ref({});
+const formKey = ref(0);
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    formFields.value = JSON.parse(JSON.stringify(initialFormFields));
+    formKey.value++; // 강제로 재렌더링
+    if (searchFormRef.value?.resetForm) {
+        searchFormRef.value.resetForm(); // 검색창 초기화
+    }
+
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+
+    searchCriteria.value = {};
     loadData();
 }
 
