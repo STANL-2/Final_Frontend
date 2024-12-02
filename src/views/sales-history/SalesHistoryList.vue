@@ -44,12 +44,8 @@
 
         <!-- 차트: GET 요청 데이터 -->
         <div v-if="method === 'GET'">
-            <BigCard :chart-data="[bigCardChartData]" />
-            <div v-if="isComparison == true">
-                <BigCard :chart-data="[secondChartData]" />
-            </div>
+            <BigCard :chart-data="[bigCardChartData, secondChartData]" />
         </div>
-
     </PageLayout>
 </template>
 
@@ -151,7 +147,7 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 let method = "POST";
-
+let saveButton;
 const searchParams = ref({
     startDate: null,
     endDate: null
@@ -199,11 +195,17 @@ const handleButtonComparisonClick = async (field2) => {
         year: searchType === 'year' ? 'year' : null,
         startDate: searchCriteria.value.salesHistorySearchDate_start || null,
         endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+        orderBy: orderByValue(saveButton),
     };
 
     console.log("Comparison Request Body:", requestBody);
-
-    await loadComparisonData(requestBody, field2.label);
+    if (field2.model === 'best') {
+        console.log("최고 데이터 요청:", requestBody);
+        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
+    } else {
+        console.log("평균 데이터 요청:", requestBody);
+        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
+    }
 };
 
 
@@ -224,6 +226,7 @@ const handleButtonClick = async (field) => {
 
     // API 요청 방법 설정
     method = field.model === 'salesHistory' ? 'POST' : 'GET';
+    saveButton = field.model;
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const searchTypeMap = {
@@ -343,14 +346,26 @@ const loadComparisonData = async (requestBody, fieldLabel) => {
             const result = response.result;
 
             console.log("Response Result:", result);
+            console.log("saveButton: ", saveButton);
 
-            // result가 배열이 아니므로 배열 형태로 데이터를 변환
-            const mappedData = [
-                {
-                    label: result.month || result.year || '',
-                    value: result.averageTotalIncentive || result.averageTotalPerformance || result.averageTotalSales,
-                },
-            ];
+            // `saveButton` 값을 기반으로 매핑할 필드 결정
+            const fieldMapping = {
+                incentive: 'averageTotalIncentive',
+                performance: 'averageTotalPerformance',
+                totalSales: 'averageTotalSales',
+            };
+
+            const mappedKey = fieldMapping[saveButton];
+            if (!mappedKey) {
+                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
+                return;
+            }
+
+            // result 배열을 매핑
+            const mappedData = result.content.map((item) => ({
+                label: item.month || item.year || '',
+                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
+            }));
 
             console.log("Mapped Comparison Data:", mappedData);
 
@@ -365,6 +380,51 @@ const loadComparisonData = async (requestBody, fieldLabel) => {
         loading.value = false;
     }
 };
+
+const loadBestData = async (requestBody, fieldLabel, searchType) => {
+    loading.value = true;
+    try {
+        const response = await $api.salesHistory.post(requestBody, `statistics/all/${searchType}`);
+
+        if (response && response.result) {
+            const result = response.result;
+
+            console.log("Response Result:", result);
+            console.log("saveButton: ", saveButton);
+
+            // `saveButton` 값을 기반으로 매핑할 필드 결정
+            const fieldMapping = {
+                incentive: 'totalIncentive',
+                performance: 'totalPerformance',
+                totalSales: 'totalSales',
+            };
+
+            const mappedKey = fieldMapping[saveButton];
+            if (!mappedKey) {
+                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
+                return;
+            }
+
+            // result 배열을 매핑
+            const mappedData = result.content.map((item) => ({
+                label: item.month || item.year || '',
+                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
+            }));
+
+            console.log("Mapped Comparison Data:", mappedData);
+
+            // 비교 차트 데이터 업데이트
+            updateChartData(mappedData, fieldLabel, true);
+        } else {
+            console.warn("Response 결과가 비어 있습니다.");
+        }
+    } catch (error) {
+        console.error('Comparison 데이터 로드 실패:', error.message);
+    } finally {
+        loading.value = false;
+    }
+};
+
 
 
 onMounted(() => {
@@ -561,6 +621,20 @@ const thirdChartData = ref({
     ],
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 });
+
+const orderByValue = (saveButton) => {
+    switch (saveButton) {
+        case 'incentive':
+            return 'total_incentive';
+        case 'performance':
+            return 'total_performance';
+        case 'totalSales':
+            return 'total_sales';
+        default:
+            return ''; // 기본값 처리
+    }
+};
+
 
 </script>
 

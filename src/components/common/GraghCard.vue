@@ -119,7 +119,6 @@ const createChart = () => {
     });
 };
 
-
 const updateChart = () => {
     console.log("updateChart 호출, localChartData:", localChartData.value);
 
@@ -139,24 +138,20 @@ const updateChart = () => {
         chartInstance.data.labels = firstDataset.labels;
 
         // Y축 데이터셋 업데이트
-        const filteredDatasets = localChartData.value.flatMap((data) => {
+        const filteredDatasets = localChartData.value.flatMap((data, index) => {
             const ctx = chartCanvas.value.getContext('2d');
-
-            // `gradientColors` 기본값 설정
             const gradientColors = data.gradientColors || [
-                "rgba(82, 77, 249, 0.7)", // 시작 색
-                "rgba(82, 77, 249, 0.3)", // 중간 색
-                "rgba(255, 255, 255, 0)", // 끝 색
+                `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.7)`,
+                `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.3)`,
+                "rgba(255, 255, 255, 0)",
             ];
-
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, gradientColors[0]);
             gradient.addColorStop(0.3, gradientColors[1]);
             gradient.addColorStop(1, gradientColors[2]);
 
-            // 데이터셋에 그래디언트 추가
             return data.datasets
-                .filter((dataset) => dataset.data && dataset.data.length > 0) // 데이터가 있는 데이터셋만 포함
+                .filter((dataset) => dataset.data && dataset.data.length > 0)
                 .map((dataset) => ({
                     ...dataset,
                     backgroundColor: gradient,
@@ -170,21 +165,46 @@ const updateChart = () => {
 
         chartInstance.data.datasets = filteredDatasets;
 
+        
         console.log("chartInstance 업데이트됨:", chartInstance.data);
-        chartInstance.update();
+
+        try {
+            chartInstance.update({ duration: 0 });
+        } catch (error) {
+            console.error("차트 업데이트 중 오류 발생, 재생성을 시도합니다:", error);
+            recreateChart();
+        }
     }
 };
 
+const recreateChart = (chartData) => {
+    if (chartInstance) {
+        console.log("차트를 삭제하고 새로 생성합니다.");
+        chartInstance.destroy();
+    }
+
+    const ctx = chartCanvas.value.getContext("2d");
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        },
+    });
+
+    console.log("새로운 차트 생성:", chartInstance);
+};
 
 
 // `props.chartData` 변경 감지
 watch(
     () => props.chartData,
     (newData) => {
-        localChartData.value = JSON.parse(JSON.stringify(newData));
-        updateChart();
-    },
-    { deep: true }
+        const combinedDatasets = newData.flatMap((data) => data.datasets);
+        const labels = newData[0]?.labels || [];
+        recreateChart({ labels, datasets: combinedDatasets });
+    }
 );
 
 onMounted(() => {
