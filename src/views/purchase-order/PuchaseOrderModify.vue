@@ -72,6 +72,7 @@ watch(
 
 const getDetailRequest = async () => {
     try {
+        console.log("purchaseOrderId: " + props.purchaseOrderId);
         const response = await $api.purchaseOrder.get('', props.purchaseOrderId);
         console.log('계약서 상세 조회 응답:', response);
 
@@ -111,7 +112,7 @@ const onUpdate = async () => {
         );
         console.log("PUT 응답:", response);
 
-        alert("계약서가 성공적으로 수정되었습니다.");
+        alert("발주서가 성공적으로 수정되었습니다.");
         closeModal();
         window.location.reload();
     } catch (error) {
@@ -129,7 +130,7 @@ const extractDataFromHTML = (html) => {
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
-        createdUrl: html, // HTML 전체를 전송
+        content: html, // HTML 전체를 전송
     };
 };
 

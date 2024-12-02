@@ -44,7 +44,8 @@
 
 
             <PuchaseOrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                @close="showDetailModal = false" @refresh="loadData" />
+                @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
+                :statusClass="getCustomTagClass(selectedDetail?.status)"/>
         </div>
 
         <PuchaseOrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
@@ -104,21 +105,15 @@ const modalTableData = [
 const formFields = [
     [
         {
-            label: '사원 검색',
+            label: '발주자 검색',
             type: 'inputWithButton',
             model: 'searchMemberId',
             showDivider: false
         },
         {
-            label: '매장 검색',
-            type: 'inputWithButton',
-            model: 'centerId',
-            showDivider: false
-        },
-        {
-            label: '제품명',
+            label: '제목',
             type: 'input',
-            model: 'carName',
+            model: 'title',
             showDivider: false
         },
         {
@@ -126,48 +121,26 @@ const formFields = [
             label: '승인여부',
             model: 'status',
             options: ['대기', '승인', '취소']
+        },
+        {
+            label: '담당자 검색',
+            type: 'inputWithButton',
+            model: 'adminId',
+            showDivider: false
         }
 
     ],
     [
         {
-            label: '고객명',
+            label: '제품명',
             type: 'input',
-            model: 'customerName',
+            model: 'productName',
             showDivider: true
         },
         {
-            label: '고객 구분',
-            type: 'radio',
-            model: 'customerClassifcation',
-            options: ['개인', '법인'],
-            showDivider: false
-        },
-        {
-            label: '구매 조건',
-            type: 'radio',
-            model: 'customerPurchaseCondition',
-            options: ['일시불', '할부', '리스'],
-            showDivider: false
-        },
-        {
-            label: '고객 상호',
-            type: 'input',
-            model: 'companyName',
-            showDivider: false
-        }
-    ],
-    [
-        {
-            label: '계약서명',
-            type: 'input',
-            model: 'title',
-            showDivider: true
-        },
-        {
-            label: '계약일',
+            label: '발주일',
             type: 'calendar', // 쌍으로 처리
-            model: 'contractDate', // 시작과 종료를 모두 포함
+            model: 'orderDate', // 시작과 종료를 모두 포함
             showIcon: true,
             manualInput: false,
         }

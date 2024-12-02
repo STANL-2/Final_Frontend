@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="계약 상세 조회" width="70rem" height="none" style="z-index: 1000;">
+    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -69,7 +69,7 @@
         </template>
     </Modal>
 
-    <PuchaseOrderModify v-model:visible="showModifyModal" :contract-id="getDetailId" @close="closeModifyModal" />
+    <PuchaseOrderModify v-model:visible="showModifyModal" :purchaseOrder-id="getDetailId" @close="closeModifyModal" />
 </template>
 
 <script setup>
@@ -77,7 +77,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderModify from '@/views/purchase-order/PuchaseOrderModify.vue';
+import PuchaseOrderModify from './PuchaseOrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -85,17 +85,17 @@ import ConfirmDialog from 'primevue/confirmdialog';
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩될 값
     details: Object, // 상세 데이터
-    status: String, // 상태 레이블
-    statusClass: String // 상태 스타일 클래스
+    status: String, // 현재 상태
+    statusClass: String, // 상태 표시 스타일
 });
 
-const emit = defineEmits(['update:modelValue', 'refresh']);
+const emit = defineEmits(['update:modelValue', 'refresh', 'update-status']);
 
 // PrimeVue 훅
 const confirm = useConfirm();
 const toast = useToast();
 
-// contractId를 저장할 ref 변수
+// orderId를 저장할 ref 변수
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
 const showModifyModal = ref(false);
@@ -119,17 +119,14 @@ const confirmStatusChange = async () => {
             },
             'status/' + getDetailId.value
         );
-
         console.log('PUT 요청 응답 결과');
         console.log(getDetailId.value);
-
         toast.add({
             severity: 'success',
             summary: '성공',
             detail: `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
             life: 3000,
         });
-
         emit('refresh');
         closeStatusModal();
     }catch(error){
@@ -143,13 +140,13 @@ const confirmStatusChange = async () => {
     }
 }
 
-// details 값이 변경될 때마다 contractId를 업데이트
+// details 값이 변경될 때마다 orderId를 업데이트
 watch(
     () => props.details,
     (newDetails) => {
         if (newDetails?.purchaseOrderId) {
-            console.log('Iframe URL:', newDetails.content);
-            getDetailId.value = newDetails.purchaseOrderId; // contractId를 저장
+            console.log('PurchaseOrderId:', newDetails.purchaseOrderId);
+            getDetailId.value = newDetails.purchaseOrderId; // orderId를 저장
             getDetailRequest(); // 데이터 요청
         }
     },
@@ -163,7 +160,6 @@ function onClose() {
 
 // GET 요청 함수
 const getDetailRequest = async () => {
-    console.log("getDetailId.value: " + getDetailId.value);
     if (!getDetailId.value) {
         console.error('purchaseOrderId가 없습니다.');
         return;
@@ -179,7 +175,7 @@ const getDetailRequest = async () => {
         console.log(response);
 
         props.details.content = response.result.content;
-        console.log("Updated details.createdUrl: " + props.details.content);
+        console.log("Updated details.content: " + props.details.content);
     } catch (error) {
         console.error('GET DETAIL 요청 실패: ', error);
     }
@@ -207,7 +203,7 @@ function printIframeContent() {
             console.error('새 창을 열 수 없습니다. 팝업 차단을 확인하세요.');
         }
     } else {
-        console.error('details.createdUrl이 설정되지 않았습니다.');
+        console.error('details.content이 설정되지 않았습니다.');
     }
 }
 
@@ -234,7 +230,7 @@ function deleteModal() {
         accept: async () => {
             try {
                 if (!getDetailId.value) {
-                    throw new Error("contractId가 없습니다.");
+                    throw new Error("purchaseOrderId가 없습니다.");
                 }
 
                 await $api.purchaseOrder.delete(getDetailId.value);
@@ -316,16 +312,21 @@ iframe {
 .status-content {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 수평 중앙 정렬 */
-    justify-content: center; /* 수직 중앙 정렬 */
-    text-align: center; /* 텍스트 중앙 정렬 */
-    gap: 1.5rem; /* 요소 간격 */
+    align-items: center;
+    /* 수평 중앙 정렬 */
+    justify-content: center;
+    /* 수직 중앙 정렬 */
+    text-align: center;
+    /* 텍스트 중앙 정렬 */
+    gap: 1.5rem;
+    /* 요소 간격 */
     margin-bottom: 1rem;
 }
 
 /* 현재 상태 스타일 */
 .current-status {
-    font-size: 18px; /* 텍스트 크기 증가 */
+    font-size: 18px;
+    /* 텍스트 크기 증가 */
     margin-bottom: 1.5rem;
 }
 
@@ -333,28 +334,35 @@ iframe {
 .status-highlight {
     color: #6360ab;
     font-weight: bold;
-    font-size: 18px; /* 강조된 텍스트 크기 증가 */
+    font-size: 18px;
+    /* 강조된 텍스트 크기 증가 */
 }
 
 /* 라디오 버튼 옵션 정렬 */
 .status-options {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 옵션 중앙 정렬 */
-    gap: 15px; /* 옵션 간격 확대 */
-    font-size: 16px; /* 라벨 크기 증가 */
+    align-items: center;
+    /* 옵션 중앙 정렬 */
+    gap: 15px;
+    /* 옵션 간격 확대 */
+    font-size: 16px;
+    /* 라벨 크기 증가 */
 }
 
 /* 라디오 버튼 스타일 */
 .status-options input[type="radio"] {
-    transform: scale(1.5); /* 버튼 크기 확대 */
-    margin-right: 10px; /* 버튼과 라벨 간 간격 */
+    transform: scale(1.5);
+    /* 버튼 크기 확대 */
+    margin-right: 10px;
+    /* 버튼과 라벨 간 간격 */
 }
 
 /* 라벨 스타일 */
 .status-options label {
     cursor: pointer;
-    font-size: 18px; /* 라벨 폰트 크기 증가 */
+    font-size: 18px;
+    /* 라벨 폰트 크기 증가 */
 }
 
 /* 주요 버튼 스타일 */
