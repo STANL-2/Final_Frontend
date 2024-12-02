@@ -1,3 +1,5 @@
+
+
 <template>
     <header>
         <nav class="menu-bar">
@@ -73,8 +75,9 @@
                 <div v-if="alarms.length === 0 && !loading" class="no-alarms">
                     해당 카테고리에 알림이 없습니다.
                 </div>
-                <div v-for="alarm in alarms" :key="alarm.redirectUrl" :class="['alarm-item', { read: alarm.readStatus }]"
-                    @click="showAlarmDetail(alarm)" style="cursor: pointer;">
+                <div v-for="alarm in alarms" :key="alarm.redirectUrl"
+                    :class="['alarm-item', { read: alarm.readStatus }]" @click="showAlarmDetail(alarm)"
+                    style="cursor: pointer;">
                     <span class="tag" :style="{
                         backgroundColor: getTagColor(alarm.tag),
                     }">
@@ -87,7 +90,10 @@
             </div>
 
             <div v-if="selectedAlarm" class="alarm-detail-container">
-                <AlarmScheduleDetail :alarm="selectedAlarm" @close="selectedAlarm = null" />
+                <div v-if="selectedAlarm" class="alarm-detail-container">
+                    <AlarmScheduleDetail :alarm="selectedAlarm" @close="selectedAlarm = null"
+                        @navigate="navigateFromAlarm" />
+                </div>
             </div>
         </div>
     </Modal>
@@ -138,14 +144,14 @@ const tagColors = [
     { name: '계약서', color: '#A7D8DE' },
     { name: '발주서', color: '#FFE4E1' },
     { name: '수주서', color: '#B9E4C9' },
-    { name: '중요', color: '#FF6666' }, 
+    { name: '중요', color: '#FF6666' },
     { name: '일반', color: '#66FF66' },
 ];
 
 const getTagColor = (tag) => {
-    if (tag === 'important') {
+    if (tag === '중요') {
         return '#FF6347'; // 빨간색
-    } else if (tag === 'normal') {
+    } else if (tag === '일반') {
         return '#32CD32'; // 초록색
     }
     const tagData = tagColors.find(item => item.name === tag);
@@ -347,30 +353,48 @@ const handleClickOutside = (event) => {
 const showAlarmDetail = async (alarm) => {
 
     try {
+
+        const updatedAlarms = alarms.value.map(a =>
+            a.alarmId === alarm.alarmId
+                ? { ...a, readStatus: true }
+                : a
+        );
+        alarms.value = updatedAlarms;
+        selectedAlarm.value = { ...alarm, readStatus: true };
+
         // Call API to mark the alarm as read
         const response = await apiAlarmService.put(
             '',
             `${alarm.alarmId}`
         );
-        
+
+        await fetchAlarmTypes();
         // Update the selected alarm
         selectedAlarm.value = { ...alarm, read: true };
-        
+
         // Update the alarms list to reflect the read status
-        alarms.value = alarms.value.map(a => 
-            a.alarmId === alarm.alarmId 
-                ? { ...a, read: true } 
+        // alarms.value = alarms.value.map(a => 
+        //     a.alarmId === alarm.alarmId 
+        //         ? { ...a, read: true } 
+        //         : a
+        // );
+    } catch (error) {
+        alarms.value = alarms.value.map(a =>
+            a.alarmId === alarm.alarmId
+                ? { ...a, readStatus: false }
                 : a
         );
-        
-        if (alarm.redirectUrl) {
-            showAlarmChart.value = false;
-            router.push(alarm.redirectUrl);
-            await fetchAlarmTypes();
-        }
-    } catch (error) {
+        selectedAlarm.value = null;
         console.error('Failed to mark alarm as read:', error);
     }
+};
+
+const navigateFromAlarm = async (redirectUrl) => {
+    if (redirectUrl) {
+        showAlarmChart.value = false;
+        router.push(redirectUrl);
+    }
+    selectedAlarm.value = null;
 };
 
 // 로그인 남은 시간 로직
@@ -424,10 +448,19 @@ onMounted(() => {
     // Initial fetch of alarm types
     fetchAlarmTypes();
 
+    // 5분마다 알람 타입 자동 업데이트
+    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
+    const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
+
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
         userStore.startTimer();
     }
+
+    // 컴포넌트 언마운트 시 인터벌 클리어
+    return () => {
+        clearInterval(alarmTypesInterval);
+    };
 });
 
 onUnmounted(() => {
@@ -850,8 +883,35 @@ onUnmounted(() => {
     font-weight: bold;
     margin-bottom: 8px;
     width: 3.2rem;
-    text-align: center; /* 텍스트 가로 정렬 */
-    line-height: 1.5; /* 수직 정렬을 위한 줄 높이 */
+    text-align: center;
+    /* 텍스트 가로 정렬 */
+    line-height: 1.5;
+    /* 수직 정렬을 위한 줄 높이 */
     vertical-align: middle;
+}
+
+.alarm-modal-container {
+    display: flex;
+    height: 600px;
+    /* Increased height to accommodate details */
+}
+
+.alarm-list-container {
+    flex: 4;
+    /* Increased width for list */
+    border-right: 1px solid #e4e4e4;
+}
+
+.alarm-detail-container {
+    flex: 3;
+    /* Space for alarm details */
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f9f9f9;
+}
+
+.alarm-item.selected-alarm {
+    background-color: #f0f0f0;
+    border-left: 4px solid #6360AB;
 }
 </style>
