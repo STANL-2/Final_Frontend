@@ -103,7 +103,7 @@ const onRegister = async () => {
         const response = await $api.promotion.post(
             promotionData,
             '',
-            file.value || null
+            file.value || " "
         );
         console.log("성공",response);
 

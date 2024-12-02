@@ -10,6 +10,24 @@
             />
         </div>
 
+        <div class="select-container">
+            <label for="tag-select">태그</label>
+            <select id="tag-select" v-model="tag">
+                <option value="ALL">ALL</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="DIRECTOR">DIRECTOR</option>
+            </select>
+        </div>
+
+        <div class="select-container">
+            <label for="classification-select">분류</label>
+            <select id="classification-select" v-model="classification">
+                <option value="NORMAL">NORMAL</option>
+                <option value="GOAL">GOAL</option>
+                <option value="STRATEGY">STRATEGY</option>
+            </select>
+        </div>
+
         <!-- FileUpload template에 적용  => 필요하면 class로 css 추가-->
         <FileUpload 
             label="파일 업로드" 
@@ -58,6 +76,8 @@ const router = useRouter();
 const title = ref(''); // 제목
 const content = ref('');
 const file = ref(null); // 업로드할 파일
+const tag = ref('ALL'); // 태그 기본값
+const classification = ref('NORMAL'); // 분류 기본값
 
 const initialHtml = `
     <!DOCTYPE html>
@@ -96,6 +116,8 @@ const onRegister = async () => {
     const noticeData = {
         title: title.value.trim(),
         content: content.value.trim(),
+        tag: tag.value,
+        classification: classification.value,
     };
 
     try {
@@ -103,7 +125,7 @@ const onRegister = async () => {
         const response = await $api.notice.post(
             noticeData,
             '',
-            file.value || null
+            file.value || " "
         );
 
         alert("등록되었습니다.");
