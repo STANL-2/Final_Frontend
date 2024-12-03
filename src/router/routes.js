@@ -9,7 +9,7 @@ const routes = [
             {
                 path: '',
                 component: () => import('@/views/Login.vue'),   // 로그인 페이지
-                meta: { requiresAuth: false }                   // 로그인은 인증 불필요
+                // meta: { requiresAuth: false }                   // 로그인은 인증 불필요
             }
         ]
     },
@@ -20,7 +20,7 @@ const routes = [
             {
                 path: 'mypage',
                 component: () => import('@/views/member/Mypage.vue'),
-                meta: { requiresAuth: true }                   
+                // meta: { requiresAuth: true }                   
             },
         ]
     },
@@ -31,14 +31,14 @@ const routes = [
             {
                 path: 'dashboard',
                 component: () => import ('@/views/DashBoard.vue'),
-                meta: { requiresAuth: true }
+                // meta: { requiresAuth: true }
             }
         ]
     },
     {
         path: '/log',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: '',
@@ -49,26 +49,18 @@ const routes = [
     {
         path: '/alarm',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true },
+        // meta: { requiresAuth: true },
         children: [
             {
-                path: 'schedule',
-                component: () => import('@/views/alarm/AlarmScheduleDetail.vue')
-            },
-            {
-                path: 'contract',
-                component: () => import('@/views/alarm/AlarmContractDetail.vue')
-            },
-            {
                 path: 'notice',
-                component: () => import('@/views/alarm/AlarmNoticeDetail.vue')
+                component: () => import('@/views/alarm/AlarmScheduleDetail.vue')
             }
         ]
     },
     {
         path: '/center',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -83,7 +75,7 @@ const routes = [
     {
         path: '/contract',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -114,7 +106,7 @@ const routes = [
     {
         path: '/customer',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -129,7 +121,7 @@ const routes = [
     {
         path: '/employee',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -144,7 +136,7 @@ const routes = [
     {
         path: '/evaluation',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -167,7 +159,7 @@ const routes = [
     {
         path: '/notice',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -201,7 +193,7 @@ const routes = [
     {
         path: '/order',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -224,7 +216,7 @@ const routes = [
     {
         path: '/problem',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -250,7 +242,7 @@ const routes = [
     {
         path: '/product',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -265,7 +257,7 @@ const routes = [
     {
         path: '/promotion',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -299,7 +291,7 @@ const routes = [
     {
         path: '/purchase-order',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
@@ -322,22 +314,18 @@ const routes = [
     {
         path: '/sales-history',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'list',
                 component: () => import('@/views/sales-history/SalesHistoryList.vue')
             },
-            {
-                path: 'detail',
-                component: () => import('@/views/sales-history/SalesHistoryDetail.vue')
-            }
         ]
     },
     {
         path: '/schedule',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: '',
@@ -360,7 +348,7 @@ const routes = [
     {
         path: '/sample',
         component: () => import('@/layouts/MainLayout.vue'),
-        meta: { requiresAuth: true, auth: 'GOD' },
+        // meta: { requiresAuth: true, auth: 'GOD' },
         children: [
             {
                 path: 'searchform',

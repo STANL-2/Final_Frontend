@@ -1,4 +1,5 @@
 <template>
+    <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
             <h1>상세 페이지</h1>
@@ -11,9 +12,7 @@
                 </div>
             </h3>
 
-            <!-- 첨부 파일 보여주기 -->
             <div class="bottom-section flex-col items-center width-s ml-xxxl">
-                <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
                     <table class="file-table">
                         <thead>
@@ -38,7 +37,7 @@
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <button class="button delete-button" @click="deletePromotion">삭제</button>
+                        <button class="button delete-button" @click="deleteModal">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
                     </div>
                 </div>
@@ -51,17 +50,22 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+import { useConfirm } from "primevue/useconfirm";
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useToast } from "primevue/usetoast";
 
+const emit = defineEmits(['update:modelValue', 'refresh']);
 
 const route = useRoute();
 const router = useRouter();
+const confirm = useConfirm();
 
 console.log(route);
+const toast = useToast();
 const promotionTitle = route.query.promotionTitle || '';
 const promotionContent = route.query.promotionContent || '';
 const promotionId = route.query.promotionId || '';
 
-// 첨부파일 조회하기
 const promotionImage = ref('');
 
 console.log("route", route.query);
@@ -70,7 +74,6 @@ const goBack = () => {
     router.back();
 };
 
-// 첨부파일 조회를 위한 get 메소드
 const getPromotion = async () => {
     try {
         const response = await $api.promotion.get(
@@ -81,7 +84,7 @@ const getPromotion = async () => {
         if (response.fileUrl) {
             promotionImage.value = response.fileUrl; // API에서 반환된 fileUrl 할당
         } else {
-            promotionImage.value = ''; // fileUrl이 없으면 빈 값
+            promotionImage.value = ''; 
         }
     } catch (error) {
         console.error('조회 중 오류 발생:', error);
@@ -89,21 +92,53 @@ const getPromotion = async () => {
     }
 }
 
-const deletePromotion = async () => {
-    try {
-        const response = await $api.promotion.delete(
-            promotionId
-        );
-        console.log(promotionId);
-        console.log(response.status)
-        alert('공지사항이 삭제되었습니다.');
-        router.back();
-    } catch (error) {
-        console.log(promotionId);
-        console.error('삭제 중 오류 발생:', error);
-        alert('삭제에 실패했습니다.');
-    }
-};
+// const deletePromotion = async () => {
+//     try {
+//         const response = await $api.promotion.delete(
+//             promotionId
+//         );
+//         console.log(promotionId);
+//         console.log(response.status)
+//         alert('공지사항이 삭제되었습니다.');
+//         router.back();
+//     } catch (error) {
+//         console.log(promotionId);
+//         console.error('삭제 중 오류 발생:', error);
+//         alert('삭제에 실패했습니다.');
+//     }
+// };
+
+function deleteModal() {
+    confirm.require({
+        message: '이 글을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                console.log("promotion",promotionId);
+                if (!promotionId) {
+                    throw new Error("promotionId 없습니다.");
+                }
+
+                await $api.promotion.delete(promotionId);
+                toast.add({ severity: 'success', summary: '성공', detail: '글이 삭제되었습니다.', life: 3000 });
+                emit('refresh');
+                emit('update:modelValue', false); // 모달 닫기
+                goBack();
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
+}
 
 const navigateToEditPage = () => {
     router.push({

@@ -17,6 +17,31 @@
             </div>
         </div>
 
+        <!-- 조회 버튼 -->
+
+        <!-- 테이블: POST 요청 데이터 -->
+        <div class="component-wrapper" v-if="method === 'POST'">
+            <div class="flex-row content-between">
+                <div>전체목록</div>
+                    <div class="flex-row items-center mb-s">
+                        <div class="ml-xs">
+                            <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
+                        </div>
+                        <div class="ml-xs">
+                            <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                        </div>
+                        <div class="ml-xs">
+                            <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                                @click="refresh" />
+                        </div>
+                    </div>
+            </div>
+            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
+                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter"></ViewTable>
+        </div>
+
         <!-- 차트: GET 요청 데이터 -->
         <div v-if="method === 'GET'">
             <BigCard :chart-data="[bigCardChartData, secondChartData]" />
@@ -28,6 +53,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
+import ViewTable from '@/components/common/ListTable.vue';
 import SSearchForm from '@/components/common/SSearchForm.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
@@ -94,13 +120,33 @@ const thirdRowFields = ref([
     },
 ]);
 
+// table 헤더 값
+const tableHeaders = ref([
+    { field: 'salesHistoryId', label: '판매내역 번호', width: '20%' },
+    { field: 'salesHistoryIncentive', label: '수당', width: '15%' },
+    { field: 'salesHistoryNumberOfVehicles', label: '판매 대수', width: '5%' },
+    { field: 'salesHistoryTotalSales', label: '매출액', width: '15%' },
+    { field: 'createdAt', label: '작성 일시', width: '20%' },
+    { field: 'contractId', label: '계약서 번호', width: '25%' },
+    { field: 'customerId', label: '고객명', width: '10%' },
+    { field: 'productId', label: '제품 번호', width: '20%' },
+    { field: 'centerId', label: '매장명', width: '20%' },
+    // { field: 'memberId', label: '담당자', width: '20%' },
+]);
+
 // 상태 변수
+const tableData = ref([]); // 테이블 데이터
+const selectedItems = ref([]);
 const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
 const rows = ref(10); // 페이지 당 행 수
-
+const first = ref(0); // 첫 번째 행 위치
+const filters = ref({}); // 필터
+const sortField = ref(null); // 정렬 필드
+const sortOrder = ref(null); // 정렬 순서
+let method = "POST";
 let saveButton;
 const searchParams = ref({
     startDate: null,
@@ -195,11 +241,11 @@ const handleButtonClick = async (field) => {
     console.log('searchType:', searchType);
 
     // 데이터 로드 및 차트 업데이트
-    await loadData(searchType, field.model, field.label);
+    await loadData(method, searchType, field.model, field.label);
 };
 
 
-const loadData = async (searchType = null, fieldModel = null, fieldLabel = null) => {
+const loadData = async (method = 'POST', searchType = null, fieldModel = null, fieldLabel = null) => {
     loading.value = true; // 로딩 시작
     try {
         searchParams.value = {
@@ -210,38 +256,49 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null)
 
         let response;
 
-        // GET 요청
-        const subUrl = `employee/statistics/search/${searchType}`;
-        const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
-        response = await $api.salesHistory.getParams(subUrl, queryString);
-        
-        console.log("queryString: "+ queryString);
-        console.log("subUrl" + subUrl);
+        if (method === 'POST') {
+            // POST 요청
+            const queryString = `?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
+            response = await $api.salesHistory.post(searchParams.value, 'employee/search' + queryString);
 
-        if (response && response.result) {
-            const result = response.result;
-
-            // 확인 로그 추가
-            console.log("response.result 확인:", result);
-            console.log("result.map 작동 여부 테스트");
-
+            if (response && response.result) {
+                tableData.value = response.result.content || [];
+                totalRecords.value = response.result.totalElements || 0;
+            }
+        }  else if (method === 'GET') {
+            // GET 요청
+            const subUrl = `employee/statistics/search/${searchType}`;
+            const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
+            response = await $api.salesHistory.getParams(subUrl, queryString);
+            
+            console.log("queryString: "+ queryString);
+            console.log("subUrl" + subUrl);
 
             if (response && response.result) {
                 const result = response.result;
 
-                // 데이터 매핑
-                const mappedData = result.map((item) => ({
-                    label: item.month || item.year || item.date || '',
-                    value: item[fieldModel] || 0,
-                }));
+                // 확인 로그 추가
+                console.log("response.result 확인:", result);
+                console.log("result.map 작동 여부 테스트");
 
-                console.log("mappedData:", mappedData);
 
-                // 차트 업데이트
-                updateChartData(mappedData, fieldLabel);
+                if (response && response.result) {
+                    const result = response.result;
+
+                    // 데이터 매핑
+                    const mappedData = result.map((item) => ({
+                        label: item.month || item.year || item.date || '',
+                        value: item[fieldModel] || 0,
+                    }));
+
+                    console.log("mappedData:", mappedData);
+
+                    // 차트 업데이트
+                    updateChartData(mappedData, fieldLabel);
+                    }
+                } else {
+                    throw new Error('Unsupported method');
                 }
-            } else {
-                throw new Error('Unsupported method');
             }
     } catch (error) {
         console.error('데이터 로드 실패:', error.message);
@@ -249,6 +306,7 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null)
         loading.value = false; // 로딩 종료
     }
 };
+
 
 const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
     console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
@@ -367,9 +425,142 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
     }
 };
 
+
+
 onMounted(() => {
     loadData('POST');
 });
+
+
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.salesHistory.get('excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'customerExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        alert('엑셀 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+        loading.value = false;
+    }
+};
+
+
+// 페이지네이션 이벤트 처리
+function onPage(event) {
+    first.value = event.first; // 시작 인덱스
+    rows.value = event.rows; // 한 페이지당 데이터 수
+    loadData(); // 데이터 로드
+}
+// 정렬 이벤트 처리
+
+function onSort(event) {
+    sortField.value = event.sortField; // 정렬 필드
+    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
+    loadData(); // 데이터 로드
+}
+
+// 필터 이벤트 처리
+function onFilter(event) {
+    filters.value = event.filters;
+    loadData(); // 데이터 다시 로드
+}
+
+// 검색창 모달
+const showModal = ref(false);
+const selectedRow = ref(null);
+const selectedCode = ref('');
+const searchFormRef = ref(null);
+const selectedFieldIndex = ref(null);
+const searchQuery = ref('');
+
+function handleOpenModal(fieldIndex) {
+    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
+    showModal.value = true;
+}
+
+const selectedRows = ref([]);
+
+const updateSelectedRows = (newSelection) => {
+    selectedRows.value = newSelection;
+    console.log('선택된 항목 업데이트:', selectedRows.value);
+};
+
+const printSelectedRows = () => {
+    if (selectedRows.value.length === 0) {
+        alert('인쇄할 행을 선택하세요.');
+        return;
+    }
+
+    const headersToPrint = tableHeaders.value.filter(
+        (header) => header.excludeFromPrint !== true
+    );
+
+    const printContent = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+
+    const headerRow = document.createElement('tr');
+    headersToPrint.forEach((header) => {
+        const th = document.createElement('th');
+        th.innerText = header.label;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    selectedRows.value.forEach((row) => {
+        const tr = document.createElement('tr');
+        headersToPrint.forEach((header) => {
+            const td = document.createElement('td');
+            td.innerText = row[header.field] || '';
+            td.style.border = '1px solid #ddd';
+            td.style.padding = '8px';
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
+
+    printContent.appendChild(table);
+
+    // iframe 생성
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-10000px';
+    printFrame.style.left = '-10000px';
+    document.body.appendChild(printFrame);
+
+    const frameDoc = printFrame.contentWindow?.document;
+    if (frameDoc) {
+        frameDoc.open();
+        frameDoc.write('<html><head><title>Print</title></head><body>');
+        frameDoc.write(printContent.innerHTML);
+        frameDoc.write('</body></html>');
+        frameDoc.close();
+
+        // 인쇄 호출
+        printFrame.contentWindow?.focus();
+        printFrame.contentWindow?.print();
+    }
+
+    // iframe 제거
+    document.body.removeChild(printFrame);
+};
 
 const bigCardChartData = ref({
     labels: [],

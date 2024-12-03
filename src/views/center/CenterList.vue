@@ -182,17 +182,9 @@ function onPage(event) {
     first.value = event.first;
     rows.value = event.rows;
     loadData(); // 데이터 다시 로드
-    // 페이지네이션 이벤트 처리
-    first.value = event.first; // 시작 인덱스
-    rows.value = event.rows; // 한 페이지당 데이터 수
-    loadData(); // 데이터 로드
 }
 // 정렬 이벤트 처리
 function onSort(event) {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    loadData(); // 데이터 다시 로드
-    // 정렬 이벤트 처리
     sortField.value = event.sortField; // 정렬 필드
     sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
     loadData(); // 데이터 로드
