@@ -2,7 +2,7 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" :key="formKey" />
             <div class="select">
                 <CommonButton label="조회" @click="select" />
             </div>
@@ -75,6 +75,11 @@
                     </div>
                 </div>
 
+                <!-- 경고 메시지 -->
+                <div v-if="validationError" class="error-message">
+                    모든 값을 입력해 주세요. (비상연락처 제외)
+                </div>
+
                 <div class="modal-actions">
                     <CommonButton label="저장" class="btn-save" @click="registerModalBtn" />
                     <CommonButton label="취소" class="btn-cancel" @click="closeRegisterModal" />
@@ -132,8 +137,26 @@ const resetRegisterInfo = () => {
     });
 };
 
+// 경고 메시지 상태
+const validationError = ref(false);
 
 const registerModalBtn = async () => {
+
+    const isValid = registerInfo.value.every(item => {
+        if (item.firstLabel === '비상연락처') return true; // 비상연락처 제외
+        const firstValid = item.firstEditable ? !!item.firstValue : true;
+        const secondValid = item.secondEditable ? !!item.secondValue : true;
+        return firstValid && secondValid;
+    });
+
+    if (!isValid) {
+        validationError.value = true; // 경고 메시지 활성화
+        return;
+    }
+
+    // 모든 값이 입력되었을 경우 저장 동작
+    validationError.value = false; // 경고 메시지 비활성화
+
     try {
         // 필드 맵핑
         const payload = {
@@ -172,7 +195,6 @@ const selectedRows = ref([]);
 
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
-    console.log('선택된 항목 업데이트:', selectedRows.value);
 };
 
 const printSelectedRows = () => {
@@ -240,7 +262,7 @@ const printSelectedRows = () => {
 };
 
 // SearchForm.vue 검색조건 값
-const formFields = ref([
+const initialFormFields = [
     [
         {
             label: '고객 번호',
@@ -272,7 +294,8 @@ const formFields = ref([
             showDivider: false
         }
     ]
-]);
+];
+const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기값 복사
 
 // table 헤더 값
 const tableHeaders = ref([
@@ -299,13 +322,24 @@ const sortOrder = ref(null); // 정렬 순서
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
-    router.push({path: '/customer/detail', query: { customerId: rowData.customerId}});  
+    router.push({ path: '/customer/detail', query: { customerId: rowData.customerId } });
 }
 
 const searchCriteria = ref({});
+const formKey = ref(0);
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    formFields.value = JSON.parse(JSON.stringify(initialFormFields));
+    formKey.value++; // 강제로 재렌더링
+    if (searchFormRef.value?.resetForm) {
+        searchFormRef.value.resetForm(); // 검색창 초기화
+    }
+
+    first.value = 0; // 페이지를 첫 번째로 초기화
+    sortField.value = null; // 정렬 조건 초기화
+    sortOrder.value = null; // 정렬 순서 초기화
+
+    searchCriteria.value = {};
     loadData();
 }
 
@@ -347,6 +381,8 @@ const loadData = async () => {
         const query = {
             page: first.value / rows.value, // 현재 페이지
             size: rows.value, // 페이지 크기
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
             ...filteredCriteria // 필터링된 검색 조건 병합
         };
 
@@ -356,12 +392,12 @@ const loadData = async () => {
         const response = await $api.customer.getParams('search', queryString);
 
         // 응답 데이터
-        const result = response?.result; 
+        const result = response?.result;
         if (result && Array.isArray(result.content)) {
             // 테이블 데이터 업데이트
-            tableData.value = result.content; 
+            tableData.value = result.content;
             // 전체 데이터 수
-            totalRecords.value = result.totalElements; 
+            totalRecords.value = result.totalElements;
         } else {
             console.warn('API 응답이 예상한 구조와 다릅니다:', response);
             throw new Error('API 응답 데이터 구조 오류');
@@ -620,5 +656,13 @@ tr:hover {
 
 .p-ripple-disabled {
     height: none;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 </style>

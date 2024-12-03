@@ -1,13 +1,282 @@
 <template>
-    <div>
-        Edit 가능한 Problem(문제사항) 조회 페이지 입니다.
-    </div>
+    <PageLayout>
+        <!-- SearchForm -->
+        <div class="component-wrapper width-s ml-l">
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+        </div>
+        <div class="flex-row content-end mr-m">
+            <CommonButton label="조회" @click="handleSearch"/>
+        </div>
+        <div class="flex-row content-between mt-l">
+            <div class="list ml-l">전체목록</div>
+            <div class="flex-row items-center mb-s mr-m">
+                <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
+                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+            </div>
+        </div>
+
+        <!-- ViewTable -->
+        <div class="table-wrapper width-s ml-l">
+            <ViewTable 
+                :headers="tableHeaders" 
+                :data="tableData" 
+                :loading="loading" 
+                :totalRecords="totalRecords" 
+                :rows="rows" 
+                :rowsPerPageOptions="[5, 10, 20, 50]"
+                :selectable="true" 
+                buttonLabel="조회" 
+                buttonHeader="상세조회"
+                :buttonAction="handleView" 
+                buttonField="code"
+                @page="onPage" 
+                @sort="onSort" 
+                @filter="onFilter" 
+            />
+        </div>
+    </PageLayout>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import PageLayout from '@/components/common/layouts/PageLayout.vue';
+import ViewTable from '@/components/common/ListTable.vue';
+import SearchForm from '@/components/common/ProblemSearchForm.vue';
+import CommonButton from '@/components/common/Button/CommonButton.vue';
+import { $api } from '@/services/api/api';
 
+const router = useRouter(); 
+const searchFormRef = ref(null); // ref로 searchFormRef 정의
+const loading = ref(false); // 로딩 상태 변수
+
+const selectedDetail = ref(null);
+
+const navigateToRegisterPage = () => {
+    router.push({ name: 'EProblemRegister' }); // 라우터 이름을 이용해 이동
+};
+
+const searchParams = ref({
+    title: '',
+    memberId: '',
+    productId: '',
+    customerId: '',
+    startDate: null,
+    endDate: null
+});
+
+const formFields = [
+    [
+        {
+            label: '제목',
+            type: 'input',
+            model: 'problemTitle',
+            showDivider: true
+        },
+        {
+            label: '작성자',
+            type: 'input',
+            model: 'problemWriter',
+            showDivider: true
+        },
+        {
+            label: '제품명',
+            type: 'input',
+            model: 'problemProduct',
+            showDivider: true
+        },
+        {
+            label: '고객명',
+            type: 'input',
+            model: 'problemCustomer',
+            showDivider: true
+        },
+        {
+            label: '조회기간',
+            type: 'calendar', // 쌍으로 처리
+            model: 'problemSearchDate', // 시작과 종료를 모두 포함
+            showIcon: true,
+            manualInput: false,
+        }
+    ]
+];
+
+const tableHeaders = [
+    { field: 'problemId', label: 'NO', width: '15%' },
+    { field: 'productId', label: '제품번호', width: '15%' },
+    { field: 'customerId', label: '고객명', width: '10%' },
+    { field: 'title', label: '제목', width: '20%' },
+    { field: 'createdAt', label: '작성 일자', width: '11%' },
+    { field: 'status', label: '처리 상태', width: '10%' },
+    { field: 'memberId', label: '작성자', width: '10%' }
+];
+
+// 상태 변수
+const tableData = ref([]); // 테이블 데이터
+const totalRecords = ref(0); // 전체 데이터 개수
+const rows = ref(5); // 페이지 당 행 수
+const first = ref(0); // 첫 번째 행 위치
+
+
+const exportCSV = async () => {
+    loading.value = true;
+    try {
+        const blob = await $api.promotion.get('excel', '', {
+            responseType: 'blob'
+        });
+
+        // 이미 blob이 반환되었으므로 바로 URL 생성
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'promotionExcel.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        console.log(url);
+        console.log('파일 다운로드 완료');
+    } catch (error) {
+        console.error('다운로드 에러:', error);
+        DOMEventService.dispatchApiError('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+        loading.value = false;
+    }
+};
+
+function handleView(rowData) {
+    selectedDetail.value = rowData; // 클릭된 행 데이터 전달
+    router.push({
+        name: 'ProblemDetail',
+        query: {
+            problemwriter: rowData.memberId, 
+            problemTitle: rowData.title, 
+            problemContent: rowData.content,
+            problemId: rowData.problemId,
+            problemStatus: rowData.status,
+            problemCreatedAt: rowData.createdAt,
+        },
+    });
+}
+function onPage(event) {
+    console.log('페이지네이션 이벤트:', event);
+    first.value = event.first;
+    rows.value = event.rows;
+    loadData();
+}
+
+function onSort(event) {
+    console.log('정렬 이벤트:', event);
+    loadData();
+}
+
+function onFilter(event) {
+    console.log('필터 이벤트:', event);
+    loadData();
+}
+
+const handleSearch = async () => {
+    console.log('handleSearch 호출됨');
+
+    // SearchForm에서 데이터를 가져옴
+    if (!searchFormRef.value) {
+        console.error('searchFormRef가 초기화되지 않았습니다.');
+        return;
+    }
+
+    const formData = searchFormRef.value.getFormData();
+    console.log('SearchForm에서 반환된 데이터:', formData);
+
+    // 검색 파라미터 매핑
+    searchParams.value = {
+        title: formData.problemTitle || '',
+        memberId: formData.problemWriter || '',
+        productId: formData.problemProduct || '',
+        customerId: formData.problemCustomer || '',
+        startDate: formData.problemSearchDate_start || null,
+        endDate: formData.problemSearchDate_end || null,
+    };
+
+    console.log('매핑된 검색 파라미터:', searchParams.value);
+
+    // 데이터 로드 호출
+    await loadData();
+};
+
+const loadData = async () => {
+    loading.value = true;
+    try {
+        const params = {
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
+            title: searchParams.value.title || '',
+            memberId: searchParams.value.memberId || '',
+            productId:searchParams.value.productId|| '',
+            customerId: searchParams.value.customerId || '',
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
+        };
+        if(params.title!=''){
+            params.title='&title='+params.title;
+        }
+        if(params.memberId!=''){
+            params.memberId='&memberId='+params.memberId;
+        }
+        if(params.productId==null){
+            params.productId=''
+            console.log("1");
+        }
+        else if(params.productId!=''){
+            params.productId='&productId='+params.productId;
+        }
+        if(params.customerId!=''){
+            params.customerId='&customerId='+params.customerId;
+        }
+        if(params.startDate==null){
+            params.startDate=''
+            console.log("1");
+            console.log(params.startDate);
+        }
+        else if(params.startDate!=''){
+            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
+            console.log("2");
+            console.log(params.startDate);
+        }
+        if(params.endDate==null){
+            params.endDate=''
+            console.log("3");
+            console.log(params.endDate);
+        }
+        else if(params.endDate!=''){
+            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
+            console.log("4");
+            console.log(params.endDate);
+        }
+        const response = await $api.problem.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.productId}${params.customerId}${params.startDate}${params.endDate}`);
+        console.log('test',`?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.productId}${params.customerId}${params.startDate}${params.endDate}`);
+        tableData.value = response.content || [];
+        totalRecords.value = response.totalElements || 0;
+    } catch (error) {
+        console.error('데이터 로드 실패:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(() => {
+    loadData();
+});
 </script>
 
-<style scoped>
 
+<style scoped>
+.list{
+    font-size: 1.5rem;
+    font-weight:bold;
+}
 </style>
+
+
