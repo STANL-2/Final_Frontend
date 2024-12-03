@@ -14,8 +14,8 @@
     </div>
     <!-- 부모에서 정의한 footer 슬롯 -->
     <template #footer>
-      <button class="btn btn-primary" @click="confirmSelection">확인</button>
-      <button class="btn btn-secondary" @click="handleHide">취소</button>
+      <SCommonButton class="btn btn-primary" @click="confirmSelection" label="확인"></SCommonButton>
+      <SCommonButton class="btn btn-secondary" @click="handleHide" label="취소"></SCommonButton>
     </template>
   </Dialog>
 </template>
@@ -24,6 +24,7 @@
 import { ref, defineEmits, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import ViewTable from '@/components/common/ListTable.vue';
+import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 
 const props = defineProps({
   modelValue: Boolean,
