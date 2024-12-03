@@ -11,9 +11,7 @@
                 </div>
             </h3>
 
-            <!-- 첨부 파일 보여주기 -->
             <div class="bottom-section flex-col items-center width-s ml-xxxl">
-                <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
                     <table class="file-table">
                         <thead>
@@ -61,7 +59,6 @@ const promotionTitle = route.query.promotionTitle || '';
 const promotionContent = route.query.promotionContent || '';
 const promotionId = route.query.promotionId || '';
 
-// 첨부파일 조회하기
 const promotionImage = ref('');
 
 console.log("route", route.query);
@@ -70,7 +67,6 @@ const goBack = () => {
     router.back();
 };
 
-// 첨부파일 조회를 위한 get 메소드
 const getPromotion = async () => {
     try {
         const response = await $api.promotion.get(
@@ -81,7 +77,7 @@ const getPromotion = async () => {
         if (response.fileUrl) {
             promotionImage.value = response.fileUrl; // API에서 반환된 fileUrl 할당
         } else {
-            promotionImage.value = ''; // fileUrl이 없으면 빈 값
+            promotionImage.value = ''; 
         }
     } catch (error) {
         console.error('조회 중 오류 발생:', error);

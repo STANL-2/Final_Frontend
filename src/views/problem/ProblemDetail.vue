@@ -38,7 +38,7 @@
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <button class="button delete-button" @click="deleteProblem">삭제</button>
+                        <button class="button delete-button" @click="goDelete">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
                         <button class="button status-button" @click="updateProblemStatus">상태 변경</button>
                     </div>
@@ -52,10 +52,13 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+import { useConfirm } from "primevue/useconfirm";
+import ConfirmDialog from 'primevue/confirmdialog';
 
 
 const route = useRoute();
 const router = useRouter();
+const confirm = useConfirm();
 
 const problemTitle = route.query.problemTitle || '';
 const problemContent = route.query.problemContent || '';
@@ -123,6 +126,36 @@ const updateProblemStatus = async () => {
         alert('상태 변경에 실패했습니다.');
     }
 };
+
+function goDelete() {
+    confirm.require({
+        message: '게시글을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                if (!problemId) {
+                    throw new Error("게시글이 없습니다.");
+                }
+
+                await $api.problem.delete(problemId);
+                toast.add({ severity: 'success', summary: '성공', detail: '게시글이 삭제되었습니다.', life: 3000 });
+
+                router.push('/problem/list'); // 
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제가 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
+}
 
 const navigateToEditPage = () => {
     router.push({
