@@ -94,7 +94,9 @@ const formData = ref({});
 const formDataIds = ref({});
 
 function resetForm() {
-    formData.value = {};
+    Object.keys(formData.value).forEach((key) => {
+        formData.value[key] = ''; // 모든 필드 초기화
+    });
 }
 
 // 컴포넌트 초기화 시 모든 필드 초기화
@@ -131,27 +133,6 @@ function updateFieldValue(fieldModel, displayValue, idValue) {
     console.log('Updated formData (names):', formData.value);
     console.log('Updated formDataIds (ids):', formDataIds.value);
 }
-
-
-// function updateFieldValue(fieldModel, value, rowIndex, index) {
-//     const key = `${fieldModel}_${rowIndex}_${index}`;
-//     console.log(`Updating field ${key} with value:`, value);
-
-//     // 특정 필드에 대해 다른 처리
-//     if (fieldModel === 'centerId') {
-//         // centerId는 고정된 키로 업데이트
-//         formData.value[fieldModel] = value;
-//     } else {
-//         // 다른 필드는 기존 로직 유지
-//         if (formData.value[key] !== undefined) {
-//             formData.value[key] = value;
-//         } else {
-//             formData.value = { ...formData.value, [key]: value };
-//         }
-//     }
-
-//     console.log('Updated formData:', formData.value);
-// }
 
 // expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
