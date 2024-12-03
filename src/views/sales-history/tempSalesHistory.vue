@@ -503,7 +503,7 @@ async function searchStore() {
 
         const endpoint = modalType.value === 'centerList'
             ? $api.center
-            : modalType.value === 'membermemberListName'
+            : modalType.value === 'memberList'
             ? $api.member
             : modalType.value === 'productList'
             ? $api.product // 가정
