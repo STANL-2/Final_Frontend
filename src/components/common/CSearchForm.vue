@@ -96,23 +96,32 @@ function resetForm() {
     formData.value = {};
 }
 
-// 컴포넌트 초기화 시 모든 필드 초기화
 function initializeFormData() {
     formData.value = {};
     props.fields.forEach((fieldGroup) => {
         fieldGroup.forEach((field) => {
+            // 모든 필드의 model을 초기화
             formData.value[field.model] = field.default || '';
+            if (field.relatedModel) {
+                // relatedModel도 초기화
+                formData.value[field.relatedModel] = '';
+            }
         });
     });
 
-    console.log('시작 폼 데이터:', formData.value);
+    console.log('초기화된 formData:', formData.value);
 }
 
+function resetFields() {
+    Object.keys(formData.value).forEach((key) => {
+        formData.value[key] = ''; // 모든 필드 초기화
+    });
+}
 
 // 모달 열기 메서드
 function openModal(rowIndex, index) {
     const field = props.fields[rowIndex][index];
-    emit('open-modal', field.model); // `field.model`만 전달
+    emit('open-modal', field.model); 
 }
 
 function updateFieldValue(fieldModel, value) {
@@ -124,36 +133,22 @@ function updateFieldValue(fieldModel, value) {
     }
 }
 
-// function updateFieldValue(fieldModel, value, rowIndex, index) {
-//     const key = `${fieldModel}_${rowIndex}_${index}`;
-//     console.log(`Updating field ${key} with value:`, value);
-
-//     // 특정 필드에 대해 다른 처리
-//     if (fieldModel === 'centerId') {
-//         // centerId는 고정된 키로 업데이트
-//         formData.value[fieldModel] = value;
-//     } else {
-//         // 다른 필드는 기존 로직 유지
-//         if (formData.value[key] !== undefined) {
-//             formData.value[key] = value;
-//         } else {
-//             formData.value = { ...formData.value, [key]: value };
-//         }
-//     }
-
-//     console.log('Updated formData:', formData.value);
-// }
-
 // expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
     formData,
     resetForm,
-    updateFieldValue
+    updateFieldValue,
+    resetFields
 });
 
 // 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
     initializeFormData();
+    props.fields.forEach((group) => {
+        group.forEach((field) => {
+            formData.value[field.model] = ''; // 초기 값 설정
+        });
+    });
 });
 </script>
 

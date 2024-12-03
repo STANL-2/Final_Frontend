@@ -8,6 +8,11 @@
         </div>
         <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
 
+        <div class="flex-row content-between ml-l mr-xl">
+            <button class="custom-button" @click="openSignatureModal()"> 작성 서명</button>
+        </div>
+        <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
+
         <template #footer>
             <CommonButton label="취소" color="#F1F1FD" textColor="#6360AB" @click="closeModal" />
             <CommonButton label="등록" color="#6360AB" textColor="#FFFFFF" @click="onRegister" />
@@ -57,24 +62,26 @@ const initialHtml = `
     <div style="width: 900px; border: 1px solid #000; padding: 20px; background-color: #fff;">
         <!-- Header Section -->
         <div
-            style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative;">
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative;">
             <!-- 수주서 제목 -->
             <div style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">
                 <h2 style="font-size: 20px; font-weight: bold; margin: 0;">수주서</h2>
             </div>
 
             <!-- Approval Table -->
-            <table
-                style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
-                <tr style="background-color: #f0f0f0;">
-                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
-                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 20px; text-align: center;"></td>
-                    <td style="border: 1px solid #000; padding: 20px; text-align: center;"></td>
-                </tr>
-            </table>
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area"></td>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
         <!-- Top Table -->
@@ -83,7 +90,7 @@ const initialHtml = `
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">날짜
                 </td>
                 <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="createdAt"></td>
-                <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
+                <td style="width: 14%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
                     번호</td>
                 <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="contractId"></td>
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">매장
@@ -98,12 +105,12 @@ const initialHtml = `
         <!-- Middle Table -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
             <tr style="background-color: #f0f0f0;">
-                <th style="border: 1px solid #000; padding: 6px;">No.</th>
-                <th style="border: 1px solid #000; padding: 6px;">일련번호</th>
-                <th style="border: 1px solid #000; padding: 6px;">품명 / 규격</th>
-                <th style="border: 1px solid #000; padding: 6px;">수주수량</th>
-                <th style="border: 1px solid #000; padding: 6px;">단가 / 합계</th>
-                <th style="border: 1px solid #000; padding: 6px;">현재고</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">No.</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">일련번호</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">품명 / 규격</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">수주수량</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">단가 / 합계</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
             </tr>
             <tr>
                 <td style="border: 1px solid #000; padding: 6px; height: 20px;"></td>
@@ -135,34 +142,6 @@ const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
 
     const doc = parser.parseFromString(html, "text/html");
-
-    // 고객 사항
-    const customerName = doc.querySelector(".customer-name-value")?.innerText.trim() || "";
-    const customerIdentifiNo = doc.querySelector(".customer-identifiNo-value")?.innerText.trim() || "";
-    const customerAddress = doc.querySelector(".customer-address-value")?.innerText.trim() || "";
-    const customerPhone = doc.querySelector(".customer-phone-value")?.innerText.trim() || "";
-    const customerEmail = doc.querySelector(".customer-email-value")?.innerText.trim() || "";
-    const companyName = doc.querySelector(".customer-company-value")?.innerText.trim() || "";
-    const customerClassifcation = doc.querySelector(".customer-customerClassifcation-value")?.innerText.trim() || "";
-    const customerPurchaseCondition = doc.querySelector(".customer-purchaseCondition-value")?.innerText.trim() || "";
-    const customerAge = doc.querySelector(".customer-age-value")?.innerText.trim() || "";
-    const customerSex = doc.querySelector(".customer-sex-value")?.innerText.trim() || "";
-
-    // 차량 사항
-    const carName = doc.querySelector(".customer-carName-value")?.innerText.trim() || "";
-    const serialNum = doc.querySelector(".customer-serialNo-value")?.innerText.trim() || "";
-    const selectOption = doc.querySelector(".customer-selectOption-value")?.innerText.trim() || "";
-    const numberOfVehicles = doc.querySelector(".customer-numberOfVehicles-value")?.innerText.trim() || "";
-    const deliveryDate = doc.querySelector(".customer-deliveryDate-value")?.innerText.trim() || "";
-    const deliveryLocation = doc.querySelector(".customer-deliveryLocation-value")?.innerText.trim() || "";
-
-    // 금액 사항
-    const vehiclePrice = parseFloat(doc.querySelector(".customer-vehiclePrice-value")?.innerText.trim() || "0");
-    const downPayment = parseFloat(doc.querySelector(".customer-downPayment-value")?.innerText.trim() || "0");
-    const intermediatePayment = parseFloat(doc.querySelector(".customer-intermediatePayment-value")?.innerText.trim() || "0");
-    const remainderPayment = parseFloat(doc.querySelector(".customer-remainderPayment-value")?.innerText.trim() || "0");
-    const consignmentPayment = parseFloat(doc.querySelector(".customer-consignmentPayment-value")?.innerText.trim() || "0");
-    const totalSales = parseFloat(doc.querySelector(".customer-totalSales-value")?.innerText.trim() || "0");
 
     // 필요한 필드를 추가적으로 추출
     return {
@@ -215,6 +194,35 @@ function closeModal() {
     emit('update:visible', false); // 부모 컴포넌트에 상태 전달
     emit('close'); // 부모 컴포넌트에 close 이벤트 전달
 }
+
+const openSignatureModal = () => {
+    isSignatureModalVisible.value = true;
+    console.log('모달 열림:', isSignatureModalVisible.value); // 디버깅 로그
+};
+
+const handleSignature = async (signatureImage) => {
+
+    if (!signatureImage.startsWith("data:image/")) {
+        console.error("잘못된 서명 이미지 데이터:", signatureImage);
+        return;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+
+    console.log("HTML 변환 결과:", doc); // 디버깅용 로그
+
+    const buyerSignatureArea = doc.querySelector('#writer-signature-area');
+    console.log("작성 서명 영역:", buyerSignatureArea); // 디버깅 로그
+    if (buyerSignatureArea) {
+        buyerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="작성 서명 이미지" style="width: 6rem; height: auto;">`;
+    }
+
+    content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
+    console.log("업데이트된 HTML:", content.value); // 디버깅 로그
+
+    isSignatureModalVisible.value = false; // 모달 닫기
+};
 
 </script>
 
