@@ -320,10 +320,6 @@ const routes = [
                 path: 'list',
                 component: () => import('@/views/sales-history/SalesHistoryList.vue')
             },
-            {
-                path: 'detail',
-                component: () => import('@/views/sales-history/SalesHistoryDetail.vue')
-            }
         ]
     },
     {

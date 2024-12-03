@@ -185,7 +185,7 @@ const searchCriteria = ref({});
 
 const refresh = () => {
     searchCriteria.value = ref({});
-    searchFormRef.value.initializeFormData;
+    searchFormRef.value.resetForm();
     loadData();
 }
 
