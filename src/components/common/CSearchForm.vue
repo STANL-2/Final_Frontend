@@ -10,7 +10,7 @@
 
                         <!-- Input field -->
                         <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[field.model]" :placeholder="field.placeholder"
+                            <input type="text" v-model="formData[field.model]"  :placeholder="formData[field.model] ? '' : field.placeholder"
                                 class="form-input" />
                         </template>
 
@@ -91,9 +91,12 @@ const props = defineProps({
 
 // formData를 ref 객체로 정의
 const formData = ref({});
+const formDataIds = ref({});
 
 function resetForm() {
-    formData.value = {};
+    Object.keys(formData.value).forEach((key) => {
+        formData.value[key] = ''; // 모든 필드 초기화
+    });
 }
 
 // 컴포넌트 초기화 시 모든 필드 초기화
@@ -115,40 +118,29 @@ function openModal(rowIndex, index) {
     emit('open-modal', field.model); // `field.model`만 전달
 }
 
-function updateFieldValue(fieldModel, value) {
-    if (formData.value[fieldModel] !== undefined) {
-        formData.value[fieldModel] = value; // 필드 값 업데이트
-        console.log('Updated formData:', formData.value);
+function updateFieldValue(fieldModel, displayValue, idValue) {
+    if (Array.isArray(formData.value[fieldModel])) {
+        // 배열이면 값 추가
+        formData.value[fieldModel].push(displayValue);
+        formDataIds.value[fieldModel].push(idValue);
+    } else if (formData.value[fieldModel] !== undefined) {
+        // 배열이 아니면 값 덮어쓰기
+        formData.value[fieldModel] = displayValue;
+        formDataIds.value[fieldModel] = idValue;
     } else {
         console.warn(`Field model ${fieldModel} not found in formData.`);
     }
+    console.log('Updated formData (names):', formData.value);
+    console.log('Updated formDataIds (ids):', formDataIds.value);
 }
-
-// function updateFieldValue(fieldModel, value, rowIndex, index) {
-//     const key = `${fieldModel}_${rowIndex}_${index}`;
-//     console.log(`Updating field ${key} with value:`, value);
-
-//     // 특정 필드에 대해 다른 처리
-//     if (fieldModel === 'centerId') {
-//         // centerId는 고정된 키로 업데이트
-//         formData.value[fieldModel] = value;
-//     } else {
-//         // 다른 필드는 기존 로직 유지
-//         if (formData.value[key] !== undefined) {
-//             formData.value[key] = value;
-//         } else {
-//             formData.value = { ...formData.value, [key]: value };
-//         }
-//     }
-
-//     console.log('Updated formData:', formData.value);
-// }
 
 // expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
     formData,
     resetForm,
-    updateFieldValue
+    updateFieldValue,
+    formDataIds,
+    initializeFormData,
 });
 
 // 컴포넌트가 로드될 때 formData 초기화
