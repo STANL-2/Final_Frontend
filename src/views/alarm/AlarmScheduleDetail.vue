@@ -2,32 +2,39 @@
     <div v-if="alarm" class="alarm-detail-container">
         <div class="alarm-detail-header">
             <div class="member-info">
-                <img v-if="member.profileImageUrl" :src="member.profileImageUrl" alt="Profile" class="profile-image" />
-                <span class="member-name">{{ member.name || "이름 없음" }}</span>
+                <img v-if="admin.profileImageUrl" :src="admin.profileImageUrl" alt="Profile" class="profile-image" />
+                <span class="member-name">{{ admin.name || "이름 없음" }}</span>
             </div>
+            <p class="created-at">{{ formatDate(alarm.createdAt) }}</p>
         </div>
 
         <div class="alarm-detail-content">
             <h3 class="message">{{ alarm.message }}</h3>
-            <p class="created-at">{{ formatDate(alarm.createdAt) }}</p>
 
             <!-- 태그별 조건부 상세 정보 렌더링 -->
             <div v-if="detailInfo" class="additional-details">
                 <!-- 미팅/회의/휴가/교육 -->
                 <template v-if="alarm.type == 'SCHEDULE'">
-                    <h4>{{ alarm.tag }} 상세 정보</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.startDateTime" class="detail-item">
-                            <strong>시작 시간:</strong> {{ formatDate(detailInfo.startDateTime) }}
+                        <div v-if="detailInfo?.result.name" class="detail-item title-with-date">
+                            <strong>[</strong> {{ detailInfo.result.name }} <strong>]</strong>
+                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
                         </div>
-                        <div v-if="detailInfo.endDateTime" class="detail-item">
-                            <strong>종료 시간:</strong> {{ formatDate(detailInfo.endDateTime) }}
+                        <div v-if="detailInfo?.result.content" class="detail-item">
+                            <strong>내용: </strong> {{ detailInfo.result.content }}
                         </div>
-                        <div v-if="detailInfo.location" class="detail-item">
-                            <strong>장소:</strong> {{ detailInfo.location }}
+                        <div v-if="detailInfo?.result.tag" class="detail-item">
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(tagMapping(detailInfo.result.tag)),
+                            }">
+                                {{ tagMapping(detailInfo.result.tag) }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.participants" class="detail-item">
-                            <strong>참석자:</strong> {{ detailInfo.participants }}
+                        <div v-if="detailInfo?.result.startAt" class="detail-item">
+                            <strong>시작일자: </strong> {{ detailInfo.result.startAt }}
+                        </div>
+                        <div v-if="detailInfo?.result.endAt" class="detail-item">
+                            <strong>종료일자: </strong> {{ detailInfo.result.endAt }}
                         </div>
                     </div>
                 </template>
@@ -36,10 +43,11 @@
                 <template v-else-if="alarm.type == 'NOTICE'">
                     <h4>{{ alarm.tag }} 공지사항</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.title" class="detail-item">
+                        <div v-if="detailInfo.title" class="detail-item title-with-date">
                             <strong>제목:</strong> {{ detailInfo.title }}
+                            <span class="created-at">{{ formatDate(detailInfo.createdAt) }}</span>
                         </div>
-                        <div v-if="detailInfo.writer" class="detail-item">
+                        <div v-if="detailInfo.tag" class="detail-item">
                             <strong>태그</strong> {{ detailInfo.tag }}
                         </div>
                         <div v-if="detailInfo.createdAt" class="detail-item">
@@ -50,56 +58,102 @@
 
                 <!-- 계약서 -->
                 <template v-else-if="alarm.tag === '계약서'">
-                    <h4>계약서 정보</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.contractNumber" class="detail-item">
-                            <strong>계약 번호:</strong> {{ detailInfo.contractNumber }}
+                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
+                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
+                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
                         </div>
-                        <div v-if="detailInfo.contractAmount" class="detail-item">
-                            <strong>계약 금액:</strong> {{ detailInfo.contractAmount.toLocaleString() }}원
+                        <div v-if="alarm.tag" class="detail-contract-item">
+                            <strong>태그: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(alarm.tag),
+                            }">
+                                {{ alarm.tag }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.contractDate" class="detail-item">
-                            <strong>계약 날짜:</strong> {{ formatDate(detailInfo.contractDate) }}
+                        <div v-if="detailInfo?.result.carName" class="detail-contract-item">
+                            <strong>차량: </strong> {{ detailInfo.result.carName }}
                         </div>
-                        <div v-if="detailInfo.contractParty" class="detail-item">
-                            <strong>계약 상대방:</strong> {{ detailInfo.contractParty }}
+                        <div v-if="detailInfo.result.status" class="detail-contract-item">
+                            <strong>승인 상태: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
+                            }">
+                                {{ tagMapping(detailInfo.result.status) }}
+                            </span>
+                        </div>
+                        <div v-if="detailInfo?.result.createdUrl" class="detail-contract-item">
+                            <a :href="detailInfo.result.createdUrl" download target="_blank">다운로드</a>
+                        </div>
+                        <div v-if="detailInfo?.result.totalSales" class="detail-contract-item">
+                            <strong>총 금액: </strong> {{ detailInfo.result.totalSales }}
+                        </div>
+                        <div v-if="detailInfo?.result.createdAt" class="detail-contract-item">
+                            <strong>생성 일자: </strong> {{ detailInfo.result.createdAt }}
                         </div>
                     </div>
                 </template>
 
                 <!-- 수주서/발주서 -->
                 <template v-if="alarm.tag === '수주서'">
-                    <h4>수주서 정보</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.orderNumber" class="detail-item">
-                            <strong>수주 번호:</strong> {{ detailInfo.orderNumber }}
+                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
+                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
+                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
                         </div>
-                        <div v-if="detailInfo.totalAmount" class="detail-item">
-                            <strong>총 금액:</strong> {{ detailInfo.totalAmount.toLocaleString() }}원
+                        <div v-if="alarm.tag" class="detail-item">
+                            <strong>태그: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(alarm.tag),
+                            }">
+                                {{ alarm.tag }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.orderDate" class="detail-item">
-                            <strong>수주 날짜:</strong> {{ formatDate(detailInfo.orderDate) }}
+                        <div v-if="detailInfo.result.status" class="detail-item">
+                            <strong>승인 상태: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
+                            }">
+                                {{ tagMapping(detailInfo.result.status) }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.customer" class="detail-item">
-                            <strong>고객:</strong> {{ detailInfo.customer }}
+                        <div v-if="detailInfo?.result.content" class="detail-item">
+                            <a :href="detailInfo.result.content" download target="_blank">다운로드</a>
+                        </div>
+                        <div v-if="detailInfo?.result.createdAt" class="detail-item">
+                            <strong>생성 일자</strong> {{ detailInfo.result.createdAt }}
                         </div>
                     </div>
                 </template>
 
+                <!-- 발주서 -->
                 <template v-else-if="alarm.tag === '발주서'">
-                    <h4>발주서 정보</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.orderNumber" class="detail-item">
-                            <strong>발주 번호:</strong> {{ detailInfo.orderNumber }}
+                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
+                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
+                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
                         </div>
-                        <div v-if="detailInfo.totalAmount" class="detail-item">
-                            <strong>총 금액:</strong> {{ detailInfo.totalAmount.toLocaleString() }}원
+                        <div v-if="alarm.tag" class="detail-item">
+                            <strong>태그: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(alarm.tag),
+                            }">
+                                {{ alarm.tag }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.orderDate" class="detail-item">
-                            <strong>발주 날짜:</strong> {{ formatDate(detailInfo.orderDate) }}
+                        <div v-if="detailInfo.result.status" class="detail-item">
+                            <strong>승인 상태: </strong>
+                            <span class="tag" :style="{
+                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
+                            }">
+                                {{ tagMapping(detailInfo.result.status) }}
+                            </span>
                         </div>
-                        <div v-if="detailInfo.customer" class="detail-item">
-                            <strong>공급업체:</strong> {{ detailInfo.customer }}
+                        <div v-if="detailInfo?.result.content" class="detail-item">
+                            <a :href="detailInfo.result.content" download target="_blank">다운로드</a>
+                        </div>
+                        <div v-if="detailInfo?.result.createdAt" class="detail-item">
+                            <strong>생성 일자:</strong> {{ detailInfo.result.createdAt }}
                         </div>
                     </div>
                 </template>
@@ -147,8 +201,49 @@ const props = defineProps({
 
 const member = ref({
     name: '',
-    profileImageUrl: ''
+    profileImageUrl: '',
+    position: ''
 });
+
+const admin = ref({
+    name: '',
+    profileImageUrl: '',
+    position: ''
+});
+
+const tagMapping = (tag) => {
+    const tagMap = {
+        'MEETING': '미팅',
+        'TRAINING': '교육',
+        'VACATION': '휴가',
+        'SESSION': '회의',
+        'IMPORTANT': '중요',
+        'NORMAL': '일반',
+        'APPROVED': '승인'
+    };
+
+    return tagMap[tag] || tag; // 일치하는 값이 없으면 원래 값 반환
+};
+
+
+const tagColors = [
+    { name: '미팅', color: '#AEC6CF' },
+    { name: '교육', color: '#FFDAB9' },
+    { name: '휴가', color: '#B0E57C' },
+    { name: '회의', color: '#FFB7C5' },
+    { name: '계약서', color: '#A7D8DE' },
+    { name: '발주서', color: '#FFE4E1' },
+    { name: '수주서', color: '#B9E4C9' },
+    { name: '중요', color: '#FFB3B3' },
+    { name: '일반', color: '#E0FFB3' },
+    { name: '승인', color: '#B3FFB3' },
+];
+
+const getTagColor = (tag) => {
+
+    const tagData = tagColors.find(item => item.name === tag);
+    return tagData ? tagData.color : '#DDD'; // 기본 회색
+};
 
 const detailInfo = ref(null);
 
@@ -173,15 +268,28 @@ const fetchMemberInfo = async () => {
     if (props.alarm && props.alarm.adminId) {
 
         try {
-            const response = await apiMemberService.get(
+            const memResponse = await apiMemberService.get(
+                'memberInfo',
+                `${props.alarm.memberId}`,
+                ''
+            );
+
+            member.value = {
+                name: memResponse.result.name || "이름 없음",
+                profileImageUrl: memResponse.result.imageUrl || null,
+                position: memResponse.result.position || null
+            };
+
+            const admResponse = await apiMemberService.get(
                 'memberInfo',
                 `${props.alarm.adminId}`,
                 ''
             );
 
-            member.value = {
-                name: response.result.name || "이름 없음",
-                profileImageUrl: response.result.imageUrl || null
+            admin.value = {
+                name: admResponse.result.name || "이름 없음",
+                profileImageUrl: admResponse.result.imageUrl || null,
+                position: memResponse.result.position || null
             };
         } catch (error) {
             console.error("Failed to fetch member info:", error);
@@ -194,22 +302,30 @@ const fetchMemberInfo = async () => {
 
 // 스케줄 정보 조회 함수들
 const fetchScheduleInfo = async () => {
+
+    console.log("alarm", props.alarm);
+
     const scheduleTypes = ['미팅', '회의', '휴가', '교육'];
     if (scheduleTypes.includes(props.alarm.tag)) {
         try {
             const response = await apiScheduleService.get(
                 '',
-                `${props.alarm.referenceId}`,
+                `${props.alarm.contentId}`,
                 ''
             );
             detailInfo.value = response;
         } catch (error) {
             console.error("Failed to fetch schedule info:", error);
         }
+
+        console.log("response", detailInfo.value);
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
     }
 };
 
 const fetchNoticeInfo = async () => {
+
     const noticeTypes = ['중요', '일반'];
     if (noticeTypes.includes(props.alarm.tag)) {
         try {
@@ -219,62 +335,194 @@ const fetchNoticeInfo = async () => {
                 ''
             );
 
-            console.log("response", response);
-
             detailInfo.value = response;
         } catch (error) {
             console.error("Failed to fetch notice info:", error);
         }
+
+        console.log("response", detailInfo.value);
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
     }
 };
 
 const fetchContractInfo = async () => {
+
     if (props.alarm.tag === '계약서') {
-        try {
-            const response = await apiContractService.get(
-                'contractDetail',
-                `${props.alarm.contentId}`,
-                ''
-            );
-            detailInfo.value = response;
-        } catch (error) {
-            console.error("Failed to fetch contract info:", error);
+        if (member.value.position === "영업 사원") {
+            // "영업 사원"일 경우 실행할 코드
+            try {
+                const response = await apiContractService.get(
+                    'employee',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 사원:", error);
+            }
+        } else if (member.value.position === "영업 관리자") {
+            // "영업 담당자"일 경우 실행할 코드
+            try {
+                const response = await apiContractService.get(
+                    'center',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 관리자:", error);
+            }
+        } else if (member.value.position === "영업 담당자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiContractService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 담당자:", error);
+            }
+        } else if (member.value.position === "시스템 관리자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiContractService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 시스템 관리자:", error);
+            }
+        } else {
+            console.log('계약정보를 가져오지 못했습니다.');
         }
+
+        console.log("response", detailInfo.value);
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
     }
 };
 
+
 const fetchPurchaseOrderInfo = async () => {
+
+    console.log("alarm", props.alarm);
+
     if (props.alarm.tag === '수주서') {
-        try {
-            const response = await apiPurchaseOrderService.get(
-                'purchaseOrderDetail',
-                `${props.alarm.contentId}`,
-                ''
-            );
-            detailInfo.value = response;
-        } catch (error) {
-            console.error("Failed to fetch purchase order info:", error);
+        if (member.value.position === "영업 사원") {
+            // "영업 사원"일 경우 실행할 코드
+            try {
+                const response = await apiOrderService.get(
+                    'employee',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 사원:", error);
+            }
+        } else if (member.value.position === "영업 관리자") {
+            // "영업 담당자"일 경우 실행할 코드
+            try {
+                const response = await apiOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 관리자:", error);
+            }
+        } else if (member.value.position === "영업 담당자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 담당자:", error);
+            }
+        } else if (member.value.position === "시스템 관리자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 시스템 관리자:", error);
+            }
+        } else {
+            console.log('계약정보를 가져오지 못했습니다.');
         }
+
+        console.log("response", detailInfo.value);
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
     }
 };
 
 const fetchOrderInfo = async () => {
+
     if (props.alarm.tag === '발주서') {
-        try {
-            const response = await apiOrderService.get(
-                'orderDetail',
-                `${props.alarm.contentId}`,
-                ''
-            );
-            detailInfo.value = response;
-        } catch (error) {
-            console.error("Failed to fetch order info:", error);
+        if (member.value.position === "영업 관리자") {
+            // "영업 담당자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    'admin',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 관리자:", error);
+            }
+        } else if (member.value.position === "영업 담당자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 담당자:", error);
+            }
+        } else if (member.value.position === "시스템 관리자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 시스템 관리자:", error);
+            }
+        } else {
+            console.log('계약정보를 가져오지 못했습니다.');
         }
+
+        console.log("response", detailInfo.value);
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
     }
 };
 
 // 알림을 클릭할 때마다 조회
 watch(() => props.alarm, async (newAlarm) => {
+
     if (newAlarm) {
         await fetchMemberInfo();
 
@@ -328,14 +576,6 @@ const formatKey = (key) => {
         .replace(/_/g, ' ')
         .replace(/^./, (str) => str.toUpperCase());
 };
-
-// 알림을 클릭할 떄 마다 조회
-watch(() => props.alarm, async (newAlarm) => {
-    if (newAlarm) {
-        await fetchMemberInfo();
-    }
-}, { immediate: true });
-
 </script>
 
 <style scoped>
@@ -346,7 +586,7 @@ watch(() => props.alarm, async (newAlarm) => {
     width: 450px;
     height: 480px;
     padding: 1rem;
-    margin-left: 5px;
+    margin-left: 1rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -357,7 +597,7 @@ watch(() => props.alarm, async (newAlarm) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .member-info {
@@ -373,7 +613,7 @@ watch(() => props.alarm, async (newAlarm) => {
 }
 
 .member-name {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
     color: #333;
 }
@@ -391,6 +631,8 @@ watch(() => props.alarm, async (newAlarm) => {
 .created-at {
     color: #777;
     margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
 }
 
 .additional-details {
@@ -398,10 +640,16 @@ watch(() => props.alarm, async (newAlarm) => {
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
+    width: 414px;
+    height: 280px;
 }
 
 .detail-item {
-    margin-bottom: 10px;
+    margin-bottom: 2rem;
+}
+
+.detail-contract-item {
+    margin-bottom: 1.5rem;
 }
 
 .action-buttons {
@@ -430,5 +678,33 @@ watch(() => props.alarm, async (newAlarm) => {
     height: 100%;
     color: #777;
     font-size: 16px;
+}
+
+.title-with-date {
+    display: inline-block; /* 같은 줄에 배치 */
+    white-space: nowrap;   /* 줄바꿈 방지 */
+    justify-content: space-between;
+}
+
+.title-with-date .created-at {
+    display: inline-block;
+    white-space: nowrap;   /* 줄바꿈 방지 */
+    font-size: 12px;   /* 생성 일자의 폰트 크기 */
+    color: #777;       /* 생성 일자의 색상 */
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    width: 3.2rem;
+    text-align: center;
+    /* 텍스트 가로 정렬 */
+    line-height: 1.5;
+    /* 수직 정렬을 위한 줄 높이 */
+    vertical-align: middle;
 }
 </style>

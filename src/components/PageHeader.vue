@@ -710,6 +710,8 @@ onUnmounted(() => {
     z-index: 1000;
     overflow-y: auto;
     padding: 10px;
+    padding-top: 3px;
+    padding-bottom: 0;
 }
 
 .alarm-categories {
@@ -788,7 +790,8 @@ onUnmounted(() => {
 }
 
 .alarm-item.read {
-    background-color: #f0f0f0;
+    /* background-color: #f4f4f4; */
+    background-color: #fbfbfb;
     /* 회색 배경 */
 }
 
