@@ -1,4 +1,5 @@
 <template>
+    <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
             <h1>상세 페이지</h1>
@@ -38,7 +39,7 @@
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <button class="button delete-button" @click="deleteProblem">삭제</button>
+                        <button class="button delete-button" @click="deleteModal">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
                         <button class="button status-button" @click="updateProblemStatus">상태 변경</button>
                     </div>
@@ -52,14 +53,20 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+import { useConfirm } from "primevue/useconfirm";
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useToast } from "primevue/usetoast";
 
+const emit = defineEmits(['update:modelValue', 'refresh']);
 
 const route = useRoute();
 const router = useRouter();
+const confirm = useConfirm();
 
 const problemTitle = route.query.problemTitle || '';
 const problemContent = route.query.problemContent || '';
 const problemId = route.query.problemId || '';
+const toast = useToast();
 
 // 첨부파일 조회하기
 const problemImage = ref('');
@@ -89,30 +96,63 @@ const getProblem = async () => {
     }
 }
 
-const deleteProblem = async () => {
-    try {
-        const response = await $api.problem.delete(
-            problemId
-        );
-        console.log(response.status)
-        alert('문제사항이 삭제되었습니다.');
-        router.back();
-    } catch (error) {
-        console.error('삭제 중 오류 발생:', error);
-        alert('삭제에 실패했습니다.');
-    }
-};
+// const deleteProblem = async () => {
+//     try {
+//         const response = await $api.problem.delete(
+//             problemId
+//         );
+//         console.log(response.status)
+//         alert('문제사항이 삭제되었습니다.');
+//         router.back();
+//     } catch (error) {
+//         console.error('삭제 중 오류 발생:', error);
+//         alert('삭제에 실패했습니다.');
+//     }
+// };
+
+function deleteModal() {
+    confirm.require({
+        message: '이 글을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                console.log("problem",problemId);
+                if (!problemId) {
+                    throw new Error("problemId가 없습니다.");
+                }
+
+                await $api.problem.delete(problemId);
+                toast.add({ severity: 'success', summary: '성공', detail: '글이 삭제되었습니다.', life: 3000 });
+                emit('refresh');
+                emit('update:modelValue', false); // 모달 닫기
+                goBack();
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
+}
 
 const updateProblemStatus = async () => {
     try {
         // `putParams`를 사용하여 상태 변경 API 호출
-        const response = await $api.problem.putParams(
-            'status',problemId // 경로에 problemId 포함
+        const response = await $api.problem.put(
+            '',
+            `status/${problemId}`
         );
         
         console.log('Response:', response); // 응답 확인
         
-        if (response.status === 200) {
+        if (response.httpStatus === 200) {
             alert('문제 상태가 변경되었습니다.');
         } else {
             alert('상태 변경에 실패했습니다.');
@@ -122,6 +162,36 @@ const updateProblemStatus = async () => {
         alert('상태 변경에 실패했습니다.');
     }
 };
+
+function goDelete() {
+    confirm.require({
+        message: '게시글을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                if (!problemId) {
+                    throw new Error("게시글이 없습니다.");
+                }
+
+                await $api.problem.delete(problemId);
+                toast.add({ severity: 'success', summary: '성공', detail: '게시글이 삭제되었습니다.', life: 3000 });
+
+                router.push('/problem/list'); // 
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제가 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
+}
 
 const navigateToEditPage = () => {
     router.push({

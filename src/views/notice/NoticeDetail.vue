@@ -1,4 +1,5 @@
 <template>
+    <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
             <h1>상세 페이지</h1>
@@ -38,7 +39,7 @@
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <button class="button delete-button" @click="deleteNotice">삭제</button>
+                        <button class="button delete-button" @click="deleteModal">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
                     </div>
                 </div>
@@ -51,7 +52,13 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { $api } from '@/services/api/api';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
 
+const emit = defineEmits(['update:modelValue', 'refresh']);
+
+const confirm = useConfirm();
 
 const route = useRoute();
 const router = useRouter();
@@ -59,7 +66,7 @@ const router = useRouter();
 const noticeTitle = route.query.noticeTitle || '';
 const noticeContent = route.query.noticeContent || '';
 const noticeId = route.query.noticeId || '';
-
+const toast = useToast();
 // 첨부파일 조회하기
 const noticeImage = ref('');
 
@@ -88,19 +95,7 @@ const getNotice = async () => {
     }
 }
 
-const deleteNotice = async () => {
-    try {
-        const response = await $api.notice.delete(
-            noticeId
-        );
-        console.log(response.status)
-        alert('공지사항이 삭제되었습니다.');
-        router.back();
-    } catch (error) {
-        console.error('삭제 중 오류 발생:', error);
-        alert('삭제에 실패했습니다.');
-    }
-};
+
 
 const navigateToEditPage = () => {
     router.push({
@@ -116,6 +111,38 @@ const navigateToEditPage = () => {
 onMounted(() => {
     getNotice();
 });
+
+function deleteModal() {
+    confirm.require({
+        message: '이 글을 삭제하시겠습니까?',
+        header: '삭제 확인',
+        icon: 'pi pi-exclamation-circle',
+        rejectLabel: '취소',
+        acceptLabel: '삭제',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-help',
+        accept: async () => {
+            try {
+                console.log("notice",noticeId);
+                if (!noticeId) {
+                    throw new Error("noticeId가 없습니다.");
+                }
+
+                await $api.notice.delete(noticeId);
+                toast.add({ severity: 'success', summary: '성공', detail: '글이 삭제되었습니다.', life: 3000 });
+                emit('refresh');
+                emit('update:modelValue', false); // 모달 닫기
+                goBack();
+            } catch (error) {
+                console.error('삭제 요청 실패:', error);
+                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
+            }
+        },
+        reject: () => {
+            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
+        }
+    });
+}
 </script>
 
 <style scoped>
