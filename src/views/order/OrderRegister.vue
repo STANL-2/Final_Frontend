@@ -1,12 +1,28 @@
 <template>
-    <Modal v-model="isVisible" header="수주서 등록" width="80rem" height="100rem">
+    <Modal v-model="isVisible" header="수주서 등록" width="100rem" height="none">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">수주서 제목:</Typography>
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+
+        <div class="flex-row content-between">
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+            <div class="p-20">
+                <Card style="width: 25rem;">
+                    <template #title>계약서 선택</template>
+                    <template #content>
+                        <div class="contract-list" @scroll="onScroll">
+                            <Divider v-for="contract in contracts" :key="contract.id" class="contract-item"
+                                @click="selectContract(contract)">
+                                {{ contract.name }}
+                            </Divider>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+        </div>
 
         <div class="flex-row content-between ml-l mr-xl">
             <button class="custom-button" @click="openSignatureModal()"> 작성 서명</button>
@@ -21,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, nextTick } from 'vue';
+import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
@@ -133,9 +149,76 @@ watch(
         isVisible.value = newVal;
         if (newVal && !content.value) {
             content.value = initialHtml;
+            fetchContracts();
         }
     }
 );
+
+const contracts = ref([]); // 계약서 데이터 리스트
+const isFetching = ref(false); // API 호출 중 여부
+const hasMore = ref(true); // 추가 데이터 여부
+const page = ref(1); // 현재 페이지 번호
+
+const fetchContracts = async () => {
+    if (isFetching.value || !hasMore.value) return;
+    isFetching.value = true;
+
+    try {
+        // API 호출
+        console.log('Request URL:', $api.contract.get('', {
+            
+            params: {
+                page: page.value - 1, // Spring에서는 0-based paging
+                size: 10, // 페이지 크기
+                sortField: 'createdAt', // 정렬 필드
+                sortOrder: 'desc', // 정렬 방향
+            },
+        }));
+        const response = await $api.contract.get('', {
+            
+            params: {
+                page: page.value - 1, // Spring에서는 0-based paging
+                size: 10, // 페이지 크기
+                sortField: 'createdAt', // 정렬 필드
+                sortOrder: 'desc', // 정렬 방향
+            },
+        });
+
+        const contractsData = response.data.result.content; // 페이지 결과
+        const totalElements = response.data.result.totalElements; // 전체 계약서 개수
+
+        if (contractsData.length > 0) {
+            contracts.value.push(...contractsData); // 목록에 추가
+            page.value += 1; // 다음 페이지로 이동
+        } else {
+            hasMore.value = false; // 더 이상 데이터가 없으면 비활성화
+        }
+    } catch (error) {
+        console.error('계약서 목록 조회 오류:', error);
+        hasMore.value = false;
+    } finally {
+        isFetching.value = false;
+    }
+};
+
+
+const onScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+        fetchContracts();
+    }
+};
+
+const selectContract = (contract) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+    const contractIdCell = doc.querySelector(".contractId");
+    if (contractIdCell) {
+        contractIdCell.textContent = contract.id;
+    }
+    content.value = doc.documentElement.outerHTML;
+};
+
 
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
@@ -229,7 +312,7 @@ const handleSignature = async (signatureImage) => {
 <style scoped>
 /* 모달 및 CKEditor 스타일 */
 .main-container {
-    max-width: 99%;
+    max-width: 83%;
     margin: 0 auto;
     padding: 20px;
     border-radius: 8px;
