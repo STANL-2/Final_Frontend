@@ -96,6 +96,20 @@ const getProblem = async () => {
     }
 }
 
+// const deleteProblem = async () => {
+//     try {
+//         const response = await $api.problem.delete(
+//             problemId
+//         );
+//         console.log(response.status)
+//         alert('문제사항이 삭제되었습니다.');
+//         router.back();
+//     } catch (error) {
+//         console.error('삭제 중 오류 발생:', error);
+//         alert('삭제에 실패했습니다.');
+//     }
+// };
+
 function deleteModal() {
     confirm.require({
         message: '이 글을 삭제하시겠습니까?',
