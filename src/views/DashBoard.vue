@@ -213,8 +213,8 @@ const loadData = async () => {
 
 
         } else {
-            // console.warn("API 응답이 예상한 구조와 다릅니다:", response);
-            // throw new Error("API 응답 데이터 구조 오류");
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);

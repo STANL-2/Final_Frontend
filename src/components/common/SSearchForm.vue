@@ -1,98 +1,54 @@
 <template>
     <div class="search-container">
-        <!-- 행 단위 렌더링 -->
         <template v-for="(fieldGroup, rowIndex) in fields" :key="rowIndex">
             <div class="form-row">
-                <!-- 필드 그룹 렌더링 -->
                 <template v-for="(field, index) in fieldGroup" :key="`${rowIndex}_${index}`">
                     <div class="form-group">
                         <div class="label">{{ field.label }}</div>
 
-                        <!-- Input field -->
-                        <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[field.model]"
-                                :placeholder="field.placeholder" class="form-input" />
+                        <!-- Select -->
+                        <template v-if="field.type === 'select'">
+                            <select v-model="formData[field.model]" class="form-select">
+                                <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
                         </template>
 
-                        <!-- Select field -->
-                        <template v-else-if="field.type === 'select'">
-                            <div class="select-container">
-                                <select v-model="formData[`${field.model}_${rowIndex}_${index}`]" class="form-select">
-                                    <option v-for="(option, idx) in field.options" :key="idx" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
-                                <span class="select-icon">
-                                    <img src="@/assets/body/chevron-down.png" />
-                                </span>
-                            </div>
-                        </template>
-
+                        <!-- Calendar -->
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start_${rowIndex}_${index}`]"
-                                    class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end_${rowIndex}_${index}`]"
-                                    class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
                             </div>
                         </template>
 
-                        <template v-if="field.type === 'inputWithButton'">
-                            <div class="search-input">
-                                <input type="text" disabled v-model="formData[`${field.model}_${rowIndex}_${index}`]"
-                                    :placeholder="field.placeholder" class="form-input" />
-                                <button class="search-button" @click="openModal(rowIndex, index)">
-                                    <span class="search-icon pi pi-search"></span>
-                                </button>
-                            </div>
-                        </template>
-
-                        <!-- Radio field -->
-                        <template v-else-if="field.type === 'radio'">
-                            <div class="radio-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="radio-label">
-                                    <input type="radio" :name="field.model" :value="option" v-model="formData[field.model]" />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </template>
-
-                        <template v-else-if="field.type === 'checkbox'">
-                            <div class="checkbox-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="checkbox-label">
-                                    <input type="checkbox" :value="option"
-                                        v-model="formData[`${field.model}_${rowIndex}_${index}`]" />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </template>
-
+                        <!-- Button -->
                         <template v-else-if="field.type === 'button'">
                             <div class="button-group">
-                                <label v-for="(option, idx) in field.options" :key="idx" class="button-label">
-                                    <input
-                                        type="button"
-                                        :value="option"
-                                        @click="onButtonClick(field, option, rowIndex, index)"
-                                    />
-                                    {{ option }}
-                                </label>
+                                <SCommonButton
+                                    :label="field.label"
+                                    @click="onButtonClick(field)"
+                                    calss="common-button"
+                                />
                             </div>
                         </template>
+
                     </div>
                 </template>
             </div>
-            <!-- 행 아래 선 -->
-            <div v-if="rowIndex < fields.length - 1" class="row-divider"></div>
         </template>
     </div>
 </template>
 
+
+
+
 <script setup>
 import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
 
-const emit = defineEmits(['open-modal']);
+const emit = defineEmits(['open-modal','search', 'button-click']);
 const props = defineProps({
     fields: {
         type: Array,
@@ -109,29 +65,16 @@ function initializeFormData() {
     formData.value = {};
     props.fields.forEach((fieldGroup) => {
         fieldGroup.forEach((field) => {
-            formData.value[field.model] = field.default || ''; // 모델 이름만 사용
+            formData.value[field.model] = field.default || ''; // 각 필드에 대해 기본값 설정
         });
     });
-
-    console.log('시작 폼 데이터:', formData.value);
+    console.log('초기화된 formData:', formData.value);
 }
 
-// 버튼 클릭 이벤트 핸들러 추가
-function onButtonClick(field, option, rowIndex, index) {
-    // 버튼 클릭 시 formData 업데이트
-    const fieldModel = `${field.model}_${rowIndex}_${index}`;
-    formData.value[fieldModel] = option;
-    console.log(`Button clicked: ${option}`);
-    console.log('Updated formData:', formData.value);
+function onButtonClick(field) {
+    console.log(`버튼 클릭: ${field.model}`);
+    emit('button-click', { model: field.model });
 }
-
-// 모달 열기 메서드
-function openModal(rowIndex, index) {
-    const field = props.fields[rowIndex][index]; // 해당 필드 가져오기
-    emit('open-modal', field.model); // 부모 컴포넌트로 모델 이름만 전달
-}
-
-
 
 // 부모 컴포넌트에서 호출하여 input 필드 값을 업데이트하는 메서드
 function updateFieldValue(fieldModel, value) {
@@ -352,5 +295,29 @@ body {
     margin: 0 8px;
     font-weight: bold;
     color: #555;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-start; /* 버튼을 왼쪽 정렬 */
+    align-items: center; /* 버튼과 텍스트 정렬 */
+    margin: 10px 0; /* 버튼 그룹 위아래 여백 */
+}
+
+.common-button {
+    background-color: #6360AB; /* 버튼 배경색 */
+    color: #fff; /* 버튼 텍스트 색상 */
+    border: none; /* 테두리 제거 */
+    padding: 8px 16px; /* 버튼 내부 여백 */
+    font-size: 14px; /* 버튼 텍스트 크기 */
+    cursor: pointer; /* 클릭 가능한 마우스 커서 */
+    border-radius: 4px; /* 모서리를 둥글게 */
+    text-align: center;
+    display: inline-block; /* 인라인 블록 레이아웃 */
+    box-sizing: border-box; /* 전체 크기 계산에 패딩과 테두리 포함 */
+}
+
+.common-button:hover {
+    background-color: #4e4c96; /* 호버 시 버튼 배경색 변경 */
 }
 </style>
