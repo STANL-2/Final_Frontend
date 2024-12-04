@@ -190,7 +190,7 @@ const getMemberInfo = async () => {
                 {
                     firstLabel: '사원번호', firstValue: result.loginId || 'N/A',
                     secondLabel: '성명', secondValue: result.name || 'N/A',
-                    thirdLabel: '주민등록번호', thirdValue: result.identNo || 'N/A'
+                    thirdLabel: '주민등록번호', thirdValue: result.identNo.substring(0, 8)+'******' || 'N/A'
                 },
                 {
                     firstLabel: '이메일', firstValue: result.email || 'N/A',
@@ -198,8 +198,8 @@ const getMemberInfo = async () => {
                     thirdLabel: '성별', thirdValue: result.sex || 'N/A'
                 },
                 {
-                    firstLabel: '입사일', firstValue: result.createdAt || 'N/A', // 입사일 정보 없음
-                    secondLabel: '발령일', secondValue: result.updatedAt || 'N/A', // 발령일 정보 없음
+                    firstLabel: '입사일', firstValue: result.createdAt.substring(0, 10) || 'N/A', // 입사일 정보 없음
+                    secondLabel: '발령일', secondValue: result.updatedAt.substring(0, 10) || 'N/A', // 발령일 정보 없음
                     thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
                 },
                 {

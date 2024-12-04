@@ -46,7 +46,7 @@ const goProfile = (member) => {
 
 const apiService = new ApiService('api/v1/member/organization');
 
-const organizationMemberHeader = ['사원번호', '성명', '직급', '발령일', '고용 구분', '상세보기'];
+const organizationMemberHeader = ['사원번호', '성명', '직급', '고용 구분', '발령일', '상세보기'];
 const organizationMembers = ref([]);
 
 const getOrganizationMembers = async (member) => {
@@ -61,7 +61,7 @@ const getOrganizationMembers = async (member) => {
             name: member.name,
             position: member.position,
             jobType: member.jobType,
-            createdAt: member.createdAt
+            createdAt: member.createdAt.substring(0, 10)
         }));
 
         console.log(organizationMembers.value);

@@ -309,18 +309,16 @@ const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'loginId', label: '사원 번호', width: '25%' },
-    { field: 'memberName', label: '사원명', width: '20%' },
+    { field: 'loginId', label: '사원 번호', width: '20%' },
+    { field: 'memberName', label: '사원명', width: '15%' },
     { field: 'phone', label: '연락처', width: '15%' },
     { field: 'email', label: '이메일', width: '20%' },
     { field: 'centerName', label: '소속 매장', width: '20%' },
-    { field: 'organizationName', label: '소속 부서', width: '20%' }
+    { field: 'organizationName', label: '소속 부서', width: '10%' }
 ]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
-const selectedItems = ref([]);
-const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
