@@ -131,7 +131,6 @@ export default {
                     noticeId,
                     file.value || null // 새 파일이 있으면 추가
                 );
-                console.log("title",updateData.title);
                 alert('공지사항이 수정되었습니다.');
                 router.push('/notice/list');
             } catch (error) {
