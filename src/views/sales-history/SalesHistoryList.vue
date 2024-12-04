@@ -20,11 +20,9 @@
                     @click="handleButtonComparisonClick(field2)" />
             </div>
         </div>
-
-
         
         <div>
-            <BigCard :chart-data="[bigCardChartData, secondChartData]" />
+            <BigCard :chartDataList="chartDataList" />
         </div>
 
         <Modal
@@ -99,7 +97,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
-import BigCard from '@/components/common/SGraphCard.vue';
+import BigCard from '@/components/common/FGraphCard.vue';
 import { $api } from '@/services/api/api';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
@@ -139,7 +137,7 @@ const formFields = [
         label: '매장/사원',
         type: 'select',
         model: 'groupBy',
-        options: ['매장', '사원'],
+        options: ['전체', '매장', '사원', ],
         showDivider: false,
     }
     ],
@@ -164,6 +162,12 @@ const secondRowFields = ref([
         model: 'totalSales',
         value: '',
     },
+    {
+        label: '기본',
+        type: 'button',
+        model: '',
+        value: '',
+    }
 ]);
 
 const thirdRowFields = ref([
@@ -182,12 +186,10 @@ const thirdRowFields = ref([
 ]);
 
 const loading = ref(false); // 로딩 상태
+const searchCriteria = ref({});
+const chartDataList = ref([]);
 let saveButton;
 
-let saveStartDate;
-let saveEndDate;
-
-const searchCriteria = ref({});
 
 const refresh = () => {
     searchCriteria.value = ref({});
@@ -244,16 +246,16 @@ if (formData && Object.keys(formData).length > 0) {
     }
 
         const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
-        const searchTypeMap = {
+        const periodMap = {
             '일별': '',
             '월별': 'month',
             '연도별': 'year',
         };
 
-        const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
+        const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
 
         // 데이터 로드 및 차트 업데이트
-        loadData(searchType);
+        loadData(periodType);
 };
 
 const handleButtonComparisonClick = async (field2) => {
@@ -356,18 +358,28 @@ const handleButtonClick = async (field) => {
     saveButton = field.model;
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
-    const searchTypeMap = {
+    const periodMap = {
         '일별': '',
         '월별': 'month',
         '연도별': 'year',
     };
 
-    const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
+
+    const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
+    const groupBy = formData.groupBy || '';
+    
+    const groupByMap = {
+            '매장': 'center',
+            '사원': 'employee',
+            '전체': '',
+        };
+
+    const groupByType = groupByMap[groupBy] || '';
 
     console.log('searchCriteria:', searchCriteria.value);
 
     // 데이터 로드 및 차트 업데이트
-    await loadData(searchType, field.model, field.label);
+    await loadData(periodType, field.model, field.label, groupByType);
     } finally{
         loading.value = false;
     }
@@ -376,6 +388,8 @@ const handleButtonClick = async (field) => {
 
 const loadData = async (searchType = null, fieldModel = null, fieldLabel = null, groupBy = 'employee') => {
     loading.value = true; // 로딩 시작
+    let saveStartDate;
+    let saveEndDate;
     try {
 
         if((searchCriteria.value.salesHistoryDate_start != saveStartDate) || (searchCriteria.value.salesHistoryDate_end != saveEndDate)){
@@ -414,24 +428,16 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
             startDate: saveStartDate || null,
             endDate: saveEndDate || null,
             orderBy: fieldModel || '',
-            groupBy: searchCriteria.value.groupBy || '',
+            groupBy,
+            period: searchType
         };
 
         console.log("searchParams: ", searchParams);
 
         const queryString = ref('');
-        // 쿼리 문자열 생성
-        if(groupBy === 'employee' || groupBy === ''){
-            if(searchType != '')
-                queryString.value = `statistics/search/${searchType}`;
-            else{
-                queryString.value = `statistics/search`;
-            }
-            // queryString.value = `statistics/search`;
-        }
-        else if(groupBy === 'center'){
-            queryString.value = `statistics/center/search/${searchType}`;
-        }
+
+        queryString.value = `statistics/search`;
+        
         console.log("API 호출 URL:", queryString.value); // 디버깅용
 
         console.log("검색 인자: ", searchParams);
@@ -443,16 +449,52 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
             const result = response.result.content;
 
             console.log("result: ", result);
-            // 데이터 매핑
-            const mappedData = result.map((item) => ({
-                label: item.month || item.year || item.date || '',
-                value: item[fieldModel] || 0,
-            }));
+            if (fieldModel === '') {
+            // 기본 버튼 클릭 시: 모든 데이터 처리  
+            if (!Array.isArray(result)) {
+                console.error("result가 배열이 아닙니다:", result);
+                return;
+            }
 
-            console.log("mappedData:", mappedData);
+            // 각 데이터를 개별로 처리
+            const mappedDataList = [
+                {
+                    labels: result.map((item) => item.period || ''),
+                    data: result.map((item) => item.totalIncentive || 0),
+                    key: '수당',
+                },
+                {
+                    labels: result.map((item) => item.period || ''),
+                    data: result.map((item) => item.totalPerformance || 0),
+                    key: '실적',
+                },
+                {
+                    labels: result.map((item) => item.period || ''),
+                    data: result.map((item) => item.totalSales || 0),
+                    key: '매출액',
+                },
+            ];
 
-            // 차트 업데이트
-            updateChartData(mappedData, fieldLabel);
+            console.log("mappedDataList (기본 버튼):", mappedDataList);
+
+            if (Array.isArray(mappedDataList)) {
+                updateChartData(mappedDataList, '기본 데이터');
+            } else {
+            console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
+    }
+
+        }
+        else {
+                // 개별 필드 처리
+                const mappedData = result.map((item) => ({
+                    label: item.period || '',
+                    value: item[fieldModel] || 0,
+                }));
+
+                console.log("mappedData (개별 필드):", mappedData);
+
+                updateChartData(mappedData, fieldLabel);
+            }
 
             searchCriteria.value = ref({});
         } else {
@@ -465,34 +507,67 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
     }
 };
 
-const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
-    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
+const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
+    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedDataList);
 
-    const labels = mappedData.map((item) => item.label);
-    const data = mappedData.map((item) => item.value);
+    // `mappedDataList`가 배열인지 확인
+    if (!Array.isArray(mappedDataList)) {
+        console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
+        return;
+    }
 
-    const targetChartData = isComparison ? secondChartData : bigCardChartData;
+    // 모든 데이터에 공통으로 사용될 라벨
+    const labels = mappedDataList[0]?.labels || [];
+    if (!labels.length) {
+        console.error("mappedDataList의 라벨이 비어 있습니다.");
+        return;
+    }
 
-    targetChartData.value = {
-        labels,
-        datasets: [
-            {
-                label: fieldLabel,
-                data,
-                borderColor: isComparison ? 'rgba(46, 204, 113, 0.8)' : 'rgba(82, 77, 249, 0.8)',
-                backgroundColor: isComparison ? 'rgba(46, 204, 113, 0.3)' : 'rgba(82, 77, 249, 0.3)',
-                pointBackgroundColor: isComparison ? 'rgba(46, 204, 113, 1)' : 'rgba(82, 77, 249, 1)',
-                pointBorderColor: '#FFFFFF',
-                pointRadius: 5,
-                fill: true,
-                tension: 0.4,
-                type: 'line',
-            },
-        ],
+    // 데이터셋 생성
+    const datasets = mappedDataList.map((data, index) => {
+        if (!data.data || !Array.isArray(data.data)) {
+            console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
+            return null;
+        }
+
+        return {
+            label: data.key, // 데이터 항목 이름 ("수당", "실적", "매출액" 등)
+            data: data.data, // 실제 데이터 배열 (예: [6900, 6920])
+            borderColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.8)`,
+            backgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.3)`,
+            pointBackgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, 1)`,
+            pointBorderColor: '#FFFFFF',
+            pointRadius: 5,
+            fill: true,
+            tension: 0.4,
+            type: 'line',
+        };
+    }).filter(Boolean); // 유효하지 않은 데이터셋은 제거
+
+    // 데이터셋이 비어 있는지 확인
+    if (!datasets.length) {
+        console.error("생성된 데이터셋이 비어 있습니다.");
+        return;
+    }
+
+    // 새로운 차트 데이터 생성
+    const newChartData = {
+        labels, // 공통 라벨 (예: ['2024-02', '2024-03'])
+        datasets, // 위에서 생성된 데이터셋
     };
 
-    console.log("Updated Chart Data:", targetChartData.value);
+    console.log("Updated Chart Data:", newChartData);
+
+            // `chartDataList` 업데이트
+    if (isComparison) {
+        chartDataList.value = [...chartDataList.value, newChartData]; // 추가
+    } else {
+        chartDataList.value = [newChartData]; // 교체
+    }
+
+    console.log("Updated chartDataList:", chartDataList.value);
 };
+
 
 const loadComparisonData = async (requestBody, fieldLabel) => {
     loading.value = true;
@@ -773,7 +848,7 @@ async function searchStore() {
 
         const endpoint = modalType.value === 'centerList'
             ? $api.center
-            : modalType.value === 'memberListName'
+            : modalType.value === 'memberList'
             ? $api.member
             : modalType.value === 'productList'
             ? $api.product // 가정
