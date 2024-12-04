@@ -12,7 +12,7 @@ jobs:
             - uses: actions/checkout@v3
             - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-            - run: docker build -t minseokkim6823/docker-frontend ./frontend
+            - run: docker build -t minseokkim6823/docker-frontend ./
             - run: docker build -t minseokkim6823/docker-nginx ./nginx
 
             - run: docker push minseokkim6823/docker-frontend
