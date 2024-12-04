@@ -3,7 +3,8 @@
         <div class="alarm-detail-header">
             <div class="member-info">
                 <img v-if="admin.profileImageUrl" :src="admin.profileImageUrl" alt="Profile" class="profile-image" />
-                <span class="member-name">{{ admin.name || "이름 없음" }}</span>
+                <span class="member-name">{{ admin.name || "이름 없음" }} </span>
+                <span class="member-position">{{ admin.position || "직책 없음" }}</span>
             </div>
             <p class="created-at">{{ formatDate(alarm.createdAt) }}</p>
         </div>
@@ -77,7 +78,7 @@
                                     </td>
                                 </tr>
                                 <tr v-if="alarm.tag">
-                                    <td class="left-column">태그</td>
+                                    <td class="left-column">대상</td>
                                     <td>
                                         <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.tag)) }">
                                             {{ tagMapping(detailInfo.tag) }}
@@ -219,7 +220,7 @@
                             <tr v-if="detailInfo?.result.content">
                                 <td class="left-column">파일</td>
                                 <td>
-                                    <a :href="detailInfo.result.createdUrl" download target="_blank"
+                                    <a :href="detailInfo.result.content" download target="_blank"
                                         class="file-link">파일 보기</a>
                                 </td>
                             </tr>
@@ -278,7 +279,7 @@
                                 <tr v-if="detailInfo?.result.content">
                                     <td class="left-column">파일</td>
                                     <td>
-                                        <a :href="detailInfo.result.createdUrl" download target="_blank"
+                                        <a :href="detailInfo.result.content" download target="_blank"
                                             class="file-link">파일 보기</a>
                                     </td>
                                 </tr>
@@ -398,8 +399,8 @@ const truncateContent = (htmlContent) => {
     const paragraphText = paragraphMatch[1].trim();
 
     // 70글자 내외로 자르고 초과 시 "..." 추가
-    return paragraphText.length > 500
-        ? paragraphText.substring(0, 500) + '...'
+    return paragraphText.length > 247
+        ? paragraphText.substring(0, 247) + '...'
         : paragraphText;
 };
 
@@ -429,7 +430,7 @@ const fetchMemberInfo = async () => {
             admin.value = {
                 name: admResponse.result.name || "이름 없음",
                 profileImageUrl: admResponse.result.imageUrl || null,
-                position: memResponse.result.position || null
+                position: admResponse.result.position || null
             };
         } catch (error) {
             console.error("Failed to fetch member info:", error);
@@ -871,7 +872,6 @@ const formatKey = (key) => {
     font-size: 12px;
     font-weight: bold;
     margin-bottom: 0;
-    width: 3.2rem;
     text-align: center;
     /* 텍스트 가로 정렬 */
     line-height: 1.5;
@@ -965,25 +965,27 @@ tbody td {
 }
 
 .file-link {
-    color: #000;
-    /* 기본 텍스트 색상 */
-    text-decoration: none;
-    /* 밑줄 제거 */
-    transition: color 0.3s ease;
-    /* 부드러운 전환 효과 */
+    color: #007bff; /* 기본 파란색 */
+    text-decoration: underline; /* 기본 밑줄 */
+    transition: color 0.3s ease; /* 부드러운 색상 전환 효과 */
 }
 
 .file-link:hover {
-    color: #007bff;
-    /* 마우스 오버 시 파란색 */
-    text-decoration: underline;
-    /* 밑줄 추가 (선택사항) */
+    color: #0056b3; /* 마우스 올렸을 때 더 어두운 파란색 */
 }
 
 .content-cell {
-    height: 150px; 
+    height: 120px; 
     vertical-align: top; 
     overflow-y: auto; 
     word-wrap: break-word; 
+}
+
+.member-position{
+    
+    margin-top: 8px;
+    margin-left: 6px;
+    font-size: 12px;
+    color: #888;    
 }
 </style>
