@@ -11,9 +11,9 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-            - run: docker build -t minseokkim6823/docker-frontend ./
-            - run: docker build -t minseokkim6823/docker-nginx ./nginx
+            
+            - run: docker build -t minseokkim6823/docker-frontend ./frontend
+            - run: docker build -t minseokkim6823/docker-nginx ./frontend/nginx
 
             - run: docker push minseokkim6823/docker-frontend
             - run: docker push minseokkim6823/docker-nginx
@@ -26,8 +26,8 @@ jobs:
               with:
                 aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
                 aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-                application_name: Motive-frontend
-                environment_name: Motive-frontend-env-1
+                application_name: stanl2_proj
+                environment_name: Stanl2proj-env
                 existing_bucket_name: elasticbeanstalk-ap-northeast-2-010438469029
                 region: ap-northeast-2
                 version_label: ${{ github.sha }}
