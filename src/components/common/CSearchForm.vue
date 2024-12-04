@@ -30,7 +30,7 @@
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" placeholder="시작 날짜"/>
                                 <span class="date-separator">~</span>
                                 <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
                             </div>

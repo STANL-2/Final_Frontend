@@ -100,6 +100,10 @@ const routes = [
             {
                 path: 'register',
                 component: () => import('@/views/contract/edit/EContractRegister.vue')
+            },
+            {
+                path: 'progress',
+                component: () => import('@/views/contract/ContractProgress.vue')
             }
         ]
     },

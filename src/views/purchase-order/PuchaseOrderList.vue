@@ -50,10 +50,10 @@
 
         <PuchaseOrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
+        <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
+            height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
-                <label class="mr-m">매장명: </label>
-                <!-- Enter 키 입력 시 searchStore 함수 호출 -->
+                <label class="mr-m">{{ modalType === 'searchMemberName' ? '사원명:' : '사원명:' }}</label>
                 <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
                 <button class="search-button" @click="searchStore">
                     <span class="search-icon pi pi-search"></span>
@@ -62,14 +62,14 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in headers" :key="header">{{ header }}</th>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ row.매장코드 }}</td>
-                        <td>{{ row.매장명 }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.centerName : row.centerName }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import PuchaseOrderDetail from '@/views/purchase-order/PuchaseOrderDetail.vue';
@@ -94,20 +94,14 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import PuchaseOrderRegister from '@/views/purchase-order/PuchaseOrderRegister.vue';
 
-// 모달 테이블 값
-const headers = ['매장코드', '매장명'];
-const modalTableData = [
-    { 매장코드: 'A', '매장명': 50 },
-    { 매장코드: 'B', '매장명': 75 },
-];
-
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
         {
-            label: '발주자 검색',
+            label: '발주자명',
             type: 'inputWithButton',
-            model: 'searchMemberId',
+            model: 'searchMemberName',
+            relatedModel: 'searchMemberId',
             showDivider: false
         },
         {
@@ -123,9 +117,10 @@ const formFields = [
             options: ['대기', '승인', '취소']
         },
         {
-            label: '담당자 검색',
+            label: '담당자명',
             type: 'inputWithButton',
-            model: 'adminId',
+            model: 'adminName',
+            relatedModel: 'adminId',
             showDivider: false
         }
 
@@ -138,9 +133,9 @@ const formFields = [
             showDivider: true
         },
         {
-            label: '발주일',
+            label: '발주일자',
             type: 'calendar', // 쌍으로 처리
-            model: 'orderDate', // 시작과 종료를 모두 포함
+            model: 'purchaseOrderDate', // 시작과 종료를 모두 포함
             showIcon: true,
             manualInput: false,
         }
@@ -200,11 +195,17 @@ function getCustomTagClass(status) {
 const searchCriteria = ref({});
 
 const refresh = () => {
-    searchCriteria.value = ref({});
-    loadData();
-}
+    if (searchFormRef.value && searchFormRef.value.resetFields) {
+        searchFormRef.value.resetFields(); // CSearchForm의 초기화 메서드 호출
+    }
 
-// 조회 버튼 클릭 시
+    // 검색 조건 초기화
+    searchCriteria.value = {};
+
+    // 데이터 로드
+    loadData();
+};
+
 const select = () => {
     const formData = searchFormRef.value?.formData;
 
@@ -215,8 +216,25 @@ const select = () => {
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        Object.entries(formData).filter(([key, value]) => {
+            if (key === 'searchMemberName') return false; // 표시용 name 제외
+            return value !== null && value !== undefined && value !== '';
+        })
     );
+
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'purchaseOrderDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'purchaseOrderDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
+
     // 검색 실행
     loadData();
 };
@@ -229,51 +247,34 @@ function handleView(rowData) {
 
 // 데이터 로드 함수
 const loadData = async () => {
-    loading.value = true; // 로딩 시작
-    try {
-        // 검색 조건 필터링 및 유효한 값만 유지
-        const filteredCriteria = Object.fromEntries(
-            Object.entries(searchCriteria.value).filter(([key, value]) => {
-                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
-                if (value === null || value === undefined || value === '') return false;
-                if (Array.isArray(value) && value.length === 0) return false;
-                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
-                return true;
-            })
-        );
+    loading.value = true;
 
-        // 쿼리 파라미터 설정
+    try {
         const query = {
-            page: first.value / rows.value, // 현재 페이지 번호
-            size: rows.value, // 한 페이지 데이터 수
-            sortField: sortField.value || null, // 정렬 필드
-            sortOrder: sortOrder.value || null, // 정렬 순서
-            ...filteredCriteria // 필터링된 검색 조건 병합
+            ...searchCriteria.value, // 기존 검색 조건 병합
+            page: first.value / rows.value,
+            size: rows.value,
+            sortField: sortField.value || null,
+            sortOrder: sortOrder.value || null,
         };
 
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
         const response = await $api.purchaseOrder.getParams('search', queryString);
 
-        // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response);
-
-        const result = response?.result; // 응답 데이터 접근
+        // 데이터 설정
+        const result = response?.result;
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content; // 테이블 데이터 업데이트
-            totalRecords.value = result.totalElements; // 전체 데이터 수
-        } else {
-            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
-            throw new Error("API 응답 데이터 구조 오류");
+            tableData.value = result.content;
+            totalRecords.value = result.totalElements;
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+        alert("데이터를 가져오는 데 실패했습니다.");
     } finally {
-        loading.value = false; // 로딩 종료
+        loading.value = false;
     }
 };
 
@@ -421,39 +422,120 @@ const selectedCode = ref('');
 const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
+const modalType = ref(''); // 현재 열려 있는 모달의 유형
+const selectedStoreCode = ref('');
+const modalTableData = ref([]);
 
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
+const dynamicHeaders = computed(() => {
+    if (modalType.value === 'searchMemberName') {
+        return ['영업매장', '사원명'];
+    } else {
+        return ['영업매장', '사원명'];
+    }
+    return [];
+});
+
+function handleOpenModal(fieldModel) {
+    modalType.value = fieldModel;
+    showModal.value = true; // 모달 열기
+    selectedRow.value = null; // 선택 초기화
 }
 
 function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
+    selectedRow.value = index; // 선택된 행의 인덱스 저장
+
+    if (modalType.value === 'searchMemberName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', row.name);
+        console.log("선택된 매장명:", row.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('adminName', row.name);
+        console.log("선택된 사원명:", row.name);
+    }
 }
 
+// 모달 확인 및 값 전달
 function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
+    if (selectedRow.value === null) {
+        alert('항목을 선택하세요.');
+        return;
     }
-    closeModal();
+
+    // 선택된 데이터를 가져오기
+    const selectedData = modalTableData.value[selectedRow.value];
+
+    if (!selectedData) {
+        console.error("선택된 데이터가 없습니다.");
+        return;
+    }
+
+    // 부모 컴포넌트의 inputWithButton 필드 업데이트
+    if (modalType.value === 'searchMemberName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberId', selectedData.memberId);
+        searchFormRef.value.updateFieldValue('searchMemberName', selectedData.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('adminName', selectedData.name); // 표시용 name
+        searchFormRef.value.updateFieldValue('adminId', selectedData.memberId);
+    }
+
+    // 모달 닫기
+    showModal.value = false;
 }
 
 function resetModalState() {
-    closeModal();
-}
-
-function closeModal() {
     showModal.value = false;
     selectedRow.value = null;
-    selectedCode.value = '';
+    searchQuery.value = ''; // 검색어 초기화
+    modalTableData.value = []; // 모달 테이블 데이터 초기화
+    selectedStoreCode.value = ''; // 선택된 매장 코드 초기화
 }
 
-function searchStore() {
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
+async function searchStore() {
+    try {
+        // 검색 쿼리 확인
+        console.log("검색어:", searchQuery.value);
+        console.log("타입: ", modalType.value);
+
+        const query = modalType.value === 'searchMemberName'
+            ? { searchMemberName: searchQuery.value }
+            : { adminName: searchQuery.value };
+
+        const endpoint = modalType.value === 'searchMemberName'
+            ? $api.member
+            : $api.member;
+
+        // API 호출
+        const response = await endpoint.getParams('search', `?name=${searchQuery.value}`);
+
+        // API 응답 데이터 확인
+        console.log("API 응답 데이터:", response);
+
+        let result = [];
+        if (modalType.value === 'centerName') {
+            // center의 경우
+            result = response.result.content || []; // content 내부 데이터 추출
+        } else {
+            // member의 경우
+            result = response.result || []; // result 자체를 사용
+            console.log("result: ", result);
+        }
+
+        // 데이터가 배열인지 확인 후 modalTableData 업데이트
+        if (Array.isArray(result)) {
+            modalTableData.value = result; // 데이터 바인딩
+        } else {
+            console.warn("API 응답 데이터가 배열이 아닙니다.");
+            modalTableData.value = [];
+        }
+    } catch (error) {
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    } finally {
+        loading.value = false; // 로딩 종료
     }
-    searchQuery.value = '';
 }
 </script>
 
