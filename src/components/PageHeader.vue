@@ -87,7 +87,7 @@
                         }">
                             {{ alarm.tag }}
                         </span>
-                        <h4 class="message">{{ alarm.message }}</h4>
+                        <h4 class="message">{{ truncateMessage(alarm.message) }}</h4>
                         <p class="created-at">{{ alarm.createdAt }}</p>
                     </template>
 
@@ -101,7 +101,7 @@
             </div>
 
             <div v-if="selectedAlarm" class="alarm-detail-container">
-                <AlarmScheduleDetail :alarm="selectedAlarm" @close="selectedAlarm = null" />
+                <AlarmScheduleDetail :alarm="selectedAlarm" @closeModal="closeAlarmModal" />
             </div>
         </div>
     </Modal>
@@ -144,6 +144,11 @@ const selectedCategory = ref('');
 
 const selectedAlarm = ref(null)
 
+const truncateMessage = (message) => {
+    if (!message) return '';
+    return message.length > 30 ? message.substring(0, 30) + '...' : message;
+};
+
 const tagColors = [
     { name: '미팅', color: '#AEC6CF' },
     { name: '교육', color: '#FFDAB9' },
@@ -152,16 +157,12 @@ const tagColors = [
     { name: '계약서', color: '#A7D8DE' },
     { name: '발주서', color: '#FFE4E1' },
     { name: '수주서', color: '#B9E4C9' },
-    { name: '중요', color: '#FF6666' },
-    { name: '일반', color: '#66FF66' },
+    { name: '중요', color: '#FFB3B3' },
+    { name: '일반', color: '#E0FFB3' },
 ];
 
 const getTagColor = (tag) => {
-    if (tag === '중요') {
-        return '#FF6347'; // 빨간색
-    } else if (tag === '일반') {
-        return '#32CD32'; // 초록색
-    }
+
     const tagData = tagColors.find(item => item.name === tag);
     return tagData ? tagData.color : '#DDD'; // 기본 회색
 };
