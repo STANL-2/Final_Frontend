@@ -12,6 +12,11 @@ services:
       - "5173"
     environment:
       - NODE_ENV=development
+    healthcheck:  # 건강 상태 확인 추가
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: always
 
   nginx:
