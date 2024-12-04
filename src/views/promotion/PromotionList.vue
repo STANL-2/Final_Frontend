@@ -1,15 +1,15 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper width-s ml-l">
+        <div class="component-wrapper">
             <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-        <div class="flex-row content-end mr-m">
+        <div class="flex-row content-end">
             <CommonButton label="조회" @click="handleSearch"/>
         </div>
         <div class="flex-row content-between mt-l">
-            <div class="list ml-l">전체목록</div>
-            <div class="flex-row items-center mb-s mr-m">
+            <div class="list">전체목록</div>
+            <div class="flex-row items-center mb-s">
                 <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
@@ -18,7 +18,7 @@
         </div>
 
         <!-- ViewTable -->
-        <div class="table-wrapper width-s ml-l">
+        <div class="table-wrapper">
             <ViewTable 
                 :headers="tableHeaders" 
                 :data="tableData" 
@@ -243,7 +243,7 @@ onMounted(() => {
 
 <style scoped>
 .list{
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight:bold;
 }
 </style>
