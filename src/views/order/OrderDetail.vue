@@ -58,6 +58,7 @@
                     </label>
                 </div>
             </div>
+            <SignatureCanvas @signatureSaved="saveSignature" />
             <template #footer>
                 <CommonButton label="확인" @click="confirmStatusChange" />
                 <CommonButton label="취소" @click="closeStatusModal" />
@@ -81,6 +82,7 @@ import OrderModify from './OrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
+import SignatureCanvas from "@/components/common/signatureCanvas/SignatureCanvas.vue";
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩될 값
@@ -101,6 +103,7 @@ const getDetailId = ref(null);
 const showModifyModal = ref(false);
 const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
 const newStatus = ref(props.status); // 새로운 상태 값
+let signatureData = ref(null); // 서명 데이터 저장
 
 function openStatusModal() {
     showStatusChangeModal.value = true;
@@ -110,38 +113,108 @@ function closeStatusModal() {
     showStatusChangeModal.value = false;
 }
 
+// 서명 저장
+const saveSignature = (dataURL) => {
+    signatureData.value = dataURL;
+};
+
 // 상태 변경 확인
 const confirmStatusChange = async () => {
     try {
-        const response = await $api.order.put(
-            {
-                status: newStatus.value,
-            },
-            'status/' + getDetailId.value
-        );
+        // 기본 검증
+        if (!getDetailId.value) {
+            throw new Error("계약 ID가 없습니다");
+        }
+        if (!signatureData.value) {
+            toast.add({
+                severity: 'warn',
+                summary: '경고',
+                detail: '서명이 필요합니다',
+                life: 3000
+            });
+            return;
+        }
 
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
+        // 상태 전환 검증
+        const allowedTransitions = {
+            'WAIT': ['APPROVED', 'CANCEL'],
+            'APPROVED': ['CANCEL'],
+            'CANCEL': []
+        };
 
+        if (!allowedTransitions[props.status]?.includes(newStatus.value)) {
+            toast.add({
+                severity: 'error',
+                summary: '오류',
+                detail: '허용되지 않은 상태 전환입니다',
+                life: 3000
+            });
+            return;
+        }
+
+        // 서버에서 HTML 가져오기
+        const response = await $api.order.get('', getDetailId.value);
+        const currentHtml = response.result.content;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(currentHtml, "text/html");
+
+        const approvalTd = doc.querySelector("#approval-signature-area");
+
+        if (!approvalTd) {
+            toast.add({
+                severity: 'error',
+                summary: '오류',
+                detail: '서명 영역을 찾을 수 없습니다',
+                life: 3000
+            });
+            return;
+        }
+
+        // 서명 이미지 삽입
+        approvalTd.innerHTML = `
+            <div class="signature-container">
+                <img src="${signatureData.value}" 
+                    alt="서명" 
+                    style="max-width: 150px; max-height: 100px; object-fit: contain;" />
+                <p class="signature-date">${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+
+        const updatedHtml = doc.documentElement.outerHTML;
+
+        // 업데이트된 HTML과 상태 저장
+        await $api.order.put({
+            status: newStatus.value
+        }, `status/${getDetailId.value}`);
+
+        await $api.order.put({
+            content: updatedHtml,
+        }, `${getDetailId.value}`);
+
+        // UI 피드백
         toast.add({
             severity: 'success',
             summary: '성공',
-            detail: 상태가  `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-            life: 3000,
+            detail: `상태가 "${newStatus.value}"로 변경되고 서명이 추가되었습니다`,
+            life: 3000
         });
 
+        // 즉시 반영 및 업데이트
+        props.details.content = updatedHtml;
         emit('refresh');
         closeStatusModal();
-    }catch(error){
-        console.error('상태 변경 실패:', error);
+
+    } catch (error) {
+        console.error("상태 변경 오류:", error);
         toast.add({
             severity: 'error',
-            summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다.',
-            life: 3000,
+            summary: '오류',
+            detail: '처리 중 오류가 발생했습니다',
+            life: 3000
         });
     }
-}
+};
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(

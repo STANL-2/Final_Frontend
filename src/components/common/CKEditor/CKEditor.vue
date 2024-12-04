@@ -359,7 +359,11 @@ export default {
 				language: 'ko',
 				stickyToolbar: true,
 				initialData: this.initialHtml, // 초기 HTML 설정
-				placeholder: '내용을 입력하세요...' // 입력란의 기본 안내 텍스트
+				placeholder: '내용을 입력하세요...', // 입력란의 기본 안내 텍스트
+				removePlugins: ['Table'],
+				extraAllowedContent: '*(*);*{*}',
+				fullPage: true,
+				allowedContent: true
 			}
 		};
 	},

@@ -71,10 +71,10 @@
         </Modal> -->
 
         <!-- 모달 -->
-        <Modal v-model="showModal" :header="modalType === 'centerId' ? '매장 검색' : '사원 검색'" width="30rem" height="none"
+        <Modal v-model="showModal" :header="modalType === 'centerName' ? '매장 검색' : '사원 검색'" width="30rem" height="none"
             @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
-                <label class="mr-m">{{ modalType === 'centerId' ? '매장명:' : '사원명:' }}</label>
+                <label class="mr-m">{{ modalType === 'centerName' ? '매장명:' : '사원명:' }}</label>
                 <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
                 <button class="search-button" @click="searchStore">
                     <span class="search-icon pi pi-search"></span>
@@ -89,8 +89,8 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'centerId' ? row.centerId : row.centerName }}</td>
-                        <td>{{ modalType === 'centerId' ? row.name : row.name }}</td>
+                        <td>{{ modalType === 'centerName' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -119,15 +119,17 @@ import EContractRegister from './edit/EContractRegister.vue';
 const formFields = [
     [
         {
-            label: '사원 검색',
+            label: '사원명',
             type: 'inputWithButton',
-            model: 'searchMemberId',
+            model: 'searchMemberName',
+            relatedModel: 'searchMemberId',
             showDivider: false
         },
         {
-            label: '매장 검색',
+            label: '매장명',
             type: 'inputWithButton',
-            model: 'centerId',
+            model: 'centerName',
+            relatedModel: 'centerId',
             showDivider: false
         },
         {
@@ -180,7 +182,7 @@ const formFields = [
             showDivider: true
         },
         {
-            label: '계약일',
+            label: '계약일자',
             type: 'calendar', // 쌍으로 처리
             model: 'contractDate', // 시작과 종료를 모두 포함
             showIcon: true,
@@ -244,9 +246,16 @@ function getCustomTagClass(status) {
 const searchCriteria = ref({});
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    if (searchFormRef.value && searchFormRef.value.resetFields) {
+        searchFormRef.value.resetFields(); // CSearchForm의 초기화 메서드 호출
+    }
+
+    // 검색 조건 초기화
+    searchCriteria.value = {};
+
+    // 데이터 로드
     loadData();
-}
+};
 
 // 조회 버튼 클릭 시
 const select = () => {
@@ -259,8 +268,13 @@ const select = () => {
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        Object.entries(formData).filter(([key, value]) => {
+            return value !== null && value !== undefined && value !== '';
+        })
     );
+
+    console.log('Search Criteria:', searchCriteria.value);
+
     // 검색 실행
     loadData();
 };
@@ -471,10 +485,10 @@ const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 
 const dynamicHeaders = computed(() => {
-    if (modalType.value === 'centerId') {
+    if (modalType.value === 'centerName') {
         return ['매장코드', '매장명'];
     } else {
-        return ['사원코드', '사원명'];
+        return ['영업매장', '사원명'];
     }
     return [];
 });
@@ -489,9 +503,18 @@ function handleOpenModal(fieldModel) {
 // 테이블 행 선택
 function selectStore(row, index) {
     selectedRow.value = index; // 선택된 행의 인덱스 저장
-    selectedStoreCode.value = row.centerId; // 매장 코드를 저장
-    console.log("선택된 매장 코드:", selectedStoreCode.value);
+
+    if (modalType.value === 'centerName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('centerName', row.name); // 매장명 표시
+        console.log("선택된 매장명:", row.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', row.name); // 사원명 표시
+        console.log("선택된 사원명:", row.name);
+    }
 }
+
 
 // 모달 확인 및 값 전달
 function confirmSelection() {
@@ -503,12 +526,19 @@ function confirmSelection() {
     // 선택된 데이터를 가져오기
     const selectedData = modalTableData.value[selectedRow.value];
 
+    if (!selectedData) {
+        console.error("선택된 데이터가 없습니다.");
+        return;
+    }
+
     // 부모 컴포넌트의 inputWithButton 필드 업데이트
-    if (modalType.value === 'centerId') {
+    if (modalType.value === 'centerName') {
         // 매장 검색의 경우
         searchFormRef.value.updateFieldValue('centerId', selectedData.centerId);
+        searchFormRef.value.updateFieldValue('centerName', selectedData.name);
     } else {
         // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', selectedData.name); // 표시용 name
         searchFormRef.value.updateFieldValue('searchMemberId', selectedData.memberId);
     }
 
@@ -530,11 +560,11 @@ async function searchStore() {
         // 검색 쿼리 확인
         console.log("검색어:", searchQuery.value);
 
-        const query = modalType.value === 'centerId'
+        const query = modalType.value === 'centerName'
             ? { name: searchQuery.value }
             : { employeeName: searchQuery.value };
 
-        const endpoint = modalType.value === 'centerId'
+        const endpoint = modalType.value === 'centerName'
             ? $api.center
             : $api.member;
 
@@ -546,12 +576,13 @@ async function searchStore() {
 
         // `modalType`에 따라 다른 응답 구조 처리
         let result = [];
-        if (modalType.value === 'centerId') {
+        if (modalType.value === 'centerName') {
             // center의 경우
             result = response.result.content || []; // content 내부 데이터 추출
         } else {
             // member의 경우
             result = response.result || []; // result 자체를 사용
+            console.log("result: ", result);
         }
 
         // 데이터가 배열인지 확인 후 modalTableData 업데이트
