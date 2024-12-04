@@ -29,7 +29,7 @@
 import { ref, onMounted, watch } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import SSearchForm from '@/components/common/SSearchForm.vue';
-import SCommonButton from '@/components/common/Button/SCommonButton.vue';
+import SCommonButton from '@/components/common/button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
 

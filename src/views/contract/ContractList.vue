@@ -199,7 +199,7 @@ const tableHeaders = ref([
     { field: 'customerName', label: '고객명', width: '13%' },
     { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'companyName', label: '고객 상호', width: '10%' },
+    { field: 'createdAt', label: '계약일자', width: '10%' },
     { field: 'status', label: '승인 상태', width: '3%' },
 ]);
 
@@ -273,7 +273,18 @@ const select = () => {
         })
     );
 
-    console.log('Search Criteria:', searchCriteria.value);
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'contractDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'contractDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
 
     // 검색 실행
     loadData();
@@ -315,9 +326,6 @@ const loadData = async () => {
 
         // API 호출
         const response = await $api.contract.getParams('search', queryString);
-
-        // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {

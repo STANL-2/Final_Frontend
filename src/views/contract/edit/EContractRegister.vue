@@ -64,10 +64,10 @@ const initialHtml = `
             <h1 style="font-size: 24px; margin-bottom: 10px;">기아 자동차 매매 계약서</h1>
         </div>
 
-        <!-- 관리 번호 및 계약 정보 -->
+        <!-- 계약 정보 -->
         <section style="margin-top: 20px;">
             <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">계약 정보</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
+            <table style="width: 100%; min-width: 700px; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd; table-layout: fixed;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
                     <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;"></td>
@@ -86,7 +86,7 @@ const initialHtml = `
         <!-- 고객 사항 -->
         <section style="margin-top: 20px;">
             <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">고객사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <table style="width: 100%; min-width: 700px; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd; table-layout: fixed;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value"></td>
@@ -129,7 +129,7 @@ const initialHtml = `
         <!-- 차량 사항 -->
         <section style="margin-top: 20px;">
             <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">차량사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <table style="width: 100%; min-width: 700px; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd; table-layout: fixed;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차종</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-carName-value">셀토스</td>
@@ -158,30 +158,30 @@ const initialHtml = `
         <!-- 금액 사항 -->
         <section style="margin-top: 20px;">
             <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">금액사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <table style="width: 100%; min-width: 700px; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd; table-layout: fixed;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량가격</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-vehiclePrice-value">10000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-vehiclePrice-value">10000</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">계약금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-downPayment-value">2000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-downPayment-value">2000</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">중도금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-intermediatePayment-value">1000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-intermediatePayment-value">1000</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-remainderPayment-value">1000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-remainderPayment-value">1000</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">탁송료</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-consignmentPayment-value">1000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-consignmentPayment-value">1000</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">합계</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-totalSales-value">15000</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100%" class="customer-totalSales-value">15000</td>
                 </tr>
             </table>
         </section>
@@ -210,6 +210,7 @@ const initialHtml = `
 </body>
 
 </html>
+
 `;
 
 // props 변화 감지

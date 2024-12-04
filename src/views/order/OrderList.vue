@@ -225,6 +225,21 @@ const select = () => {
         })
     );
 
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'orderDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'orderDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
+
+    console.log("변경된 검색 조건:", searchCriteria.value);
+
     // 검색 실행
     loadData();
 };

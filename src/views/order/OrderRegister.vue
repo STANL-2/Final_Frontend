@@ -8,16 +8,28 @@
         </div>
 
         <div class="flex-row content-between">
-            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" ref="editorRef" />
             <div class="p-20">
-                <Card style="width: 25rem;">
+                <Card style="width: 25rem; height: 100%; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
                     <template #title>계약서 선택</template>
+                    <Divider />
                     <template #content>
-                        <div class="contract-list" @scroll="onScroll">
-                            <Divider v-for="contract in contracts" :key="contract.id" class="contract-item"
-                                @click="selectContract(contract)">
-                                {{ contract.name }}
-                            </Divider>
+                        <div
+                            class="contract-list"
+                            @scroll="onScroll"
+                            style="max-height: 300px; overflow-y: auto;"
+                        >
+                            <div
+                                v-for="contract in contracts"
+                                :key="contract.id"
+                                class="contract-item"
+                                :class="{ 'hover': true, 'selected': selectedContractId === contract.id }"
+                                @click="selectContract(contract)"
+                                style="padding: 15px 10px; cursor: pointer;"
+                            >
+                                <Typography>제목: {{ contract.title }}</Typography>
+                                <Typography type="caption">{{ contract.createdAt }}</Typography>
+                            </div>
                         </div>
                     </template>
                 </Card>
@@ -59,7 +71,6 @@ const emit = defineEmits(['update:visible', 'close']);
 // 내부 상태 변수
 const isVisible = ref(props.visible);
 const isSignatureModalVisible = ref(false);
-const currentSignatureRole = ref(''); // 현재 서명 역할 (buyer/seller)
 const content = ref(''); // CKEditor의 현재 내용
 const title = ref('');
 const initialHtml = `
@@ -142,6 +153,28 @@ const initialHtml = `
 </html>
 `;
 
+// CKEditor 내용에서 데이터를 추출하는 함수
+const extractDataFromHTML = (html) => {
+    const parser = new DOMParser();
+
+    const doc = parser.parseFromString(html, "text/html");
+
+    const contractId = doc.querySelector(".contractId")?.innerText.trim() || "";
+
+    // 필요한 필드를 추가적으로 추출
+    return {
+        title: title.value,
+        contractId: contractId,
+        content: html // HTML 전체를 전송
+    };
+};
+
+const contracts = ref([]);
+const page = ref(1);
+const hasMoreContracts = ref(true);
+const sortField = ref('contractDate'); // 정렬 기준 필드
+const sortOrder = ref('desc'); // 정렬 순서 (asc/desc)
+
 // props 변화 감지
 watch(
     () => props.visible,
@@ -154,88 +187,99 @@ watch(
     }
 );
 
-const contracts = ref([]); // 계약서 데이터 리스트
-const isFetching = ref(false); // API 호출 중 여부
-const hasMore = ref(true); // 추가 데이터 여부
-const page = ref(1); // 현재 페이지 번호
+// 모달 열릴 때 초기 데이터 로드
+watch(() => props.visible, (newVal) => {
+    if (newVal) {
+        contracts.value = []; // 기존 데이터 초기화
+        page.value = 1;
+        hasMoreContracts.value = true;
+        fetchContracts(); // 데이터 로드
+    }
+});
+
+const isLoading = ref(false); // 요청 상태
 
 const fetchContracts = async () => {
-    if (isFetching.value || !hasMore.value) return;
-    isFetching.value = true;
+    if (!hasMoreContracts.value || isLoading.value) return; // 요청 중이거나 데이터가 없으면 실행하지 않음
 
+    isLoading.value = true; // 요청 시작
     try {
-        // API 호출
-        console.log('Request URL:', $api.contract.get('', {
-            
-            params: {
-                page: page.value - 1, // Spring에서는 0-based paging
-                size: 10, // 페이지 크기
-                sortField: 'createdAt', // 정렬 필드
-                sortOrder: 'desc', // 정렬 방향
-            },
-        }));
-        const response = await $api.contract.get('', {
-            
-            params: {
-                page: page.value - 1, // Spring에서는 0-based paging
-                size: 10, // 페이지 크기
-                sortField: 'createdAt', // 정렬 필드
-                sortOrder: 'desc', // 정렬 방향
-            },
-        });
+        const query = {
+            page: page.value - 1,
+            size: 10,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+        };
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString);
 
-        const contractsData = response.data.result.content; // 페이지 결과
-        const totalElements = response.data.result.totalElements; // 전체 계약서 개수
+        const response = await $api.contract.getParams('search', queryString);
+        console.log("API 응답 데이터:", response);
 
-        if (contractsData.length > 0) {
-            contracts.value.push(...contractsData); // 목록에 추가
-            page.value += 1; // 다음 페이지로 이동
-        } else {
-            hasMore.value = false; // 더 이상 데이터가 없으면 비활성화
+        const result = response?.result;
+        const contractData = result.content;
+        const totalPages = result.totalPages;
+
+        if (contractData.length) {
+            contracts.value.push(...contractData);
+            page.value += 1;
+        }
+
+        if (page.value > totalPages) {
+            hasMoreContracts.value = false;
         }
     } catch (error) {
-        console.error('계약서 목록 조회 오류:', error);
-        hasMore.value = false;
+        console.error('계약서 조회 중 오류 발생:', error);
     } finally {
-        isFetching.value = false;
+        isLoading.value = false; // 요청 종료
     }
 };
 
+const editorRef = ref(null); 
+const ignoreUpdates = ref(false);
+const selectedContractId = ref(null);
 
+// 계약서 선택 시 CKEditor 업데이트
+const selectContract = (contract) => {
+    selectedContractId.value = contract.id;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
+
+    const contractIdCell = doc.querySelector('.contractId'); // .contractId 셀 찾기
+    if (!contractIdCell) {
+        console.error("HTML 구조에 .contractId 셀을 찾을 수 없습니다.");
+        console.log("HTML 구조:", doc.documentElement.outerHTML);
+        return;
+    }
+
+    // contractId 값 삽입
+    contractIdCell.textContent = contract.contractId;
+    console.log("업데이트된 .contractId 셀:", contractIdCell);
+
+    // HTML 업데이트
+    const updatedHtml = doc.documentElement.outerHTML;
+    console.log("업데이트된 HTML:", updatedHtml);
+
+    // CKEditor와 동기화
+    ignoreUpdates.value = true; // 업데이트 플래그 설정
+    content.value = updatedHtml; // content.value 업데이트
+};
+
+// 무한 스크롤 이벤트 핸들러
 const onScroll = (event) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.target;
-    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+    const target = event.target;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
         fetchContracts();
     }
 };
 
-const selectContract = (contract) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content.value, "text/html");
-    const contractIdCell = doc.querySelector(".contractId");
-    if (contractIdCell) {
-        contractIdCell.textContent = contract.id;
-    }
-    content.value = doc.documentElement.outerHTML;
-};
-
-
-// CKEditor 내용에서 데이터를 추출하는 함수
-const extractDataFromHTML = (html) => {
-    const parser = new DOMParser();
-
-    const doc = parser.parseFromString(html, "text/html");
-
-    // 필요한 필드를 추가적으로 추출
-    return {
-        title: title.value,
-        contractId: "CON_000000037",
-        content: html // HTML 전체를 전송
-    };
-};
-
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
+    if (ignoreUpdates.value) {
+        ignoreUpdates.value = false; // 플래그 초기화
+        return; // CKEditor 업데이트 중 발생한 호출 무시
+    }
+
     content.value = newContent;
     console.log("Editor content updated:", newContent);
 };
@@ -365,5 +409,20 @@ const handleSignature = async (signatureImage) => {
     border-radius: 4px;
     cursor: pointer;
     font-size: 13px;
+}
+
+.contract-item {
+    transition: background-color 0.2s ease-in-out;
+    border-radius: 4px;
+    border-bottom: 1px solid #e4e4e4;
+    padding: 0 10px;
+}
+
+.contract-item.hover:hover {
+    background-color: #f5f5f5; /* 연한 회색 */
+}
+
+.contract-item.selected {
+    background-color: #e0e0e0; /* 선택된 상태 */
 }
 </style>

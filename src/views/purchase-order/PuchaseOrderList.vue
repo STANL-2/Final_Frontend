@@ -135,7 +135,7 @@ const formFields = [
         {
             label: '발주일자',
             type: 'calendar', // 쌍으로 처리
-            model: 'orderDate', // 시작과 종료를 모두 포함
+            model: 'purchaseOrderDate', // 시작과 종료를 모두 포함
             showIcon: true,
             manualInput: false,
         }
@@ -206,7 +206,6 @@ const refresh = () => {
     loadData();
 };
 
-// 조회 버튼 클릭 시
 const select = () => {
     const formData = searchFormRef.value?.formData;
 
@@ -223,6 +222,19 @@ const select = () => {
         })
     );
 
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'purchaseOrderDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'purchaseOrderDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
+
     // 검색 실행
     loadData();
 };
@@ -235,51 +247,34 @@ function handleView(rowData) {
 
 // 데이터 로드 함수
 const loadData = async () => {
-    loading.value = true; // 로딩 시작
-    try {
-        // 검색 조건 필터링 및 유효한 값만 유지
-        const filteredCriteria = Object.fromEntries(
-            Object.entries(searchCriteria.value).filter(([key, value]) => {
-                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
-                if (value === null || value === undefined || value === '') return false;
-                if (Array.isArray(value) && value.length === 0) return false;
-                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
-                return true;
-            })
-        );
+    loading.value = true;
 
-        // 쿼리 파라미터 설정
+    try {
         const query = {
-            page: first.value / rows.value, // 현재 페이지 번호
-            size: rows.value, // 한 페이지 데이터 수
-            sortField: sortField.value || null, // 정렬 필드
-            sortOrder: sortOrder.value || null, // 정렬 순서
-            ...filteredCriteria // 필터링된 검색 조건 병합
+            ...searchCriteria.value, // 기존 검색 조건 병합
+            page: first.value / rows.value,
+            size: rows.value,
+            sortField: sortField.value || null,
+            sortOrder: sortOrder.value || null,
         };
 
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
         const response = await $api.purchaseOrder.getParams('search', queryString);
 
-        // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response);
-
-        const result = response?.result; // 응답 데이터 접근
+        // 데이터 설정
+        const result = response?.result;
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content; // 테이블 데이터 업데이트
-            totalRecords.value = result.totalElements; // 전체 데이터 수
-        } else {
-            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
-            throw new Error("API 응답 데이터 구조 오류");
+            tableData.value = result.content;
+            totalRecords.value = result.totalElements;
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+        alert("데이터를 가져오는 데 실패했습니다.");
     } finally {
-        loading.value = false; // 로딩 종료
+        loading.value = false;
     }
 };
 
