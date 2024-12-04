@@ -3,158 +3,288 @@
         <div class="alarm-detail-header">
             <div class="member-info">
                 <img v-if="admin.profileImageUrl" :src="admin.profileImageUrl" alt="Profile" class="profile-image" />
-                <span class="member-name">{{ admin.name || "이름 없음" }}</span>
+                <span class="member-name">{{ admin.name || "이름 없음" }} </span>
+                <span class="member-position">{{ admin.position || "직책 없음" }}</span>
             </div>
             <p class="created-at">{{ formatDate(alarm.createdAt) }}</p>
         </div>
 
         <div class="alarm-detail-content">
-            <h3 class="message">{{ alarm.message }}</h3>
 
             <!-- 태그별 조건부 상세 정보 렌더링 -->
             <div v-if="detailInfo" class="additional-details">
                 <!-- 미팅/회의/휴가/교육 -->
                 <template v-if="alarm.type == 'SCHEDULE'">
                     <div class="detail-grid">
-                        <div v-if="detailInfo?.result.name" class="detail-item title-with-date">
-                            <strong>[</strong> {{ detailInfo.result.name }} <strong>]</strong>
-                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
-                        </div>
-                        <div v-if="detailInfo?.result.content" class="detail-item">
-                            <strong>내용: </strong> {{ detailInfo.result.content }}
-                        </div>
-                        <div v-if="detailInfo?.result.tag" class="detail-item">
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(tagMapping(detailInfo.result.tag)),
-                            }">
-                                {{ tagMapping(detailInfo.result.tag) }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo?.result.startAt" class="detail-item">
-                            <strong>시작일자: </strong> {{ detailInfo.result.startAt }}
-                        </div>
-                        <div v-if="detailInfo?.result.endAt" class="detail-item">
-                            <strong>종료일자: </strong> {{ detailInfo.result.endAt }}
-                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>항목</th>
+                                    <th>내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="detailInfo?.result.name">
+                                    <td class="left-column">제목</td>
+                                    <td>
+                                        {{ detailInfo.result.name }}
+                                    </td>
+                                </tr>
+                                <tr v-if="alarm.tag">
+                                    <td class="left-column">태그</td>
+                                    <td>
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
+                                            {{ tagMapping(alarm.tag) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="member.name && member.position">
+                                    <td class="left-column">등록자</td>
+                                    <td>{{ member.name }} {{ member.position }} </td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.startAt">
+                                    <td class="left-column">시작일자</td>
+                                    <td>{{ detailInfo.result.startAt }}</td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.endAt">
+                                    <td class="left-column">종료일자</td>
+                                    <td>{{ detailInfo.result.endAt }}</td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.content">
+                                    <td class="left-column">내용</td>
+                                    <td class="content-cell">{{ detailInfo.result.content }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+
                 </template>
 
                 <!-- 공지사항 -->
                 <template v-else-if="alarm.type == 'NOTICE'">
-                    <h4>{{ alarm.tag }} 공지사항</h4>
                     <div class="detail-grid">
-                        <div v-if="detailInfo.title" class="detail-item title-with-date">
-                            <strong>제목:</strong> {{ detailInfo.title }}
-                            <span class="created-at">{{ formatDate(detailInfo.createdAt) }}</span>
-                        </div>
-                        <div v-if="detailInfo.tag" class="detail-item">
-                            <strong>태그</strong> {{ detailInfo.tag }}
-                        </div>
-                        <div v-if="detailInfo.createdAt" class="detail-item">
-                            <strong>내용</strong> {{ truncateContent(detailInfo.content) }}
-                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>항목</th>
+                                    <th>내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="detailInfo.title">
+                                    <td class="left-column">제목</td>
+                                    <td>
+                                        {{ detailInfo.title }}
+                                    </td>
+                                </tr>
+                                <tr v-if="alarm.tag">
+                                    <td class="left-column">대상</td>
+                                    <td>
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.tag)) }">
+                                            {{ tagMapping(detailInfo.tag) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="alarm.tag">
+                                    <td class="left-column">분류</td>
+                                    <td>
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
+                                            {{ tagMapping(alarm.tag) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="admin.name && admin.position">
+                                    <td class="left-column">등록자</td>
+                                    <td>{{ admin.name }} {{ admin.position }} </td>
+                                </tr>
+                                <tr v-if="detailInfo.content">
+                                    <td class="left-column">내용</td>
+                                    <td class="content-cell">{{ truncateContent(detailInfo.content) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </template>
 
                 <!-- 계약서 -->
                 <template v-else-if="alarm.tag === '계약서'">
                     <div class="detail-grid">
-                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
-                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
-                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
-                        </div>
-                        <div v-if="alarm.tag" class="detail-contract-item">
-                            <strong>태그: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(alarm.tag),
-                            }">
-                                {{ alarm.tag }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo?.result.carName" class="detail-contract-item">
-                            <strong>차량: </strong> {{ detailInfo.result.carName }}
-                        </div>
-                        <div v-if="detailInfo.result.status" class="detail-contract-item">
-                            <strong>승인 상태: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
-                            }">
-                                {{ tagMapping(detailInfo.result.status) }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo?.result.createdUrl" class="detail-contract-item">
-                            <a :href="detailInfo.result.createdUrl" download target="_blank">다운로드</a>
-                        </div>
-                        <div v-if="detailInfo?.result.totalSales" class="detail-contract-item">
-                            <strong>총 금액: </strong> {{ detailInfo.result.totalSales }}
-                        </div>
-                        <div v-if="detailInfo?.result.createdAt" class="detail-contract-item">
-                            <strong>생성 일자: </strong> {{ detailInfo.result.createdAt }}
-                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>항목</th>
+                                    <th>내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="detailInfo?.result.title">
+                                    <td class="left-column">제목</td>
+                                    <td>{{ detailInfo.result.title }}</td>
+                                </tr>
+                                <tr v-if="alarm.tag">
+                                    <td class="left-column">태그</td>
+                                    <td>
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(alarm.tag) }">
+                                            {{ alarm.tag }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.customerName">
+                                    <td class="left-column">고객명</td>
+                                    <td>{{ detailInfo.result.customerName }}</td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.customerPurchaseCondition">
+                                    <td class="left-column">결제방식</td>
+                                    <td>{{ detailInfo.result.customerPurchaseCondition }}</td>
+                                </tr>
+                                <tr v-if="member.name && member.position">
+                                    <td class="left-column">계약자</td>
+                                    <td>{{ member.name }} {{ member.position }}</td>
+                                </tr>
+                                <tr v-if="admin.name && admin.position">
+                                    <td class="left-column">승인자</td>
+                                    <td>{{ admin.name }} {{ admin.position }}</td>
+                                </tr>
+                                <tr v-if="detailInfo.result.status">
+                                    <td class="left-column">승인 상태</td>
+                                    <td>
+                                        <span class="tag"
+                                            :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.result.status)) }">
+                                            {{ tagMapping(detailInfo.result.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.createdAt">
+                                    <td class="left-column">계약날짜</td>
+                                    <td>{{ formatDate(detailInfo.result.createdAt) }}</td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.createdUrl">
+                                    <td class="left-column">파일</td>
+                                    <td>
+                                        <a :href="detailInfo.result.createdUrl" download target="_blank"
+                                            class="file-link">파일 보기</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </template>
 
                 <!-- 수주서/발주서 -->
                 <template v-if="alarm.tag === '수주서'">
-                    <div class="detail-grid">
-                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
-                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
-                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
-                        </div>
-                        <div v-if="alarm.tag" class="detail-item">
-                            <strong>태그: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(alarm.tag),
-                            }">
-                                {{ alarm.tag }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo.result.status" class="detail-item">
-                            <strong>승인 상태: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
-                            }">
-                                {{ tagMapping(detailInfo.result.status) }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo?.result.content" class="detail-item">
-                            <a :href="detailInfo.result.content" download target="_blank">다운로드</a>
-                        </div>
-                        <div v-if="detailInfo?.result.createdAt" class="detail-item">
-                            <strong>생성 일자</strong> {{ detailInfo.result.createdAt }}
-                        </div>
-                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>항목</th>
+                                <th>내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="detailInfo?.result.title">
+                                <td class="left-column">제목</td>
+                                <td>{{ detailInfo.result.title }}</td>
+                            </tr>
+                            <tr v-if="alarm.tag">
+                                <td class="left-column">태그</td>
+                                <td>
+                                    <span class="tag" :style="{ backgroundColor: getTagColor(alarm.tag) }">
+                                        {{ alarm.tag }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr v-if="detailContractInfo?.carName">
+                                <td class="left-column">제품명</td>
+                                <td>{{ detailContractInfo.carName }}</td>
+                            </tr>
+                            <tr v-if="member.name && member.position">
+                                <td class="left-column">수주자</td>
+                                <td>{{ member.name }} {{ member.position }}</td>
+                            </tr>
+                            <tr v-if="admin.name && admin.position">
+                                <td class="left-column">승인자</td>
+                                <td>{{ admin.name }} {{ admin.position }}</td>
+                            </tr>
+                            <tr v-if="detailInfo.result.status">
+                                <td class="left-column">승인 상태</td>
+                                <td>
+                                    <span class="tag"
+                                        :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.result.status)) }">
+                                        {{ tagMapping(detailInfo.result.status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr v-if="detailInfo?.result.createdAt">
+                                <td class="left-column">수주날짜</td>
+                                <td>{{ formatDate(detailInfo.result.createdAt) }}</td>
+                            </tr>
+                            <tr v-if="detailInfo?.result.content">
+                                <td class="left-column">파일</td>
+                                <td>
+                                    <a :href="detailInfo.result.content" download target="_blank"
+                                        class="file-link">파일 보기</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </template>
 
                 <!-- 발주서 -->
                 <template v-else-if="alarm.tag === '발주서'">
                     <div class="detail-grid">
-                        <div v-if="detailInfo?.result.title" class="detail-item title-with-date">
-                            <strong>[</strong> {{ detailInfo.result.title }} <strong>]</strong>
-                            <span class="created-at">{{ formatDate(detailInfo.result.createdAt) }}</span>
-                        </div>
-                        <div v-if="alarm.tag" class="detail-item">
-                            <strong>태그: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(alarm.tag),
-                            }">
-                                {{ alarm.tag }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo.result.status" class="detail-item">
-                            <strong>승인 상태: </strong>
-                            <span class="tag" :style="{
-                                backgroundColor: getTagColor(tagMapping(detailInfo.result.status)),
-                            }">
-                                {{ tagMapping(detailInfo.result.status) }}
-                            </span>
-                        </div>
-                        <div v-if="detailInfo?.result.content" class="detail-item">
-                            <a :href="detailInfo.result.content" download target="_blank">다운로드</a>
-                        </div>
-                        <div v-if="detailInfo?.result.createdAt" class="detail-item">
-                            <strong>생성 일자:</strong> {{ detailInfo.result.createdAt }}
-                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>항목</th>
+                                    <th>내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="detailInfo?.result.title">
+                                    <td class="left-column">제목</td>
+                                    <td>{{ detailInfo.result.title }}</td>
+                                </tr>
+                                <tr v-if="alarm.tag">
+                                    <td class="left-column">태그</td>
+                                    <td>
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(alarm.tag) }">
+                                            {{ alarm.tag }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="detailContractInfo?.carName">
+                                    <td class="left-column">제품명</td>
+                                    <td>{{ detailContractInfo.carName }}</td>
+                                </tr>
+                                <tr v-if="member.name && member.position">
+                                    <td class="left-column">발주자</td>
+                                    <td>{{ member.name }} {{ member.position }}</td>
+                                </tr>
+                                <tr v-if="admin.name && admin.position">
+                                    <td class="left-column">승인자</td>
+                                    <td>{{ admin.name }} {{ admin.position }}</td>
+                                </tr>
+                                <tr v-if="detailInfo.result.status">
+                                    <td class="left-column">승인 상태</td>
+                                    <td>
+                                        <span class="tag"
+                                            :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.result.status)) }">
+                                            {{ tagMapping(detailInfo.result.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.createdAt">
+                                    <td class="left-column">수주날짜</td>
+                                    <td>{{ formatDate(detailInfo.result.createdAt) }}</td>
+                                </tr>
+                                <tr v-if="detailInfo?.result.content">
+                                    <td class="left-column">파일</td>
+                                    <td>
+                                        <a :href="detailInfo.result.content" download target="_blank"
+                                            class="file-link">파일 보기</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </template>
 
@@ -219,7 +349,11 @@ const tagMapping = (tag) => {
         'SESSION': '회의',
         'IMPORTANT': '중요',
         'NORMAL': '일반',
-        'APPROVED': '승인'
+        'APPROVED': '승인',
+        "all": '전체',
+        "admin": '영업 관리자',
+        "director":'영업 담당자',
+        "god": '시스템 관리자'
     };
 
     return tagMap[tag] || tag; // 일치하는 값이 없으면 원래 값 반환
@@ -237,6 +371,10 @@ const tagColors = [
     { name: '중요', color: '#FFB3B3' },
     { name: '일반', color: '#E0FFB3' },
     { name: '승인', color: '#B3FFB3' },
+    { name: '전체', color: '#D3D3D3' }, 
+    { name: '영업 관리자', color: '#FFA07A' }, 
+    { name: '영업 담당자', color: '#20B2AA' }, 
+    { name: '시스템 관리자', color: '#9370DB' } 
 ];
 
 const getTagColor = (tag) => {
@@ -246,8 +384,11 @@ const getTagColor = (tag) => {
 };
 
 const detailInfo = ref(null);
+const detailContractInfo = ref(null);
+const detailOrderInfo = ref(null);
 
-// content를 최대 30글자로 자르고, 초과 시 "..." 추가
+const emit = defineEmits(['close', 'closeModal']);
+
 const truncateContent = (htmlContent) => {
     if (!htmlContent) return '';
 
@@ -258,8 +399,8 @@ const truncateContent = (htmlContent) => {
     const paragraphText = paragraphMatch[1].trim();
 
     // 70글자 내외로 자르고 초과 시 "..." 추가
-    return paragraphText.length > 200
-        ? paragraphText.substring(0, 200) + '...'
+    return paragraphText.length > 247
+        ? paragraphText.substring(0, 247) + '...'
         : paragraphText;
 };
 
@@ -289,7 +430,7 @@ const fetchMemberInfo = async () => {
             admin.value = {
                 name: admResponse.result.name || "이름 없음",
                 profileImageUrl: admResponse.result.imageUrl || null,
-                position: memResponse.result.position || null
+                position: admResponse.result.position || null
             };
         } catch (error) {
             console.error("Failed to fetch member info:", error);
@@ -302,8 +443,6 @@ const fetchMemberInfo = async () => {
 
 // 스케줄 정보 조회 함수들
 const fetchScheduleInfo = async () => {
-
-    console.log("alarm", props.alarm);
 
     const scheduleTypes = ['미팅', '회의', '휴가', '교육'];
     if (scheduleTypes.includes(props.alarm.tag)) {
@@ -340,7 +479,7 @@ const fetchNoticeInfo = async () => {
             console.error("Failed to fetch notice info:", error);
         }
 
-        console.log("response", detailInfo.value);
+        console.log("noticeResponse", detailInfo.value);
     } else {
         console.log('잘못된 태그 정보 입니다.');
     }
@@ -410,7 +549,74 @@ const fetchContractInfo = async () => {
 
 const fetchPurchaseOrderInfo = async () => {
 
-    console.log("alarm", props.alarm);
+    if (props.alarm.tag === '발주서') {
+        if (member.value.position === "영업 관리자") {
+            // "영업 담당자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    'admin',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 관리자:", error);
+            }
+        } else if (member.value.position === "영업 담당자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 영업 담당자:", error);
+            }
+        } else if (member.value.position === "시스템 관리자") {
+            // "시스템 관리자"일 경우 실행할 코드
+            try {
+                const response = await apiPurchaseOrderService.get(
+                    '',
+                    `${props.alarm.contentId}`,
+                    ''
+                );
+                detailInfo.value = response;
+            } catch (error) {
+                console.error("Failed to fetch contract info for 시스템 관리자:", error);
+            }
+        } else {
+            console.log('계약정보를 가져오지 못했습니다.');
+        }
+
+        console.log("res", detailInfo.value);
+
+        // 수주서 정보 가져오기 (제품 추출을 위함)
+        if (detailInfo.value.result.orderId) {
+            const orderResponse = await apiOrderService.get(
+                '',
+                `${detailInfo.value.result.orderId}`,
+                ''
+            );
+            detailOrderInfo.value = orderResponse.result;
+        }
+
+        // 계약서 정보 가져오기 (제품 추출을 위함)
+        if (detailOrderInfo.value.contractId) {
+            const contractResponse = await apiContractService.get(
+                '',
+                `${detailOrderInfo.value.contractId}`,
+                ''
+            );
+            detailContractInfo.value = contractResponse.result;
+        }
+    } else {
+        console.log('잘못된 태그 정보 입니다.');
+    }
+};
+
+const fetchOrderInfo = async () => {
 
     if (props.alarm.tag === '수주서') {
         if (member.value.position === "영업 사원") {
@@ -465,56 +671,16 @@ const fetchPurchaseOrderInfo = async () => {
             console.log('계약정보를 가져오지 못했습니다.');
         }
 
-        console.log("response", detailInfo.value);
-    } else {
-        console.log('잘못된 태그 정보 입니다.');
-    }
-};
-
-const fetchOrderInfo = async () => {
-
-    if (props.alarm.tag === '발주서') {
-        if (member.value.position === "영업 관리자") {
-            // "영업 담당자"일 경우 실행할 코드
-            try {
-                const response = await apiPurchaseOrderService.get(
-                    'admin',
-                    `${props.alarm.contentId}`,
-                    ''
-                );
-                detailInfo.value = response;
-            } catch (error) {
-                console.error("Failed to fetch contract info for 영업 관리자:", error);
-            }
-        } else if (member.value.position === "영업 담당자") {
-            // "시스템 관리자"일 경우 실행할 코드
-            try {
-                const response = await apiPurchaseOrderService.get(
-                    '',
-                    `${props.alarm.contentId}`,
-                    ''
-                );
-                detailInfo.value = response;
-            } catch (error) {
-                console.error("Failed to fetch contract info for 영업 담당자:", error);
-            }
-        } else if (member.value.position === "시스템 관리자") {
-            // "시스템 관리자"일 경우 실행할 코드
-            try {
-                const response = await apiPurchaseOrderService.get(
-                    '',
-                    `${props.alarm.contentId}`,
-                    ''
-                );
-                detailInfo.value = response;
-            } catch (error) {
-                console.error("Failed to fetch contract info for 시스템 관리자:", error);
-            }
-        } else {
-            console.log('계약정보를 가져오지 못했습니다.');
+        // 계약서 정보 가져오기 (제품 추출을 위함)
+        if (detailInfo.value.result.contractId) {
+            const contractResponse = await apiContractService.get(
+                '',
+                `${detailInfo.value.result.contractId}`,
+                ''
+            );
+            detailContractInfo.value = contractResponse.result;
         }
 
-        console.log("response", detailInfo.value);
     } else {
         console.log('잘못된 태그 정보 입니다.');
     }
@@ -542,10 +708,10 @@ watch(() => props.alarm, async (newAlarm) => {
                 await fetchContractInfo();
                 break;
             case '수주서':
-                await fetchPurchaseOrderInfo();
+                await fetchOrderInfo();
                 break;
             case '발주서':
-                await fetchOrderInfo();
+                await fetchPurchaseOrderInfo();
                 break;
         }
     }
@@ -555,6 +721,7 @@ watch(() => props.alarm, async (newAlarm) => {
 const goToRelatedPage = () => {
     if (props.alarm.redirectUrl) {
         router.push(props.alarm.redirectUrl);
+        emit('closeModal');
     }
 };
 
@@ -597,7 +764,7 @@ const formatKey = (key) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .member-info {
@@ -638,10 +805,12 @@ const formatKey = (key) => {
 .additional-details {
     background-color: #f9f9f9;
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    width: 414px;
-    height: 280px;
+    padding: 13px;
+    padding-top: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 410px;
+    height: 340px;
 }
 
 .detail-item {
@@ -681,16 +850,19 @@ const formatKey = (key) => {
 }
 
 .title-with-date {
-    display: inline-block; /* 같은 줄에 배치 */
-    white-space: nowrap;   /* 줄바꿈 방지 */
+    display: inline-block;
+    /* 같은 줄에 배치 */
+    white-space: nowrap;
+    /* 줄바꿈 방지 */
     justify-content: space-between;
 }
 
 .title-with-date .created-at {
     display: inline-block;
-    white-space: nowrap;   /* 줄바꿈 방지 */
-    font-size: 12px;   /* 생성 일자의 폰트 크기 */
-    color: #777;       /* 생성 일자의 색상 */
+    white-space: nowrap;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 0;
 }
 
 .tag {
@@ -699,12 +871,121 @@ const formatKey = (key) => {
     border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
-    margin-bottom: 8px;
-    width: 3.2rem;
+    margin-bottom: 0;
     text-align: center;
     /* 텍스트 가로 정렬 */
     line-height: 1.5;
     /* 수직 정렬을 위한 줄 높이 */
     vertical-align: middle;
+}
+
+.detail-item {
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #333;
+}
+
+.title-with-date {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title-with-date strong {
+    color: #555;
+}
+
+.created-at {
+    font-size: 12px;
+    color: #888;
+    margin-left: 8px;
+}
+
+.content {
+    margin-top: 4px;
+    color: #444;
+    line-height: 1.5;
+}
+
+.tag-container {
+    display: flex;
+    align-items: center;
+}
+
+.tag-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.date {
+    font-size: 17px;
+    color: #555;
+    margin-left: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+thead th {
+    background-color: #f7f7f7;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+}
+
+tbody td {
+    padding: 7px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    /* 본문 폰트 크기 */
+    text-align: center;
+    /* 본문 중앙 정렬 */
+}
+
+.left-column {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    text-align: center;
+    font-size: 12px;
+    width: 104.45px;
+}
+
+.file-link {
+    color: #007bff; /* 기본 파란색 */
+    text-decoration: underline; /* 기본 밑줄 */
+    transition: color 0.3s ease; /* 부드러운 색상 전환 효과 */
+}
+
+.file-link:hover {
+    color: #0056b3; /* 마우스 올렸을 때 더 어두운 파란색 */
+}
+
+.content-cell {
+    height: 120px; 
+    vertical-align: top; 
+    overflow-y: auto; 
+    word-wrap: break-word; 
+}
+
+.member-position{
+    
+    margin-top: 8px;
+    margin-left: 6px;
+    font-size: 12px;
+    color: #888;    
 }
 </style>
