@@ -189,7 +189,7 @@ const getMemberInfo = async () => {
             {
                 firstLabel: '이메일', firstValue: result.email || 'N/A',
                 secondLabel: '휴대전화', secondValue: result.phone || 'N/A',
-                thirdLabel: '성별', thirdValue: result.sex || 'N/A'
+                thirdLabel: '성별', thirdValue: result.sex === 'MALE' ? '남성' : '여성'
             },
             {
                 firstLabel: '입사일', firstValue: result.createdAt.substring(0, 10) || 'N/A',
@@ -207,8 +207,8 @@ const getMemberInfo = async () => {
                 thirdLabel: '주소', thirdValue: result.address || 'N/A',
             },
             {
-                firstLabel: '고용형태', firstValue: result.jobType || 'N/A',
-                secondLabel: '비고', secondValue: result.note || 'N/A'
+                firstLabel: '고용형태', firstValue: result.jobType === 'REGULAR' ? '정규직' : '비정규직',
+                secondLabel: '비고', secondValue: result.note || '-'
             },
         ];
     } catch (error) {
@@ -223,11 +223,11 @@ const getEducationData = async () => {
         const result = response.result;
 
         educationData.value = result.map((edu) => ({
-            entranceDate: edu.entranceDate,
-            graduationDate: edu.graduationDate,
-            name: edu.name,
-            major: edu.major || '-',
-            score: edu.score || '-',
+            entranceDate: edu.entranceDate || 'N/A',
+            graduationDate: edu.graduationDate || 'N/A',
+            name: edu.name || 'N/A',
+            major: edu.major || 'N/A',
+            score: edu.score || 'N/A',
             note: edu.note || '-',
         }));
     } catch (error) {
@@ -242,10 +242,10 @@ const getCertificationData = async () => {
         const result = response.result;
 
         certificationData.value = result.map((cert) => ({
-            acquisitionDate: cert.acquisitionDate,
-            agency: cert.agency,
-            name: cert.name,
-            score: cert.score || '-',
+            acquisitionDate: cert.acquisitionDate || 'N/A',
+            agency: cert.agency || 'N/A',
+            name: cert.name || 'N/A',
+            score: cert.score || 'N/A',
             note: cert.note || '-',
         }));
     } catch (error) {
@@ -259,9 +259,9 @@ const getCareerData = async () => {
         const result = response.result;
 
         careerData.value = result.map((career) => ({
-            emplDate: career.emplDate,
-            resignDate: career.resignDate || '-',
-            name: career.name,
+            emplDate: career.emplDate || 'N/A',
+            resignDate: career.resignDate || 'N/A',
+            name: career.name || 'N/A',
             note: career.note || '-',
         }));
     } catch (error) {
@@ -275,11 +275,11 @@ const getFamilyData = async () => {
         const result = response.result;
 
         familyData.value = result.map((family) => ({
-            relation: family.relation,
-            name: family.name,
-            birth: family.birth,
-            identNo: family.identNo,
-            phone: family.phone,
+            relation: family.relation || 'N/A',
+            name: family.name || 'N/A',
+            birth: family.birth || 'N/A',
+            identNo: family.identNo.substring(0, 9) + '******' || 'N/A',
+            phone: family.phone || 'N/A',
             sex: family.sex === 'MALE' ? '남성' : '여성',
             disability: family.disability ? 'O' : 'X',
             die: family.die ? 'O' : 'X',

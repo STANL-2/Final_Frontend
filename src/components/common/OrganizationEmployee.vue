@@ -57,10 +57,10 @@ const getOrganizationMembers = async (member) => {
 
         // 필요한 데이터만 추출하여 careerData 배열에 저장
         organizationMembers.value = result.map(member => ({
-            loginId: member.loginId,
-            name: member.name,
-            position: member.position,
-            jobType: member.jobType,
+            loginId: member.loginId || 'N/A',
+            name: member.name || 'N/A',
+            position: member.position || 'N/A',
+            jobType: member.jobType === 'REGULAR' ? '정규직' : '비정규직',
             createdAt: member.createdAt.substring(0, 10)
         }));
 
