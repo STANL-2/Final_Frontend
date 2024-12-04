@@ -446,7 +446,7 @@ const closeAlarmModal = () => {
 // 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
 watchEffect(() => {
     if (userStore.remainingTime <= 0) {
-        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        router.push('/');
         logout();
     }
 });

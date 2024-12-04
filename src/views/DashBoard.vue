@@ -33,6 +33,17 @@
                 </Card>
             </div>
         </div>
+
+        <div class="card-news card">
+                <Card>
+                    <div class="card-content">
+                        <div class="card-name">자동차 기사</div>
+                        <div class="news-list">
+                            <NaverNews/> 
+                        </div>
+                    </div>
+                </Card>
+            </div>
     </main>
 </template>
 
@@ -42,6 +53,7 @@ import Card from '@/components/common/Card.vue';
 import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
 import DashTimeLine from '@/components/common/DashTimeLine.vue';
+import NaverNews from '@/components/NaverNews.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 
@@ -234,31 +246,40 @@ onMounted(() => {
 <style scoped>
 .dashboard {
     background-color: #F1F1FD;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 섹션 간의 간격 추가 */
 }
 
 .small-cards {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap; /* 작은 화면에서 줄바꿈을 허용 */
+    gap: 20px; /* 카드 사이의 간격 */
 }
 
 .card {
-    width: 100%;
-    padding-top: 15px;
+    flex: 1;
+    min-width: 280px; /* 카드의 최소 너비 설정 */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card:not(:last-child) {
-    margin-right: 30px;
+    margin-right: 0; /* 기본 마진을 제거하고 gap으로 간격 설정 */
 }
 
 .card-name {
-    font-size: 25px;
+    font-size: 20px;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    color: #333;
 }
 
 .gauge-chart-container,
-.customer-rank {
+.customer-rank,
+.news-list {
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -267,14 +288,46 @@ onMounted(() => {
 }
 
 .sell-card {
-    width: 50%;
+    flex: 2;
+    min-width: 300px; /* 최소 너비를 설정해 카드 크기를 조정 */
 }
 
 .plan-card {
-    width: 100%;
+    flex: 3;
+    min-width: 300px;
 }
 
 .customer-card {
-    width: 30%;
+    flex: 1;
+    min-width: 250px;
+}
+
+.card-news {
+    flex: 2;
+    min-width: 300px;
+}
+
+/* 카드 내용 스타일 */
+.card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 뉴스 목록 스타일링 */
+.news-list {
+    width: 100%;
+    max-height: 200px; /* 뉴스 목록 최대 높이 설정 */
+    overflow-y: auto; /* 스크롤을 허용하여 많은 뉴스가 있는 경우 대응 */
+}
+
+.news-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.news-list::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 4px;
 }
 </style>
