@@ -25,7 +25,7 @@ const updateCharts = () => {
     props.chartDataList.forEach((chartData, index) => {
         const canvas = chartCanvasRefs[index];
         if (!canvas) {
-            console.error(`Canvas not found for chart index ${index}`);
+            console.warn(`Canvas not found for chart index ${index}`);
             return;
         }
 
@@ -34,7 +34,9 @@ const updateCharts = () => {
             const chart = chartInstances[index];
             chart.data = chartData;
             chart.update();
+            console.log("이번엔 여기 왔어");
         } else {
+            console.log("여기임?");
             // 새로운 차트 생성
             const ctx = canvas.getContext('2d');
             const chartInstance = new Chart(ctx, {
@@ -57,17 +59,36 @@ const updateCharts = () => {
     }
 };
 
+const destroyCharts = () => {
+    // chartInstances 배열의 모든 차트 인스턴스 제거
+    if (chartInstances.length > 0) {
+        chartInstances.forEach((chart) => chart.destroy());
+        chartInstances.length = 0; // 배열을 비움
+    }
+    chartCanvasRefs.length = 0;
+    console.log("차트가 초기화되었습니다.");
+};
+
+
 // watch로 데이터 변경 감지
 watch(
     () => props.chartDataList,
     (newData) => {
         console.log("chartDataList 변경 감지:", newData);
         if (newData && newData.length > 0) {
+            console.log("update!");
             updateCharts();
+        }
+        else{
+            destroyCharts();
         }
     },
     { immediate: true, deep: true }
 );
+
+defineExpose({
+    destroyCharts,
+});
 
 onMounted(() => {
     updateCharts();

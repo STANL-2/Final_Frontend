@@ -3,98 +3,77 @@
         <div class="component-wrapper">
             <!-- SearchForm -->
             <div class="component-wrapper">
-                <CSearchForm :fields="formFields"  @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="select" />
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                    @keyup.enter="select" />
                 <div class="select">
                     <CommonButton label="조회" @click="select" />
                 </div>
+                <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh" />
             </div>
             <!-- 두 번째 행: 버튼 -->
-            <div class="form-row button-row">
-                <SCommonButton v-for="field in secondRowFields" :key="field.model" :label="field.label"
+            <div v-for="(row, rowIndex) in secondRowFields" :key="rowIndex" class="form-row button-row">
+                <SCommonButton v-for="field in row" :key="field.model" :label="field.label"
                     @click="handleButtonClick(field)" />
             </div>
 
-            <!-- 세 번째 행: 버튼 -->
-            <div class="form-row button-row">
-                <SCommonButton v-for="field2 in thirdRowFields" :key="field2.model" :label="field2.label"
-                    @click="handleButtonComparisonClick(field2)" />
-            </div>
+
         </div>
-        
+
         <div>
-            <BigCard :chartDataList="chartDataList" />
+            <BigCard ref="chartRef" :chartDataList="chartDataList" />
         </div>
 
-        <Modal
-    v-model="showModal"
-    :header="modalType === 'centerList' ? '매장 검색' : 
-             modalType === 'memberList' ? '사원 검색' : 
-             modalType === 'productList' ? '제품 검색' : 
-             modalType === 'customerList' ? '고객 검색' : '검색'"
-    width="30rem"
-    height="none"
-    @confirm="confirmSelection"
-    @cancel="resetModalState"
->
-    <!-- 검색 입력 -->
-    <div class="flex-row content-center mb-m">
-        <label class="mr-m">
-            {{ modalType === 'centerList' ? '매장명:' : 
-            modalType === 'memberList' ? '사원명:' : 
-            modalType === 'productList' ? '제품명:' : 
-            modalType === 'customerList' ? '고객명:' : '' }}
-        </label>
-        <InputText
-            type="text"
-            v-model="searchQuery"
-            @keyup.enter="searchStore"
-        />
-        <button class="search-button" @click="searchStore">
-            <span class="search-icon pi pi-search"></span>
-        </button>
-    </div>
+        <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
+            modalType === 'memberList' ? '사원 검색' :
+                modalType === 'productList' ? '제품 검색' :
+                    modalType === 'customerList' ? '고객 검색' : '검색'" width="30rem" height="none"
+            @confirm="confirmSelection" @cancel="resetModalState">
+            <!-- 검색 입력 -->
+            <div class="flex-row content-center mb-m">
+                <label class="mr-m">
+                    {{ modalType === 'centerList' ? '매장명:' :
+                        modalType === 'memberList' ? '사원명:' :
+                            modalType === 'productList' ? '제품명:' :
+                                modalType === 'customerList' ? '고객명:' : '' }}
+                </label>
+                <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
+                <button class="search-button" @click="searchStore">
+                    <span class="search-icon pi pi-search"></span>
+                </button>
+            </div>
 
-    <!-- 검색 결과 테이블 -->
-    <table>
-        <thead>
-            <tr>
-                <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr
-                v-for="(row, index) in modalTableData"
-                :key="index"
-                @click="selectStore(row, index)"
-                :class="{ selected: selectedRow === index }"
-            >
-                <td v-if="modalType === 'centerList'">{{ row.centerId }}</td>
-                <td v-if="modalType === 'memberList'">{{ row.memberId }}</td>
-                <td v-if="modalType === 'productList'">{{ row.productId }}</td>
-                <td v-if="modalType === 'customerList'">{{ row.customerId }}</td>
-                <td>{{ row.name }}</td>
-            </tr>
-        </tbody>
-    </table>
+            <!-- 검색 결과 테이블 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
+                        :class="{ selected: selectedRow === index }">
+                        <td v-if="modalType === 'centerList'">{{ row.centerId }}</td>
+                        <td v-if="modalType === 'memberList'">{{ row.memberId }}</td>
+                        <td v-if="modalType === 'productList'">{{ row.productId }}</td>
+                        <td v-if="modalType === 'customerList'">{{ row.customerId }}</td>
+                        <td>{{ row.name }}</td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <!-- 모달 하단 버튼 -->
-        <template #footer>
-            <CommonButton label="확인" @click="confirmSelection" />
-            <CommonButton
-                label="취소"
-                color="#ffffff"
-                textColor="#6360AB"
-                borderColor="#6360AB"
-                @click="resetModalState"
-            />
-        </template>
-    </Modal>
+            <!-- 모달 하단 버튼 -->
+            <template #footer>
+                <CommonButton label="확인" @click="confirmSelection" />
+                <CommonButton label="취소" color="#ffffff" textColor="#6360AB" borderColor="#6360AB"
+                    @click="resetModalState" />
+            </template>
+        </Modal>
     </PageLayout>
 </template>
 
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/FGraphCard.vue';
@@ -106,95 +85,121 @@ import Modal from '@/components/common/Modal.vue';
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
-    {
-        label: '분류',
-        type: 'select',
-        model: 'period',
-        value: '',
-        options: ['일별', '월별', '연도별'],
-        showDivider: false,
-    },
-    {
-        label: '조회기간',
-        type: 'calendar',
-        model: 'salesHistoryDate',
-        showIcon: true,
-        manualInput: false,
-    },
-    {
-        label: '담당자명',
-        type: 'inputWithButton',
-        model: 'memberList',
-        showDivier: false,
-    },
-    {
-        label: '매장명',
-        type: 'inputWithButton',
-        model: 'centerList',
-        showDivider: false,
-    },
-    {
-        label: '매장/사원',
-        type: 'select',
-        model: 'groupBy',
-        options: ['전체', '매장', '사원', ],
-        showDivider: false,
-    }
+        {
+            label: '분류',
+            type: 'select',
+            model: 'period',
+            value: '',
+            options: ['일별', '월별', '연도별'],
+            showDivider: false,
+        },
+        {
+            label: '조회기간',
+            type: 'calendar',
+            model: 'salesHistoryDate',
+            showIcon: true,
+            manualInput: false,
+        },
+        {
+            label: '담당자명',
+            type: 'inputWithButton',
+            model: 'memberList',
+            showDivier: false,
+        },
+        {
+            label: '매장명',
+            type: 'inputWithButton',
+            model: 'centerList',
+            showDivider: false,
+        },
+        {
+            label: '매장/사원',
+            type: 'select',
+            model: 'groupBy',
+            options: ['전체', '매장', '사원',],
+            showDivider: false,
+        }
     ],
 ];
 
 const secondRowFields = ref([
-    {
-        label: '수당',
-        type: 'button',
-        model: 'totalIncentive',
-        value: '',
-    },
-    {
-        label: '실적',
-        type: 'button',
-        model: 'totalPerformance',
-        value: '',
-    },
-    {
-        label: '매출액',
-        type: 'button',
-        model: 'totalSales',
-        value: '',
-    },
-    {
-        label: '기본',
-        type: 'button',
-        model: '',
-        value: '',
-    }
-]);
-
-const thirdRowFields = ref([
-    {
-        label: '최고',
-        type: 'button',
-        model: 'best',
-        value: '',
-    },
-    {
-        label: '평균',
-        type: 'button',
-        model: 'average',
-        value: '',
-    }
+    [
+        {
+            label: '수당',
+            type: 'button',
+            model: 'totalIncentive',
+            value: 'totalIncentive',
+        },
+        {
+            label: '실적',
+            type: 'button',
+            model: 'totalPerformance',
+            value: 'totalPerformance',
+        },
+        {
+            label: '매출액',
+            type: 'button',
+            model: 'totalSales',
+            value: 'totalSales',
+        },
+        {
+            label: '기본',
+            type: 'button',
+            model: '',
+            value: '',
+        },
+    ],
+    [
+        {
+            label: '최고',
+            type: 'button',
+            model: '',
+            value: 'best',
+        },
+        {
+            label: '평균',
+            type: 'button',
+            model: '',
+            value: 'average',
+        },
+    ],
 ]);
 
 const loading = ref(false); // 로딩 상태
 const searchCriteria = ref({});
 const chartDataList = ref([]);
 let saveButton;
+let saveValue;
 
+const chartRef = ref(null);
 
 const refresh = () => {
-    searchCriteria.value = ref({});
-    loadData();
-}
+    // 검색 조건 초기화
+    searchCriteria.value = {};
+
+    // SearchForm 초기화
+    if (searchFormRef.value) {
+        searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
+    }
+
+    // 차트 데이터 초기화
+    chartDataList.value = []; // 빈 배열로 초기화
+    chartRef.value.destroyCharts(); // 기존 차트 제거
+
+    // 버튼 상태 초기화
+    secondRowFields.value.forEach((field) => field.value = '');
+    thirdRowFields.value.forEach((field) => field.value = '');
+
+    // 모달 상태 초기화
+    showModal.value = false;
+    selectedRow.value = null;
+    searchQuery.value = '';
+    modalTableData.value = [];
+    selectedStoreCode.value = '';
+
+    console.log('화면이 초기화되었습니다.');
+};
+
 
 // 조회 버튼 클릭 시
 const select = () => {
@@ -207,117 +212,6 @@ const select = () => {
     }
 
     // 검색 조건 생성
-if (formDataIds && Object.keys(formDataIds).length > 0) {
-    // formDataIds가 존재하고 값이 있을 경우
-    Object.entries(formDataIds).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-            // 배열 필드인 경우 배열 병합 처리
-            if (Array.isArray(searchCriteria.value[key])) {
-                searchCriteria.value[key] = searchCriteria.value[key].concat(value);
-            } else {
-                searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
-            }
-        }
-    });
-}
-
-if (formData && Object.keys(formData).length > 0) {
-    // formData에 값이 있을 경우
-    Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-            // 배열 필드인 경우 배열 병합 처리
-            if (Array.isArray(searchCriteria.value[key])) {
-                if (!searchCriteria.value[key].includes(value)) {
-                    searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
-                }
-            } else if (searchCriteria.value[key] !== undefined) {
-                if (!Array.isArray(searchCriteria.value[key])) {
-                    // 기존 값이 배열이 아니면 배열로 변환
-                    searchCriteria.value[key] = [searchCriteria.value[key]];
-                }
-                if (!searchCriteria.value[key].includes(value)) {
-                    searchCriteria.value[key].push(value);
-                }
-            } else {
-                searchCriteria.value[key] = value; // 새로운 값 설정
-            }
-            }
-        });
-    }
-
-        const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
-        const periodMap = {
-            '일별': '',
-            '월별': 'month',
-            '연도별': 'year',
-        };
-
-        const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
-
-        // 데이터 로드 및 차트 업데이트
-        loadData(periodType);
-};
-
-const handleButtonComparisonClick = async (field2) => {
-    console.log(`${field2.model} 비교 버튼 클릭됨`);
-
-    const formData = searchFormRef.value?.formData;
-
-    if (!formData) {
-        console.error('FormData를 가져올 수 없습니다.');
-        return;
-    }
-
-    searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
-    );
-
-    const period = formData.period || '';
-    const searchTypeMap = {
-        '일별': null,
-        '월별': 'month',
-        '연도별': 'year',
-    };
-    const searchType = searchTypeMap[period];
-
-    const requestBody = {
-        groupBy: 'employee',
-        month: searchType === 'month' ? 'month' : null,
-        year: searchType === 'year' ? 'year' : null,
-        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
-        orderBy: orderByValue(saveButton),
-    };
-
-    console.log("Comparison Request Body:", requestBody);
-    if (field2.model === 'best') {
-        console.log("최고 데이터 요청:", requestBody);
-        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
-    } else {
-        console.log("평균 데이터 요청:", requestBody);
-        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
-    }
-    
-};
-
-const handleButtonClick = async (field) => {
-
-    if (loading.value) return;
-
-    loading.value = true;
-    try{
-    const formData = searchFormRef.value?.formData;
-    const formDataIds = searchFormRef.value?.formDataIds;
-
-    console.log("formDataIds: ", formDataIds);
-    console.log("formData: ", formData);
-
-    if (!formData || !formDataIds) {
-        console.error('formData를 가져올 수 없습니다.');
-        return;
-    }
-
-        // 검색 조건 생성
     if (formDataIds && Object.keys(formDataIds).length > 0) {
         // formDataIds가 존재하고 값이 있을 경우
         Object.entries(formDataIds).forEach(([key, value]) => {
@@ -352,10 +246,9 @@ const handleButtonClick = async (field) => {
                 } else {
                     searchCriteria.value[key] = value; // 새로운 값 설정
                 }
-                }
-            });
+            }
+        });
     }
-    saveButton = field.model;
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const periodMap = {
@@ -364,35 +257,174 @@ const handleButtonClick = async (field) => {
         '연도별': 'year',
     };
 
-
     const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
-    const groupBy = formData.groupBy || '';
-    
-    const groupByMap = {
+
+    // 데이터 로드 및 차트 업데이트
+    loadData(periodType);
+};
+
+const handleButtonComparisonClick = async (field2) => {
+    console.log(`${field2.model} 비교 버튼 클릭됨`);
+
+    const formData = searchFormRef.value?.formData;
+
+    if (!formData) {
+        console.error('FormData를 가져올 수 없습니다.');
+        return;
+    }
+
+    searchCriteria.value = Object.fromEntries(
+        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+    );
+
+    const period = formData.period || '';
+    const searchTypeMap = {
+        '일별': null,
+        '월별': 'month',
+        '연도별': 'year',
+    };
+    const searchType = searchTypeMap[period];
+
+    const requestBody = {
+        groupBy: formData.groupBy === 'employee',
+        month: searchType === 'month' ? 'month' : null,
+        year: searchType === 'year' ? 'year' : null,
+        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
+        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+        orderBy: orderByValue(saveButton),
+    };
+
+    console.log("Comparison Request Body:", requestBody);
+    if (field2.model === 'best') {
+        console.log("최고 데이터 요청:", requestBody);
+        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
+    } else {
+        console.log("평균 데이터 요청:", requestBody);
+        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
+    }
+
+};
+
+const handleButtonClick = async (field) => {
+
+    if (loading.value) return;
+
+    loading.value = true;
+    try {
+        const formData = searchFormRef.value?.formData;
+        const formDataIds = searchFormRef.value?.formDataIds;
+
+        console.log("formDataIds: ", formDataIds);
+        console.log("formData: ", formData);
+
+        if (!formData || !formDataIds) {
+            console.error('formData를 가져올 수 없습니다.');
+            return;
+        }
+
+        // 검색 조건 생성
+        if (formDataIds && Object.keys(formDataIds).length > 0) {
+            // formDataIds가 존재하고 값이 있을 경우
+            Object.entries(formDataIds).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    // 배열 필드인 경우 배열 병합 처리
+                    if (Array.isArray(searchCriteria.value[key])) {
+                        searchCriteria.value[key] = searchCriteria.value[key].concat(value);
+                    } else {
+                        searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
+                    }
+                }
+            });
+        }
+
+        if (formData && Object.keys(formData).length > 0) {
+            // formData에 값이 있을 경우
+            Object.entries(formData).forEach(([key, value]) => {
+                if (formDataIds[key]) {
+                    // formDataIds에 동일한 키가 있는 경우 무시
+                    console.log(`formData의 ${key} 키가 formDataIds와 중복되어 무시되었습니다.`);
+                    return;
+                }
+
+                if (value !== null && value !== undefined && value !== '') {
+                    // 배열 필드인 경우 배열 병합 처리
+                    if (Array.isArray(searchCriteria.value[key])) {
+                        if (!searchCriteria.value[key].includes(value)) {
+                            searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
+                        }
+                    } else if (searchCriteria.value[key] !== undefined) {
+                        if (!Array.isArray(searchCriteria.value[key])) {
+                            // 기존 값이 배열이 아니면 배열로 변환
+                            searchCriteria.value[key] = [searchCriteria.value[key]];
+                        }
+                        if (!searchCriteria.value[key].includes(value)) {
+                            searchCriteria.value[key].push(value);
+                        }
+                    } else {
+                        searchCriteria.value[key] = value; // 새로운 값 설정
+                    }
+                }
+            });
+        }
+
+        console.log("Updated searchCriteria: ", searchCriteria.value);
+
+        if (field.value != '') {
+            saveButton = field.model;
+            saveValue = field.value;
+        }
+        // saveButton = field.model ?
+
+        const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
+        const periodMap = {
+            '일별': '',
+            '월별': 'month',
+            '연도별': 'year',
+        };
+
+
+        const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
+        const groupBy = formData.groupBy || '';
+
+        const groupByMap = {
             '매장': 'center',
             '사원': 'employee',
             '전체': '',
         };
 
-    const groupByType = groupByMap[groupBy] || '';
+        const groupByType = groupByMap[groupBy] || '';
 
-    console.log('searchCriteria:', searchCriteria.value);
+        console.log('searchCriteria:', searchCriteria.value);
 
-    // 데이터 로드 및 차트 업데이트
-    await loadData(periodType, field.model, field.label, groupByType);
-    } finally{
+        const apiPathMap = {
+            average: 'statistics/average',
+            best: 'statistics/best',
+            default: 'statistics/search',
+        };
+
+        const apiPath = apiPathMap[field.value] || apiPathMap.default;
+
+        console.log("API Path:", apiPath);
+
+        // 데이터 로드 및 차트 업데이트
+        await loadData(periodType, field.model, field.label, groupByType, apiPath);
+    } finally {
         loading.value = false;
     }
 };
 
 
-const loadData = async (searchType = null, fieldModel = null, fieldLabel = null, groupBy = 'employee') => {
+const loadData = async (searchType = null,
+    fieldModel = null,
+    fieldLabel = null,
+    groupBy = 'employee',
+    apiPath = 'statistics/search') => {
+
     loading.value = true; // 로딩 시작
     let saveStartDate;
     let saveEndDate;
     try {
-
-        if((searchCriteria.value.salesHistoryDate_start != saveStartDate) || (searchCriteria.value.salesHistoryDate_end != saveEndDate)){
+        if ((searchCriteria.value.salesHistoryDate_start != saveStartDate) || (searchCriteria.value.salesHistoryDate_end != saveEndDate)) {
             saveStartDate = searchCriteria.value.salesHistoryDate_start;
             saveEndDate = searchCriteria.value.salesHistoryDate_end;
         }
@@ -406,7 +438,6 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
                 return key !== 'salesHistoryDate_start' && key !== 'salesHistoryDate_end' && key !== 'period'; // 날짜 제외
             })
         );
-
         // 배열 필드 강제 처리
         const ensureArrayFields = (criteria) => {
             const arrayFields = ['memberList', 'centerList', 'productList']; // 배열로 처리할 필드 정의
@@ -417,8 +448,6 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
             });
             return criteria;
         };
-        
-
         // 필터링된 조건에 배열 처리 추가
         const preparedCriteria = ensureArrayFields(filteredCriteria);
 
@@ -427,69 +456,136 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
             ...preparedCriteria,
             startDate: saveStartDate || null,
             endDate: saveEndDate || null,
-            orderBy: fieldModel || '',
+            orderBy: saveButton || '',
             groupBy,
             period: searchType
         };
 
         console.log("searchParams: ", searchParams);
 
-        const queryString = ref('');
 
-        queryString.value = `statistics/search`;
-        
-        console.log("API 호출 URL:", queryString.value); // 디버깅용
+        console.log("API 호출 URL:", apiPath); // 디버깅용
 
         console.log("검색 인자: ", searchParams);
 
         // API 호출
-        const response = await $api.salesHistory.post(searchParams, queryString.value);
+        const response = await $api.salesHistory.post(searchParams, apiPath);
 
         if (response && response.result) {
             const result = response.result.content;
 
             console.log("result: ", result);
             if (fieldModel === '') {
-            // 기본 버튼 클릭 시: 모든 데이터 처리  
-            if (!Array.isArray(result)) {
-                console.error("result가 배열이 아닙니다:", result);
-                return;
+                if (saveValue === '') {
+                    // 기본 버튼 클릭 시: 모든 데이터 처리
+                    if (!Array.isArray(result)) {
+                        console.error("result가 배열이 아닙니다:", result);
+                        return;
+                    }
+
+                    const mappedDataList = [
+                        {
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
+                            data: result.map((item) => item.totalIncentive || 0),
+                            key: '수당',
+                        },
+                        {
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
+                            data: result.map((item) => item.totalPerformance || 0),
+                            key: '실적',
+                        },
+                        {
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
+                            data: result.map((item) => item.totalSales || 0),
+                            key: '매출액',
+                        },
+                    ];
+
+                    console.log("mappedDataList (기본 버튼):", mappedDataList);
+
+                    if (Array.isArray(mappedDataList)) {
+                        updateChartData(mappedDataList, '기본 데이터');
+                    } else {
+                        console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
+                    }
+                } else if (saveValue === 'average' || saveValue === 'best') {
+                    // 최고, 평균 버튼 클릭 시
+                    const keyPrefix = saveValue === 'average' ? '평균' : '최고';
+                    const fieldMapping = {
+                        totalIncentive: `${keyPrefix} 수당`,
+                        totalPerformance: `${keyPrefix} 실적`,
+                        totalSales: `${keyPrefix} 매출액`,
+                    };
+
+                    const mappedData = [
+                        {
+                            labels: result.map((item) => item.period || ''),
+                            data: result.map((item) => item.averageTotalIncentive || item.bestTotalIncentive || 0),
+                            key: fieldMapping.totalIncentive,
+                        },
+                        {
+                            labels: result.map((item) => item.period || ''),
+                            data: result.map((item) => item.averageTotalPerformance || item.bestTotalPerformance || 0),
+                            key: fieldMapping.totalPerformance,
+                        },
+                        {
+                            labels: result.map((item) => item.period || ''),
+                            data: result.map((item) => item.averageTotalSales || item.bestTotalSales || 0),
+                            key: fieldMapping.totalSales,
+                        },
+                    ];
+
+                    console.log(`${saveValue} 데이터 매핑 완료:`, mappedData);
+
+                    updateChartData(mappedData, `${keyPrefix} 데이터`);
+                }
             }
 
-            // 각 데이터를 개별로 처리
-            const mappedDataList = [
-                {
-                    labels: result.map((item) => item.period || ''),
-                    data: result.map((item) => item.totalIncentive || 0),
-                    key: '수당',
-                },
-                {
-                    labels: result.map((item) => item.period || ''),
-                    data: result.map((item) => item.totalPerformance || 0),
-                    key: '실적',
-                },
-                {
-                    labels: result.map((item) => item.period || ''),
-                    data: result.map((item) => item.totalSales || 0),
-                    key: '매출액',
-                },
-            ];
-
-            console.log("mappedDataList (기본 버튼):", mappedDataList);
-
-            if (Array.isArray(mappedDataList)) {
-                updateChartData(mappedDataList, '기본 데이터');
-            } else {
-            console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
-    }
-
-        }
-        else {
+            else {
                 // 개별 필드 처리
-                const mappedData = result.map((item) => ({
-                    label: item.period || '',
-                    value: item[fieldModel] || 0,
-                }));
+                const mappedData = result.map((item) => {
+                    let label;
+                    try {
+                        // groupBy에 따라 적절한 라벨을 설정
+                        label = groupBy === 'center' ? item.centerId :
+                            groupBy === 'employee' ? item.memberId :
+                                item.period || '';
+                        // 만약 label이 문자열이 아니면 강제로 문자열로 변환
+                        label = typeof label === 'string' ? label : JSON.stringify(label);
+                    } catch (error) {
+                        console.error("Label 파싱 중 오류 발생:", error);
+                        label = ''; // 기본값 설정
+                    }
+
+                    return {
+                        label,
+                        value: item[fieldModel] || 0,
+                    };
+                });
 
                 console.log("mappedData (개별 필드):", mappedData);
 
@@ -498,7 +594,7 @@ const loadData = async (searchType = null, fieldModel = null, fieldLabel = null,
 
             searchCriteria.value = ref({});
         } else {
-                throw new Error('Unsupported method');
+            throw new Error('Unsupported method');
         }
     } catch (error) {
         console.error('데이터 로드 실패:', error.message);
@@ -516,56 +612,88 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         return;
     }
 
+
     // 모든 데이터에 공통으로 사용될 라벨
     const labels = mappedDataList[0]?.labels || [];
     if (!labels.length) {
-        console.error("mappedDataList의 라벨이 비어 있습니다.");
-        return;
-    }
+        console.log("개별 필드 데이터 처리 중...");
 
-    // 데이터셋 생성
-    const datasets = mappedDataList.map((data, index) => {
-        if (!data.data || !Array.isArray(data.data)) {
-            console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
-            return null;
+        // 개별 필드 데이터 매핑
+        const individualFieldData = {
+            labels: mappedDataList.map((item) => item.label), // 각 항목의 label 값 추출
+            datasets: [
+                {
+                    label: fieldLabel, // 필드 레이블 사용
+                    data: mappedDataList.map((item) => item.value), // 각 항목의 value 값 추출
+                    borderColor: 'rgba(82, 77, 249, 0.8)',
+                    backgroundColor: 'rgba(82, 77, 249, 0.3)',
+                    pointBackgroundColor: 'rgba(82, 77, 249, 1)',
+                    pointBorderColor: '#FFFFFF',
+                    pointRadius: 5,
+                    fill: true,
+                    tension: 0.4,
+                    type: 'line', // 라인 차트로 설정
+                },
+            ],
+        };
+
+        console.log("개별 필드 차트 데이터:", individualFieldData);
+
+        // `chartDataList`에 추가 (isComparison 여부에 따라 처리)
+        if (isComparison) {
+            chartDataList.value = [...chartDataList.value, individualFieldData]; // 추가
+        } else {
+            chartDataList.value = [individualFieldData]; // 교체
         }
 
-        return {
-            label: data.key, // 데이터 항목 이름 ("수당", "실적", "매출액" 등)
-            data: data.data, // 실제 데이터 배열 (예: [6900, 6920])
-            borderColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.8)`,
-            backgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.3)`,
-            pointBackgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, 1)`,
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            fill: true,
-            tension: 0.4,
-            type: 'line',
-        };
-    }).filter(Boolean); // 유효하지 않은 데이터셋은 제거
-
-    // 데이터셋이 비어 있는지 확인
-    if (!datasets.length) {
-        console.error("생성된 데이터셋이 비어 있습니다.");
+        console.log("Updated chartDataList:", chartDataList.value);
         return;
     }
+    else {
+        // 데이터셋 생성
+        const datasets = mappedDataList.map((data, index) => {
+            if (!data.data || !Array.isArray(data.data)) {
+                console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
+                return null;
+            }
 
-    // 새로운 차트 데이터 생성
-    const newChartData = {
-        labels, // 공통 라벨 (예: ['2024-02', '2024-03'])
-        datasets, // 위에서 생성된 데이터셋
-    };
+            return {
+                label: data.key, // 데이터 항목 이름 ("수당", "실적", "매출액" 등)
+                data: data.data, // 실제 데이터 배열 (예: [6900, 6920])
+                borderColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.8)`,
+                backgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.3)`,
+                pointBackgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, 1)`,
+                pointBorderColor: '#FFFFFF',
+                pointRadius: 5,
+                fill: true,
+                tension: 0.4,
+                type: 'line',
+            };
+        }).filter(Boolean); // 유효하지 않은 데이터셋은 제거
 
-    console.log("Updated Chart Data:", newChartData);
+        // 데이터셋이 비어 있는지 확인
+        if (!datasets.length) {
+            console.error("생성된 데이터셋이 비어 있습니다.");
+            return;
+        }
 
-            // `chartDataList` 업데이트
-    if (isComparison) {
-        chartDataList.value = [...chartDataList.value, newChartData]; // 추가
-    } else {
-        chartDataList.value = [newChartData]; // 교체
+        // 새로운 차트 데이터 생성
+        const newChartData = {
+            labels, // 공통 라벨 (예: ['2024-02', '2024-03'])
+            datasets, // 위에서 생성된 데이터셋
+        };
+
+        console.log("Updated Chart Data:", newChartData);
+
+        // `chartDataList` 업데이트
+        if (isComparison) {
+            chartDataList.value = [...chartDataList.value, newChartData]; // 추가
+        } else {
+            chartDataList.value = [newChartData]; // 교체
+        }
+
+        console.log("Updated chartDataList:", chartDataList.value);
     }
-
-    console.log("Updated chartDataList:", chartDataList.value);
 };
 
 
@@ -849,12 +977,12 @@ async function searchStore() {
         const endpoint = modalType.value === 'centerList'
             ? $api.center
             : modalType.value === 'memberList'
-            ? $api.member
-            : modalType.value === 'productList'
-            ? $api.product // 가정
-            : modalType.value === 'customerList'
-            ? $api.customer // 가정
-            : null;
+                ? $api.member
+                : modalType.value === 'productList'
+                    ? $api.product // 가정
+                    : modalType.value === 'customerList'
+                        ? $api.customer // 가정
+                        : null;
 
         if (!endpoint) {
             console.error('유효하지 않은 modalType:', modalType.value);
