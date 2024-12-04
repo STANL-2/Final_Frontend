@@ -1,25 +1,18 @@
-# Stage 1: Build the Vue Vite application
-# FROM node:18 AS builder
-# WORKDIR /app
+# Node.js 이미지 사용
+FROM node:16
 
-# # Copy files and install dependencies
-# COPY package.json package-lock.json ./
-# RUN npm install
-# COPY . .
+# 작업 디렉토리 설정
+WORKDIR /app
 
-# # Build the application
-# RUN npm run build
+# 종속성 설치
+COPY package*.json ./
+RUN npm install
 
-# # Stage 2: Serve with NGINX
-# FROM nginx:1.23.4
-# WORKDIR /usr/share/nginx/html
+# 소스 코드 복사
+COPY . .
 
-# # Copy build output from Stage 1
-# COPY --from=builder /app/dist .
+# Vite 개발 서버 실행
+CMD ["npm", "run", "dev"]
 
-# # Copy custom NGINX configuration
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# EXPOSE 80
-
-# CMD ["nginx", "-g", "daemon off;"]
+# Vite 개발 서버 포트
+EXPOSE 5173
