@@ -92,21 +92,6 @@ const getPromotion = async () => {
     }
 }
 
-// const deletePromotion = async () => {
-//     try {
-//         const response = await $api.promotion.delete(
-//             promotionId
-//         );
-//         console.log(promotionId);
-//         console.log(response.status)
-//         alert('공지사항이 삭제되었습니다.');
-//         router.back();
-//     } catch (error) {
-//         console.log(promotionId);
-//         console.error('삭제 중 오류 발생:', error);
-//         alert('삭제에 실패했습니다.');
-//     }
-// };
 
 function deleteModal() {
     confirm.require({
