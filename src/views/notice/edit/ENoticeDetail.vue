@@ -70,7 +70,6 @@ const toast = useToast();
 // 첨부파일 조회하기
 const noticeImage = ref('');
 
-console.log("route", route.query);
 
 const goBack = () => {
     router.back();
@@ -123,7 +122,6 @@ function deleteModal() {
         acceptClass: 'p-button-help',
         accept: async () => {
             try {
-                console.log("notice",noticeId);
                 if (!noticeId) {
                     throw new Error("noticeId가 없습니다.");
                 }

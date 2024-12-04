@@ -121,7 +121,6 @@ const rows = ref(5); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 
 function handleOpenModal() {
-    console.log('모달 열기 호출됨');
 }
 const exportCSV = async () => {
     loading.value = true;
@@ -235,22 +234,17 @@ const loadData = async () => {
         }
         if(params.startDate==null){
             params.startDate=''
-            console.log(params.startDate);
         }
         else if(params.startDate!=''){
             params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
-            console.log(params.startDate);
         }
         if(params.endDate==null){
             params.endDate=''
-            console.log(params.endDate);
         }
         else if(params.endDate!=''){
             params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
-            console.log(params.endDate);
         }
         const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
-        console.log(`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
     } catch (error) {
