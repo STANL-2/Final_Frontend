@@ -99,23 +99,32 @@ function resetForm() {
     });
 }
 
-// 컴포넌트 초기화 시 모든 필드 초기화
 function initializeFormData() {
     formData.value = {};
     props.fields.forEach((fieldGroup) => {
         fieldGroup.forEach((field) => {
+            // 모든 필드의 model을 초기화
             formData.value[field.model] = field.default || '';
+            if (field.relatedModel) {
+                // relatedModel도 초기화
+                formData.value[field.relatedModel] = '';
+            }
         });
     });
 
-    console.log('시작 폼 데이터:', formData.value);
+    console.log('초기화된 formData:', formData.value);
 }
 
+function resetFields() {
+    Object.keys(formData.value).forEach((key) => {
+        formData.value[key] = ''; // 모든 필드 초기화
+    });
+}
 
 // 모달 열기 메서드
 function openModal(rowIndex, index) {
     const field = props.fields[rowIndex][index];
-    emit('open-modal', field.model); // `field.model`만 전달
+    emit('open-modal', field.model); 
 }
 
 function updateFieldValue(fieldModel, displayValue, idValue) {
@@ -141,11 +150,17 @@ defineExpose({
     updateFieldValue,
     formDataIds,
     initializeFormData,
+    resetFields
 });
 
 // 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
     initializeFormData();
+    props.fields.forEach((group) => {
+        group.forEach((field) => {
+            formData.value[field.model] = ''; // 초기 값 설정
+        });
+    });
 });
 </script>
 

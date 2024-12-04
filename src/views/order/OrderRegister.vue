@@ -1,12 +1,33 @@
 <template>
-    <Modal v-model="isVisible" header="수주서 등록" width="80rem" height="100rem">
+    <Modal v-model="isVisible" header="수주서 등록" width="100rem" height="none">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">수주서 제목:</Typography>
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+
+        <div class="flex-row content-between">
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
+            <div class="p-20">
+                <Card style="width: 25rem;">
+                    <template #title>계약서 선택</template>
+                    <template #content>
+                        <div class="contract-list" @scroll="onScroll">
+                            <Divider v-for="contract in contracts" :key="contract.id" class="contract-item"
+                                @click="selectContract(contract)">
+                                {{ contract.name }}
+                            </Divider>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+        </div>
+
+        <div class="flex-row content-between ml-l mr-xl">
+            <button class="custom-button" @click="openSignatureModal()"> 작성 서명</button>
+        </div>
+        <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
         <template #footer>
             <CommonButton label="취소" color="#F1F1FD" textColor="#6360AB" @click="closeModal" />
@@ -16,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, nextTick } from 'vue';
+import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
@@ -57,24 +78,26 @@ const initialHtml = `
     <div style="width: 900px; border: 1px solid #000; padding: 20px; background-color: #fff;">
         <!-- Header Section -->
         <div
-            style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative;">
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative;">
             <!-- 수주서 제목 -->
             <div style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">
                 <h2 style="font-size: 20px; font-weight: bold; margin: 0;">수주서</h2>
             </div>
 
             <!-- Approval Table -->
-            <table
-                style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
-                <tr style="background-color: #f0f0f0;">
-                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
-                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 20px; text-align: center;"></td>
-                    <td style="border: 1px solid #000; padding: 20px; text-align: center;"></td>
-                </tr>
-            </table>
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area"></td>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
         <!-- Top Table -->
@@ -83,7 +106,7 @@ const initialHtml = `
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">날짜
                 </td>
                 <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="createdAt"></td>
-                <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
+                <td style="width: 14%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
                     번호</td>
                 <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="contractId"></td>
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">매장
@@ -98,12 +121,12 @@ const initialHtml = `
         <!-- Middle Table -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
             <tr style="background-color: #f0f0f0;">
-                <th style="border: 1px solid #000; padding: 6px;">No.</th>
-                <th style="border: 1px solid #000; padding: 6px;">일련번호</th>
-                <th style="border: 1px solid #000; padding: 6px;">품명 / 규격</th>
-                <th style="border: 1px solid #000; padding: 6px;">수주수량</th>
-                <th style="border: 1px solid #000; padding: 6px;">단가 / 합계</th>
-                <th style="border: 1px solid #000; padding: 6px;">현재고</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">No.</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">일련번호</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">품명 / 규격</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">수주수량</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">단가 / 합계</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
             </tr>
             <tr>
                 <td style="border: 1px solid #000; padding: 6px; height: 20px;"></td>
@@ -126,43 +149,82 @@ watch(
         isVisible.value = newVal;
         if (newVal && !content.value) {
             content.value = initialHtml;
+            fetchContracts();
         }
     }
 );
+
+const contracts = ref([]); // 계약서 데이터 리스트
+const isFetching = ref(false); // API 호출 중 여부
+const hasMore = ref(true); // 추가 데이터 여부
+const page = ref(1); // 현재 페이지 번호
+
+const fetchContracts = async () => {
+    if (isFetching.value || !hasMore.value) return;
+    isFetching.value = true;
+
+    try {
+        // API 호출
+        console.log('Request URL:', $api.contract.get('', {
+            
+            params: {
+                page: page.value - 1, // Spring에서는 0-based paging
+                size: 10, // 페이지 크기
+                sortField: 'createdAt', // 정렬 필드
+                sortOrder: 'desc', // 정렬 방향
+            },
+        }));
+        const response = await $api.contract.get('', {
+            
+            params: {
+                page: page.value - 1, // Spring에서는 0-based paging
+                size: 10, // 페이지 크기
+                sortField: 'createdAt', // 정렬 필드
+                sortOrder: 'desc', // 정렬 방향
+            },
+        });
+
+        const contractsData = response.data.result.content; // 페이지 결과
+        const totalElements = response.data.result.totalElements; // 전체 계약서 개수
+
+        if (contractsData.length > 0) {
+            contracts.value.push(...contractsData); // 목록에 추가
+            page.value += 1; // 다음 페이지로 이동
+        } else {
+            hasMore.value = false; // 더 이상 데이터가 없으면 비활성화
+        }
+    } catch (error) {
+        console.error('계약서 목록 조회 오류:', error);
+        hasMore.value = false;
+    } finally {
+        isFetching.value = false;
+    }
+};
+
+
+const onScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+        fetchContracts();
+    }
+};
+
+const selectContract = (contract) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+    const contractIdCell = doc.querySelector(".contractId");
+    if (contractIdCell) {
+        contractIdCell.textContent = contract.id;
+    }
+    content.value = doc.documentElement.outerHTML;
+};
+
 
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
 
     const doc = parser.parseFromString(html, "text/html");
-
-    // 고객 사항
-    const customerName = doc.querySelector(".customer-name-value")?.innerText.trim() || "";
-    const customerIdentifiNo = doc.querySelector(".customer-identifiNo-value")?.innerText.trim() || "";
-    const customerAddress = doc.querySelector(".customer-address-value")?.innerText.trim() || "";
-    const customerPhone = doc.querySelector(".customer-phone-value")?.innerText.trim() || "";
-    const customerEmail = doc.querySelector(".customer-email-value")?.innerText.trim() || "";
-    const companyName = doc.querySelector(".customer-company-value")?.innerText.trim() || "";
-    const customerClassifcation = doc.querySelector(".customer-customerClassifcation-value")?.innerText.trim() || "";
-    const customerPurchaseCondition = doc.querySelector(".customer-purchaseCondition-value")?.innerText.trim() || "";
-    const customerAge = doc.querySelector(".customer-age-value")?.innerText.trim() || "";
-    const customerSex = doc.querySelector(".customer-sex-value")?.innerText.trim() || "";
-
-    // 차량 사항
-    const carName = doc.querySelector(".customer-carName-value")?.innerText.trim() || "";
-    const serialNum = doc.querySelector(".customer-serialNo-value")?.innerText.trim() || "";
-    const selectOption = doc.querySelector(".customer-selectOption-value")?.innerText.trim() || "";
-    const numberOfVehicles = doc.querySelector(".customer-numberOfVehicles-value")?.innerText.trim() || "";
-    const deliveryDate = doc.querySelector(".customer-deliveryDate-value")?.innerText.trim() || "";
-    const deliveryLocation = doc.querySelector(".customer-deliveryLocation-value")?.innerText.trim() || "";
-
-    // 금액 사항
-    const vehiclePrice = parseFloat(doc.querySelector(".customer-vehiclePrice-value")?.innerText.trim() || "0");
-    const downPayment = parseFloat(doc.querySelector(".customer-downPayment-value")?.innerText.trim() || "0");
-    const intermediatePayment = parseFloat(doc.querySelector(".customer-intermediatePayment-value")?.innerText.trim() || "0");
-    const remainderPayment = parseFloat(doc.querySelector(".customer-remainderPayment-value")?.innerText.trim() || "0");
-    const consignmentPayment = parseFloat(doc.querySelector(".customer-consignmentPayment-value")?.innerText.trim() || "0");
-    const totalSales = parseFloat(doc.querySelector(".customer-totalSales-value")?.innerText.trim() || "0");
 
     // 필요한 필드를 추가적으로 추출
     return {
@@ -216,12 +278,41 @@ function closeModal() {
     emit('close'); // 부모 컴포넌트에 close 이벤트 전달
 }
 
+const openSignatureModal = () => {
+    isSignatureModalVisible.value = true;
+    console.log('모달 열림:', isSignatureModalVisible.value); // 디버깅 로그
+};
+
+const handleSignature = async (signatureImage) => {
+
+    if (!signatureImage.startsWith("data:image/")) {
+        console.error("잘못된 서명 이미지 데이터:", signatureImage);
+        return;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+
+    console.log("HTML 변환 결과:", doc); // 디버깅용 로그
+
+    const buyerSignatureArea = doc.querySelector('#writer-signature-area');
+    console.log("작성 서명 영역:", buyerSignatureArea); // 디버깅 로그
+    if (buyerSignatureArea) {
+        buyerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="작성 서명 이미지" style="width: 6rem; height: auto;">`;
+    }
+
+    content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
+    console.log("업데이트된 HTML:", content.value); // 디버깅 로그
+
+    isSignatureModalVisible.value = false; // 모달 닫기
+};
+
 </script>
 
 <style scoped>
 /* 모달 및 CKEditor 스타일 */
 .main-container {
-    max-width: 99%;
+    max-width: 83%;
     margin: 0 auto;
     padding: 20px;
     border-radius: 8px;
