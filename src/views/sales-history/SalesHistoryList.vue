@@ -20,7 +20,7 @@
         </div>
 
         <div>
-            <BigCard ref="chartRef" :chartDataList="chartDataList" />
+            <BigCard ref="chartRef" :chartDataList="chartDataList":chartOptions="chartOptions" />
         </div>
 
         <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
@@ -168,6 +168,7 @@ const secondRowFields = ref([
 const loading = ref(false); // 로딩 상태
 const searchCriteria = ref({});
 const chartDataList = ref([]);
+const chartOptions = ref([]);
 let saveButton;
 let saveValue;
 
@@ -186,9 +187,8 @@ const refresh = () => {
     chartDataList.value = []; // 빈 배열로 초기화
     chartRef.value.destroyCharts(); // 기존 차트 제거
 
-    // 버튼 상태 초기화
+    // 버튼 상태 초기화`
     secondRowFields.value.forEach((field) => field.value = '');
-    thirdRowFields.value.forEach((field) => field.value = '');
 
     // 모달 상태 초기화
     showModal.value = false;
@@ -462,10 +462,7 @@ const loadData = async (searchType = null,
         };
 
         console.log("searchParams: ", searchParams);
-
-
         console.log("API 호출 URL:", apiPath); // 디버깅용
-
         console.log("검색 인자: ", searchParams);
 
         // API 호출
@@ -475,6 +472,7 @@ const loadData = async (searchType = null,
             const result = response.result.content;
 
             console.log("result: ", result);
+
             if (fieldModel === '') {
                 if (saveValue === '') {
                     // 기본 버튼 클릭 시: 모든 데이터 처리
@@ -544,27 +542,27 @@ const loadData = async (searchType = null,
                     const mappedData = [
                         {
                             labels: result.map((item) => item.period || ''),
-                            data: result.map((item) => item.averageTotalIncentive || item.bestTotalIncentive || 0),
+                            data: result.map((item) => item.averageTotalIncentive || item.totalIncentive || 0),
                             key: fieldMapping.totalIncentive,
                         },
                         {
                             labels: result.map((item) => item.period || ''),
-                            data: result.map((item) => item.averageTotalPerformance || item.bestTotalPerformance || 0),
+                            data: result.map((item) => item.averageTotalPerformance || item.totalPerformance || 0),
                             key: fieldMapping.totalPerformance,
                         },
                         {
                             labels: result.map((item) => item.period || ''),
-                            data: result.map((item) => item.averageTotalSales || item.bestTotalSales || 0),
+                            data: result.map((item) => item.averageTotalSales || item.totalSales || 0),
                             key: fieldMapping.totalSales,
                         },
                     ];
 
                     console.log(`${saveValue} 데이터 매핑 완료:`, mappedData);
 
-                    updateChartData(mappedData, `${keyPrefix} 데이터`);
+                    // 기존 차트에 새 데이터 추가 (true로 설정)
+                    updateChartData(mappedData, `${keyPrefix} 데이터`, true);
                 }
             }
-
             else {
                 // 개별 필드 처리
                 const mappedData = result.map((item) => {
@@ -606,25 +604,21 @@ const loadData = async (searchType = null,
 const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
     console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedDataList);
 
-    // `mappedDataList`가 배열인지 확인
     if (!Array.isArray(mappedDataList)) {
         console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
         return;
     }
 
-
-    // 모든 데이터에 공통으로 사용될 라벨
+    // 데이터셋의 라벨 추출
     const labels = mappedDataList[0]?.labels || [];
     if (!labels.length) {
-        console.log("개별 필드 데이터 처리 중...");
-
-        // 개별 필드 데이터 매핑
+        // 데이터셋이 없다면 새로운 차트 데이터 생성
         const individualFieldData = {
-            labels: mappedDataList.map((item) => item.label), // 각 항목의 label 값 추출
+            labels: mappedDataList.map((item) => item.label),
             datasets: [
                 {
-                    label: fieldLabel, // 필드 레이블 사용
-                    data: mappedDataList.map((item) => item.value), // 각 항목의 value 값 추출
+                    label: fieldLabel,
+                    data: mappedDataList.map((item) => item.value),
                     borderColor: 'rgba(82, 77, 249, 0.8)',
                     backgroundColor: 'rgba(82, 77, 249, 0.3)',
                     pointBackgroundColor: 'rgba(82, 77, 249, 1)',
@@ -632,25 +626,26 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                     pointRadius: 5,
                     fill: true,
                     tension: 0.4,
-                    type: 'line', // 라인 차트로 설정
+                    type: 'line',
                 },
             ],
         };
 
-        console.log("개별 필드 차트 데이터:", individualFieldData);
+        // 날짜 필드 처리
+        individualFieldData.startDate = mappedDataList.map(item => item.startDate);
+        individualFieldData.endDate = mappedDataList.map(item => item.endDate);
 
-        // `chartDataList`에 추가 (isComparison 여부에 따라 처리)
+        // 차트 데이터에 새로 생성한 데이터 추가
         if (isComparison) {
-            chartDataList.value = [...chartDataList.value, individualFieldData]; // 추가
+            chartDataList.value = [...chartDataList.value, individualFieldData];
         } else {
-            chartDataList.value = [individualFieldData]; // 교체
+            chartDataList.value = [individualFieldData];
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
         return;
-    }
-    else {
-        // 데이터셋 생성
+    } else {
+        // 기존 데이터셋이 있을 경우
         const datasets = mappedDataList.map((data, index) => {
             if (!data.data || !Array.isArray(data.data)) {
                 console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
@@ -658,43 +653,47 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             }
 
             return {
-                label: data.key, // 데이터 항목 이름 ("수당", "실적", "매출액" 등)
-                data: data.data, // 실제 데이터 배열 (예: [6900, 6920])
+                label: data.key,
+                data: data.data,
                 borderColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.8)`,
                 backgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 0.3)`,
-                pointBackgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, 1)`,
+                pointBackgroundColor: `rgba(${82 + index * 20}, ${77 + index * 20}, ${249 - index * 20}, 1)`,
                 pointBorderColor: '#FFFFFF',
                 pointRadius: 5,
                 fill: true,
                 tension: 0.4,
                 type: 'line',
             };
-        }).filter(Boolean); // 유효하지 않은 데이터셋은 제거
+        }).filter(Boolean);
 
-        // 데이터셋이 비어 있는지 확인
         if (!datasets.length) {
             console.error("생성된 데이터셋이 비어 있습니다.");
             return;
         }
 
-        // 새로운 차트 데이터 생성
+        const startDate = mappedDataList.map(item => item.startDate);
+        const endDate = mappedDataList.map(item => item.endDate);
+
         const newChartData = {
-            labels, // 공통 라벨 (예: ['2024-02', '2024-03'])
-            datasets, // 위에서 생성된 데이터셋
+            labels,
+            datasets,
+            startDate,
+            endDate,
         };
 
-        console.log("Updated Chart Data:", newChartData);
-
-        // `chartDataList` 업데이트
+        // 차트 데이터에 새로 생성한 데이터 추가
         if (isComparison) {
-            chartDataList.value = [...chartDataList.value, newChartData]; // 추가
+            chartDataList.value = [...chartDataList.value, newChartData];
         } else {
-            chartDataList.value = [newChartData]; // 교체
+            chartDataList.value = [newChartData];
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
     }
 };
+
+
+
 
 
 const loadComparisonData = async (requestBody, fieldLabel) => {
@@ -809,7 +808,7 @@ const secondChartData = ref({
     labels: [],
     datasets: [
         {
-            label: '실적',
+            label: '',
             data: [],
             yAxisID: 'y1',
             borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루

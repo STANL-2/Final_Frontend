@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, defineProps } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, defineProps, defineExpose } from 'vue';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -14,6 +14,14 @@ const props = defineProps({
     chartDataList: {
         type: Array,
         required: true,
+    },
+    chartOptions: {
+        type: Object,
+        default: () => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } },
+        }),
     },
 });
 
@@ -34,18 +42,14 @@ const updateCharts = () => {
             const chart = chartInstances[index];
             chart.data = chartData;
             chart.update();
-            console.log("이번엔 여기 왔어");
         } else {
-            console.log("여기임?");
             // 새로운 차트 생성
             const ctx = canvas.getContext('2d');
             const chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: chartData,
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: true } },
+                    ...props.chartOptions, // 부모 컴포넌트에서 받은 chartOptions 사용
                 },
             });
             chartInstances[index] = chartInstance;
@@ -66,20 +70,15 @@ const destroyCharts = () => {
         chartInstances.length = 0; // 배열을 비움
     }
     chartCanvasRefs.length = 0;
-    console.log("차트가 초기화되었습니다.");
 };
-
 
 // watch로 데이터 변경 감지
 watch(
     () => props.chartDataList,
     (newData) => {
-        console.log("chartDataList 변경 감지:", newData);
         if (newData && newData.length > 0) {
-            console.log("update!");
             updateCharts();
-        }
-        else{
+        } else {
             destroyCharts();
         }
     },
@@ -95,7 +94,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    chartInstances.forEach((chart) => chart.destroy());
+    destroyCharts();
 });
 </script>
 
