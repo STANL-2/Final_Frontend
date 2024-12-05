@@ -97,13 +97,13 @@ const routes = [
                 path: 'modify',
                 component: () => import('@/views/contract/edit/EContractModify.vue')
             },
-            {
+            {   
                 path: 'register',
                 component: () => import('@/views/contract/edit/EContractRegister.vue')
             },
             {
                 path: 'progress',
-                component: () => import('@/views/contract/ContractProgress.vue')
+                component: () => import('@/views/contract/ContractProgressDetail.vue')
             }
         ]
     },

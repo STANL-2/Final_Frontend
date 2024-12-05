@@ -21,6 +21,9 @@
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
                 <div class="ml-xs">
+                    <CommonButton label="진행현황" icon="pi pi-chart-line" @click="openProgressModal" />
+                </div>
+                <div class="ml-xs">
                     <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
                         @click="refresh" />
                 </div>
@@ -49,6 +52,8 @@
         </div>
 
         <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
+        <ContractProgressDetail v-model:visible="showProgressModal" :contractId="selectedContractId"
+            :contractStatusUpdatedAt="selectedContractStatusUpdatedAt" />
 
         <!-- <Modal v-model="showModal" :header="modalType === 'centerId' ? '매장 검색' : '사원 검색'" @confirm="confirmSelection">
             <input v-model="searchQuery" placeholder="검색어 입력" @keyup.enter="searchModalData" />
@@ -114,6 +119,7 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import EContractRegister from './edit/EContractRegister.vue';
+import ContractProgressDetail from './ContractProgressDetail.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -215,6 +221,9 @@ const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
 const selectedRows = ref([]);
+const showProgressModal = ref(false); // 진행현황 모달 표시 여부
+const selectedContractId = ref(null); // 선택된 계약서 ID
+const selectedContractCreatedAt = ref(null);
 
 function getStatusLabel(status) {
     switch (status) {
@@ -607,6 +616,24 @@ async function searchStore() {
     } finally {
         loading.value = false; // 로딩 종료
     }
+}
+
+// 진행상황 모달창 오픈
+function openProgressModal() {
+    if (!selectedRows.value || selectedRows.value.length === 0) {
+        alert('진행현황을 볼 계약서를 선택하세요.');
+        return;
+    }
+
+    const selectedContract = selectedRows.value[0]; // 첫 번째 선택된 계약서 데이터
+    selectedContractId.value = selectedContract.contractId; // 계약서 ID 저장
+    selectedContractCreatedAt.value = selectedContract.createdAt;
+    showProgressModal.value = true;
+}
+
+function closeProgressModal() {
+    showProgressModal.value = false;
+    selectedContractId.value = null;
 }
 
 </script>
