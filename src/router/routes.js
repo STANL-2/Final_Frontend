@@ -10,6 +10,10 @@ const routes = [
                 path: '',
                 component: () => import('@/views/Login.vue'),   // 로그인 페이지
                 // meta: { requiresAuth: false }                   // 로그인은 인증 불필요
+            },
+            {
+                path: 'commingsoon',
+                component: () => import('@/views/ComingSoon.vue')
             }
         ]
     },

@@ -27,7 +27,7 @@ const findMenuPath = (menu, path) => {
 
 const breadcrumbs = computed(() => {
     const path = route.path;
-    return findMenuPath(asideMenu, path);
+    return findMenuPath(asideMenu.value, path);
 });
 </script>
 
