@@ -185,7 +185,7 @@ const recreateChart = (chartData) => {
 
     const ctx = chartCanvas.value.getContext("2d");
     chartInstance = new Chart(ctx, {
-        type: "line",
+        type: 'bar',
         data: chartData,
         options: {
             responsive: true,

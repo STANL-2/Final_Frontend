@@ -39,6 +39,10 @@ import Card from 'primevue/card';
 import Dialog from 'primevue/dialog';
 import ConfirmationService from 'primevue/confirmationservice';
 import RadioButton from 'primevue/radiobutton';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+
+
 
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -78,5 +82,7 @@ app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('Dialog', Dialog);
 app.component('RadioButton', RadioButton);
+app.component('TabPanel', TabPanel);
+app.component('TabView', TabView);
 
 app.mount('#app');
