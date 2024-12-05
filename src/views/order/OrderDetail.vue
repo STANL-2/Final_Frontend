@@ -7,20 +7,11 @@
                 <div class="status-display">
                     <span :class="['status-badge', statusClass]">{{ status }}</span>
                 </div>
-                <div class="ml-xs">
-                    <button @click="openStatusModal" class="custom-button">승인/취소</button>
-                </div>
             </div>
 
             <div class="flex-row content-end">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="수정" @click="openModifyModal" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
                 </div>
             </div>
         </div>
@@ -35,34 +26,6 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
-
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
-            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
-            <div class="status-content">
-                <p class="current-status">
-                    <strong>현재 상태:</strong>
-                    <span class="status-highlight ml-xs">{{ status }}</span>
-                </p>
-                <div class="status-options">
-                    <label>
-                        <input type="radio" value="WAIT" v-model="newStatus" />
-                        대기
-                    </label>
-                    <label>
-                        <input type="radio" value="APPROVED" v-model="newStatus" />
-                        승인
-                    </label>
-                    <label>
-                        <input type="radio" value="CANCEL" v-model="newStatus" />
-                        취소
-                    </label>
-                </div>
-            </div>
-            <template #footer>
-                <CommonButton label="확인" @click="confirmStatusChange" />
-                <CommonButton label="취소" @click="closeStatusModal" />
-            </template>
-        </Modal>
 
         <template #footer>
             <CommonButton label="닫기" @click="onClose" />
@@ -113,35 +76,35 @@ function closeStatusModal() {
 // 상태 변경 확인
 const confirmStatusChange = async () => {
     try {
+    
+        // 업데이트된 HTML과 상태 저장
         const response = await $api.order.put(
             {
                 status: newStatus.value,
-            },
-            'status/' + getDetailId.value
+            }, 
+            `status/` + getDetailId.value
         );
 
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
-
+        // UI 피드백
         toast.add({
             severity: 'success',
             summary: '성공',
-            detail: 상태가  `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-            life: 3000,
+            detail: `상태가 "${newStatus.value}"로 변경되었습니다`,
+            life: 3000
         });
 
         emit('refresh');
         closeStatusModal();
-    }catch(error){
-        console.error('상태 변경 실패:', error);
+    } catch (error) {
+        console.error("상태 변경 오류:", error);
         toast.add({
             severity: 'error',
             summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다.',
-            life: 3000,
+            detail: '상태 변경 중 오류가 발생했습니다',
+            life: 3000
         });
     }
-}
+};
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(

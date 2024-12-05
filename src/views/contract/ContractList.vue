@@ -1,28 +1,33 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="select" />
-            <div class="select">
-                <CommonButton label="조회" @click="select" />
+        <div class="search-wrapper">
+            <div class="flex-row">
+                <div class="ml-l">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
+                </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="select" />
+                </div>
+            </div>
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                    @keyup.enter="select" />
             </div>
         </div>
 
-        <div class="flex-row content-between">
-            <div>전체목록</div>
+
+        <div class="flex-row content-between mt-l">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
-                <div>
-                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
-                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
                 </div>
             </div>
         </div>
@@ -30,7 +35,7 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows"
                 @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
                 buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
@@ -50,31 +55,11 @@
 
         <EContractRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
 
-        <!-- <Modal v-model="showModal" :header="modalType === 'centerId' ? '매장 검색' : '사원 검색'" @confirm="confirmSelection">
-            <input v-model="searchQuery" placeholder="검색어 입력" @keyup.enter="searchModalData" />
-            <button @click="searchModalData">검색</button>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>이름</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(item, index) in modalTableData" :key="index" @click="selectedRow = index">
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.name }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </Modal> -->
-
         <!-- 모달 -->
-        <Modal v-model="showModal" :header="modalType === 'centerId' ? '매장 검색' : '사원 검색'" width="30rem" height="none"
+        <Modal v-model="showModal" :header="modalType === 'centerName' ? '매장 검색' : '사원 검색'" width="30rem" height="none"
             @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
-                <label class="mr-m">{{ modalType === 'centerId' ? '매장명:' : '사원명:' }}</label>
+                <label class="mr-m">{{ modalType === 'centerName' ? '매장명:' : '사원명:' }}</label>
                 <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
                 <button class="search-button" @click="searchStore">
                     <span class="search-icon pi pi-search"></span>
@@ -89,8 +74,8 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'centerId' ? row.centerId : row.centerName }}</td>
-                        <td>{{ modalType === 'centerId' ? row.name : row.name }}</td>
+                        <td>{{ modalType === 'centerName' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -119,15 +104,17 @@ import EContractRegister from './edit/EContractRegister.vue';
 const formFields = [
     [
         {
-            label: '사원 검색',
+            label: '사원명',
             type: 'inputWithButton',
-            model: 'searchMemberId',
+            model: 'searchMemberName',
+            relatedModel: 'searchMemberId',
             showDivider: false
         },
         {
-            label: '매장 검색',
+            label: '매장명',
             type: 'inputWithButton',
-            model: 'centerId',
+            model: 'centerName',
+            relatedModel: 'centerId',
             showDivider: false
         },
         {
@@ -180,7 +167,7 @@ const formFields = [
             showDivider: true
         },
         {
-            label: '계약일',
+            label: '계약일자',
             type: 'calendar', // 쌍으로 처리
             model: 'contractDate', // 시작과 종료를 모두 포함
             showIcon: true,
@@ -197,7 +184,7 @@ const tableHeaders = ref([
     { field: 'customerName', label: '고객명', width: '13%' },
     { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
     { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'companyName', label: '고객 상호', width: '10%' },
+    { field: 'createdAt', label: '계약일자', width: '10%' },
     { field: 'status', label: '승인 상태', width: '3%' },
 ]);
 
@@ -207,7 +194,7 @@ const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(10); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
@@ -244,9 +231,16 @@ function getCustomTagClass(status) {
 const searchCriteria = ref({});
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    if (searchFormRef.value && searchFormRef.value.resetFields) {
+        searchFormRef.value.resetFields(); // CSearchForm의 초기화 메서드 호출
+    }
+
+    // 검색 조건 초기화
+    searchCriteria.value = {};
+
+    // 데이터 로드
     loadData();
-}
+};
 
 // 조회 버튼 클릭 시
 const select = () => {
@@ -259,8 +253,24 @@ const select = () => {
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        Object.entries(formData).filter(([key, value]) => {
+            return value !== null && value !== undefined && value !== '';
+        })
     );
+
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'contractDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'contractDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
+
     // 검색 실행
     loadData();
 };
@@ -301,9 +311,6 @@ const loadData = async () => {
 
         // API 호출
         const response = await $api.contract.getParams('search', queryString);
-
-        // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {
@@ -471,10 +478,10 @@ const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 
 const dynamicHeaders = computed(() => {
-    if (modalType.value === 'centerId') {
+    if (modalType.value === 'centerName') {
         return ['매장코드', '매장명'];
     } else {
-        return ['사원코드', '사원명'];
+        return ['영업매장', '사원명'];
     }
     return [];
 });
@@ -489,9 +496,18 @@ function handleOpenModal(fieldModel) {
 // 테이블 행 선택
 function selectStore(row, index) {
     selectedRow.value = index; // 선택된 행의 인덱스 저장
-    selectedStoreCode.value = row.centerId; // 매장 코드를 저장
-    console.log("선택된 매장 코드:", selectedStoreCode.value);
+
+    if (modalType.value === 'centerName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('centerName', row.name); // 매장명 표시
+        console.log("선택된 매장명:", row.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', row.name); // 사원명 표시
+        console.log("선택된 사원명:", row.name);
+    }
 }
+
 
 // 모달 확인 및 값 전달
 function confirmSelection() {
@@ -503,12 +519,19 @@ function confirmSelection() {
     // 선택된 데이터를 가져오기
     const selectedData = modalTableData.value[selectedRow.value];
 
+    if (!selectedData) {
+        console.error("선택된 데이터가 없습니다.");
+        return;
+    }
+
     // 부모 컴포넌트의 inputWithButton 필드 업데이트
-    if (modalType.value === 'centerId') {
+    if (modalType.value === 'centerName') {
         // 매장 검색의 경우
         searchFormRef.value.updateFieldValue('centerId', selectedData.centerId);
+        searchFormRef.value.updateFieldValue('centerName', selectedData.name);
     } else {
         // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', selectedData.name); // 표시용 name
         searchFormRef.value.updateFieldValue('searchMemberId', selectedData.memberId);
     }
 
@@ -530,11 +553,11 @@ async function searchStore() {
         // 검색 쿼리 확인
         console.log("검색어:", searchQuery.value);
 
-        const query = modalType.value === 'centerId'
+        const query = modalType.value === 'centerName'
             ? { name: searchQuery.value }
             : { employeeName: searchQuery.value };
 
-        const endpoint = modalType.value === 'centerId'
+        const endpoint = modalType.value === 'centerName'
             ? $api.center
             : $api.member;
 
@@ -546,12 +569,13 @@ async function searchStore() {
 
         // `modalType`에 따라 다른 응답 구조 처리
         let result = [];
-        if (modalType.value === 'centerId') {
+        if (modalType.value === 'centerName') {
             // center의 경우
             result = response.result.content || []; // content 내부 데이터 추출
         } else {
             // member의 경우
             result = response.result || []; // result 자체를 사용
+            console.log("result: ", result);
         }
 
         // 데이터가 배열인지 확인 후 modalTableData 업데이트
@@ -689,5 +713,27 @@ tr:hover {
 .search-icon {
     color: white;
     font-size: 14px;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>

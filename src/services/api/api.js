@@ -21,6 +21,7 @@ import SalesHistoryApiService from './SalesHistoryApiService';
 import SampleApiService from './SampleApiService';
 import ScheduleApiService from './ScheduleApiService';
 import FileApiService from './FileApiService';
+import NewsApiService from './NewsApiService';
 
 export const $api = {
     alarm: new AlarmApiService(),
@@ -35,6 +36,7 @@ export const $api = {
     family: new FamilyApiService(),
     log: new LogApiService(),
     member: new MemberApiService(),
+    news: new NewsApiService(),
     notice: new NoticeApiService(),
     order: new OrderApiService(),
     organization: new OrganizationApiService(),

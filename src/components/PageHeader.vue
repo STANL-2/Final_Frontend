@@ -9,8 +9,6 @@
                 </RouterLink>
             </div>
 
-
-
             <div class="end">
                 <div class="left-time">
                     <i class="pi pi-clock" style="margin-right: 8px; color: #ff4d4f;">{{ blank }}{{ formattedTime }}</i>
@@ -24,17 +22,17 @@
                     <i v-else="userStore.imageurl" class="pi pi-user profile" @click="goMypage"></i>
                     <div class="alarm-container">
                         <i class="pi pi-bell alarm" @click="toggleAlarmDropdown"></i>
-                        <span v-if="totalUnreadAlarms > 0" class="alarm-badge">
+                        <span class="alarm-badge" v-show="totalUnreadAlarms >= 0">
                             {{ totalUnreadAlarms }}
                         </span>
                         <!-- Alarm Dropdown -->
                         <div v-if="showAlarmDropdown" class="alarm-dropdown">
                             <div class="alarm-categories">
                                 <div v-for="(category, index) in alarmCategories" :key="index" class="alarm-category"
-                                    @click="navigateToAlarmCategory(category.name)">
+                                    @click="showAlarmModal(category.value)">
                                     <div class="category-info">
                                         <span class="category-name">{{ category.name }}</span>
-                                        <span v-if="category.unreadCount > 0" class="category-unread-count">
+                                        <span v-if="category.unreadCount >= 0" class="category-unread-count">
                                             {{ category.unreadCount }}
                                         </span>
                                     </div>
@@ -65,6 +63,48 @@
             </div>
         </div>
     </Modal>
+
+    <Modal v-model="showAlarmChart" header="알림" width="63rem" height="37rem" class="alarm-modal-header">
+        <div class="alarm-modal-container" @click.self="closeAlarmModal">
+            <div class="sidebar-container">
+                <Sidebar @menu-clicked="showAlarms" />
+            </div>
+            <div class="alarm-list-container" @scroll="handleScroll">
+                <div v-if="alarms.length === 0 && !loading" class="no-alarms">
+                    해당 카테고리에 알림이 없습니다.
+                </div>
+                <div v-for="alarm in alarms" :key="alarm.redirectUrl || 'no-alarms'" :class="[
+                    'alarm-item',
+                    {
+                        'read': alarm.readStatus,
+                        'no-alarms-message': alarm.isNoAlarmsMessage
+                    }
+                ]" @click="!alarm.isNoAlarmsMessage && showAlarmDetail(alarm)" style="cursor: pointer;">
+                    <!-- Only show tag and other details for actual alarms -->
+                    <template v-if="!alarm.isNoAlarmsMessage">
+                        <span class="tag" :style="{
+                            backgroundColor: getTagColor(alarm.tag),
+                        }">
+                            {{ alarm.tag }}
+                        </span>
+                        <h4 class="message">{{ truncateMessage(alarm.message) }}</h4>
+                        <p class="created-at">{{ alarm.createdAt }}</p>
+                    </template>
+
+                    <!-- No alarms message -->
+                    <template v-else>
+                        <div class="no-alarms-content">{{ alarm.message }}</div>
+                    </template>
+                </div>
+                <div v-if="loading" class="alarm-item">
+                </div>
+            </div>
+
+            <div v-if="selectedAlarm" class="alarm-detail-container">
+                <AlarmScheduleDetail :alarm="selectedAlarm" @closeModal="closeAlarmModal" />
+            </div>
+        </div>
+    </Modal>
 </template>
 
 <script setup>
@@ -75,9 +115,8 @@ import Modal from './common/Modal.vue';
 import Tree from 'primevue/tree';
 import ApiService from '@/services/api/config/ApiService';
 import OrganizationEmployee from './common/OrganizationEmployee.vue';
+import Sidebar from '@/views/alarm/AlarmSideBar.vue';
 import AlarmScheduleDetail from '@/views/alarm/AlarmScheduleDetail.vue';
-import AlarmContractDetail from '@/views/alarm/AlarmContractDetail.vue';
-import AlarmNoticeDetail from '@/views/alarm/AlarmNoticeDetail.vue';
 
 const blank = ' ';
 const userStore = useUserStore();
@@ -90,12 +129,45 @@ const expandedKeys = ref({});
 const organizationId = ref('ORG_000000001');
 
 const apiService = new ApiService('api/v1/organization');
-const apiAlarmService = new ApiService('api/v1/alarm');
 
+const apiAlarmService = new ApiService('api/v1/alarm');
+const alarms = ref([]);
+const showAlarmChart = ref(false);
 const showAlarmDropdown = ref(false);
 const totalUnreadAlarms = ref(0);
 const alarmCategories = ref([]);
 
+const currentPage = ref(0);
+const totalPages = ref(1);
+const loading = ref(false);
+const selectedCategory = ref('');
+
+const selectedAlarm = ref(null)
+
+const truncateMessage = (message) => {
+    if (!message) return '';
+    return message.length > 30 ? message.substring(0, 30) + '...' : message;
+};
+
+const tagColors = [
+    { name: '미팅', color: '#AEC6CF' },
+    { name: '교육', color: '#FFDAB9' },
+    { name: '휴가', color: '#B0E57C' },
+    { name: '회의', color: '#FFB7C5' },
+    { name: '계약서', color: '#A7D8DE' },
+    { name: '발주서', color: '#FFE4E1' },
+    { name: '수주서', color: '#B9E4C9' },
+    { name: '중요', color: '#FFB3B3' },
+    { name: '일반', color: '#E0FFB3' },
+];
+
+const getTagColor = (tag) => {
+
+    const tagData = tagColors.find(item => item.name === tag);
+    return tagData ? tagData.color : '#DDD'; // 기본 회색
+};
+
+// 마이 페이지
 const goMypage = () => {
     router.push('/mypage');
 }
@@ -105,6 +177,7 @@ const logout = () => {
     router.replace('/');
 }
 
+// 조직도
 const showOrganizationModal = async () => {
     showOrganizationChart.value = true;
     await getOrganizationChart();
@@ -166,6 +239,8 @@ const onNodeCollapse = (node) => {
     console.log('노드 축소:', node);
 };
 
+
+// 알람
 const fetchAlarmTypes = async () => {
     try {
         const response = await apiAlarmService.get('', '');
@@ -174,14 +249,17 @@ const fetchAlarmTypes = async () => {
             alarmCategories.value = [
                 {
                     name: '계약 알림',
+                    value: 'CONTRACT',
                     unreadCount: response.result.contractAlarmCount
                 },
                 {
                     name: '공지 알림',
+                    value: 'NOTICE',
                     unreadCount: response.result.noticeAlarmCount
                 },
                 {
                     name: '일정 알림',
+                    value: 'SCHEDULE',
                     unreadCount: response.result.scheduleAlarmCount
                 }
             ];
@@ -196,19 +274,85 @@ const fetchAlarmTypes = async () => {
     }
 };
 
-const navigateToAlarmCategory = (categoryName) => {
-    switch (categoryName) {
-        case '일정 알림':
-            router.push('/alarm/schedule');
-            break;
-        case '계약 알림':
-            router.push('/alarm/contract');
-            break;
-        case '공지 알림':
-            router.push('/alarm/notice');
-            break;
+const showAlarms = async (categoryName) => {
+    selectedCategory.value = categoryName;
+    currentPage.value = 0;
+    totalPages.value = 1;
+    alarms.value = [];
+    await fetchAlarmsByType();
+};
+
+const fetchAlarmsByType = async () => {
+    if (loading.value || currentPage.value >= totalPages.value) {
+        return;
     }
-    showAlarmDropdown.value = false;
+
+    loading.value = true;
+
+    try {
+        const query = {
+            page: currentPage.value,
+            size: 8,
+        };
+
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        const response = await apiAlarmService.getParams(`${selectedCategory.value}`, queryString);
+
+        if (response && response.result) {
+            if (currentPage.value === 0 && response.result.content.length === 0) {
+                // Create a "no alarms" item
+                alarms.value = [{
+                    isNoAlarmsMessage: true,
+                    message: '해당 카테고리에 알림이 없습니다.',
+                }];
+            } else {
+                // Append new alarms to the list
+                alarms.value.push(...response.result.content);
+            }
+
+            // Sort alarms by createdAt in descending order
+            alarms.value.sort((a, b) => {
+                // Keep the "no alarms" message at the top if it exists
+                if (a.isNoAlarmsMessage) return -1;
+                if (b.isNoAlarmsMessage) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+
+            if (response.result.last) {
+                totalPages.value = currentPage.value + 1; // Fix total pages
+            }
+            currentPage.value += 1;
+        }
+
+        // Handle no alarms case
+        if (alarms.value.length === 0) {
+            console.log(`${selectedCategory.value} 카테고리에 알람이 없습니다.`);
+        }
+    } catch (error) {
+        console.error('알림 요청 실패: ', error);
+    } finally {
+        loading.value = false; // Reset loading state
+    }
+};
+
+
+const handleScroll = (event) => {
+    const { scrollTop, clientHeight, scrollHeight } = event.target;
+
+    // 데이터가 더 이상 없으면 스크롤 이벤트 처리하지 않음
+    if (currentPage.value >= totalPages.value) {
+        console.log('모든 페이지를 로드했습니다.');
+        return;
+    }
+
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+        fetchAlarmsByType(); // 추가 데이터 요청
+    }
+};
+
+const showAlarmModal = async (categoryName) => {
+    showAlarmChart.value = true;
+    await showAlarms(categoryName);
 };
 
 const toggleAlarmDropdown = async () => {
@@ -224,6 +368,41 @@ const handleClickOutside = (event) => {
     const alarmContainer = document.querySelector('.alarm-container');
     if (alarmContainer && !alarmContainer.contains(event.target)) {
         showAlarmDropdown.value = false;
+    }
+};
+
+// 알림 클릭 핸들러
+const showAlarmDetail = async (alarm) => {
+
+    try {
+
+        const updatedAlarms = alarms.value.map(a =>
+            a.alarmId === alarm.alarmId
+                ? { ...a, readStatus: true }
+                : a
+        );
+
+        alarms.value = updatedAlarms;
+        selectedAlarm.value = { ...alarm, readStatus: true };
+
+        // Call API to mark the alarm as read
+        const response = await apiAlarmService.put(
+            '',
+            `${alarm.alarmId}`
+        );
+
+        await fetchAlarmTypes();
+        // Update the selected alarm
+        // selectedAlarm.value = { ...alarm, read: true };/
+
+    } catch (error) {
+        alarms.value = alarms.value.map(a =>
+            a.alarmId === alarm.alarmId
+                ? { ...a, readStatus: false }
+                : a
+        );
+        selectedAlarm.value = null;
+        console.error('Failed to mark alarm as read:', error);
     }
 };
 
@@ -245,6 +424,7 @@ const apiAuth = new ApiService('api/v1/auth');
 const refreshTokenBtn = async () => {
     try {
 
+
         const response = await apiAuth.post(
             {
                 refreshToken: userStore.refreshToken
@@ -259,10 +439,14 @@ const refreshTokenBtn = async () => {
     }
 }
 
+const closeAlarmModal = () => {
+    showAlarmChart.value = false; // 모달 닫기
+};
+
 // 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
 watchEffect(() => {
     if (userStore.remainingTime <= 0) {
-        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        router.push('/');
         logout();
     }
 });
@@ -273,10 +457,19 @@ onMounted(() => {
     // Initial fetch of alarm types
     fetchAlarmTypes();
 
+    // 5분마다 알람 타입 자동 업데이트
+    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
+    const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
+
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
         userStore.startTimer();
     }
+
+    // 컴포넌트 언마운트 시 인터벌 클리어
+    return () => {
+        clearInterval(alarmTypesInterval);
+    };
 });
 
 onUnmounted(() => {
@@ -494,15 +687,10 @@ onUnmounted(() => {
     align-items: center;
 }
 
-.alarm {
-    cursor: pointer;
-    position: relative;
-}
-
 .alarm-badge {
     position: absolute;
-    top: 13px;
-    right: -4px;
+    top: 9px;
+    right: -8px;
     background-color: red;
     color: white;
     border-radius: 50%;
@@ -513,8 +701,8 @@ onUnmounted(() => {
 .alarm-dropdown {
     position: absolute;
     top: 80%;
-    left: -5rem;
-    width: 14rem;
+    left: -3rem;
+    width: 10rem;
     max-height: 300px;
     background-color: white;
     border: 1px solid #ddd;
@@ -523,6 +711,8 @@ onUnmounted(() => {
     z-index: 1000;
     overflow-y: auto;
     padding: 10px;
+    padding-top: 3px;
+    padding-bottom: 0;
 }
 
 .alarm-categories {
@@ -576,5 +766,144 @@ onUnmounted(() => {
 
 .extend-button:hover {
     background-color: #4a48a2;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.alarm-item[data-v-628430e3] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    border-bottom: 1px solid #e4e4e4;
+    background-color: #ffffff;
+    width: 380px;
+    height: 120px;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
+}
+
+.alarm-item.read {
+    /* background-color: #f4f4f4; */
+    background-color: #fbfbfb;
+    /* 회색 배경 */
+}
+
+.alarm-item:hover {
+    background-color: #f5f5f5;
+}
+
+
+.alarm-item:active {
+    transform: scale(1.01);
+    /* 클릭 시 조금만 확대 */
+}
+
+.alarm-item:last-child {
+    border-bottom: none;
+}
+
+.alarm-item h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: #333;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.alarm-item p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.alarm-modal-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.alarm-list-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 480px;
+    border-left: 1px solid #e4e4e4;
+    border-right: 1px solid #e4e4e4;
+}
+
+.no-alarms {
+    /* text-align: center; */
+    color: #777;
+    padding: 20px;
+    font-size: 16px;
+    margin: auto;
+}
+
+.message {
+    white-space: pre-line;
+    margin-bottom: 0;
+    /* 줄바꿈 간 여백 제거 */
+    line-height: 1.5;
+}
+
+.created-at {
+    color: #777;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    width: 3.2rem;
+    text-align: center;
+    /* 텍스트 가로 정렬 */
+    line-height: 1.5;
+    /* 수직 정렬을 위한 줄 높이 */
+    vertical-align: middle;
+}
+
+.no-alarms-message {
+    text-align: center;
+    color: #777;
+    padding: 20px;
+    font-size: 16px;
+    cursor: default !important;
+}
+
+.no-alarms-content {
+    width: 100%;
+    text-align: center;
+    color: #777;
+    font-size: 16px;
+}
+
+:global(.p-dialog .p-dialog-header) {
+    padding-bottom: 0.7rem !important;
+}
+
+:global(.p-dialog .p-dialog-content) {
+    padding-bottom: 1rem !important;
 }
 </style>

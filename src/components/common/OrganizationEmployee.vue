@@ -46,7 +46,7 @@ const goProfile = (member) => {
 
 const apiService = new ApiService('api/v1/member/organization');
 
-const organizationMemberHeader = ['사원번호', '성명', '직급', '발령일', '고용 구분', '상세보기'];
+const organizationMemberHeader = ['사원번호', '성명', '직급', '고용 구분', '발령일', '상세보기'];
 const organizationMembers = ref([]);
 
 const getOrganizationMembers = async (member) => {
@@ -57,11 +57,11 @@ const getOrganizationMembers = async (member) => {
 
         // 필요한 데이터만 추출하여 careerData 배열에 저장
         organizationMembers.value = result.map(member => ({
-            loginId: member.loginId,
-            name: member.name,
-            position: member.position,
-            jobType: member.jobType,
-            createdAt: member.createdAt
+            loginId: member.loginId || 'N/A',
+            name: member.name || 'N/A',
+            position: member.position || 'N/A',
+            jobType: member.jobType === 'REGULAR' ? '정규직' : '비정규직',
+            createdAt: member.createdAt.substring(0, 10)
         }));
 
         console.log(organizationMembers.value);

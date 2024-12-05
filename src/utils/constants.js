@@ -18,7 +18,8 @@ export const asideMenu = [
         key: '2', label: '계약서 및 수주 관리', url: '/sample',
         children: [
             { key: '2-0', label: '계약서', url: '/contract/list' },
-            { key: '2-1', label: '수주서', url: '/order/list' }
+            { key: '2-1', label: '수주서', url: '/order/list' },
+            { key: '2-2', label: '계약 진행현황', url: '/contract/progress' }
         ]
     },
     { 

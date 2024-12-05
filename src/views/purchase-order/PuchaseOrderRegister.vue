@@ -1,13 +1,32 @@
 <template>
-    <Modal v-model="isVisible" header=" 발주서 등록" width="80rem" height="none">
+    <Modal v-model="isVisible" header=" 발주서 등록" width="100rem" height="none">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">발주서 제목:</Typography>
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" />
-
+        <div class="flex-row content-between">
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate"
+                ref="editorRef" />
+            <div class="p-20">
+                <Card
+                    style="width: 25rem; height: 98%; margin-top: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
+                    <template #title>수주서 선택</template>
+                    <Divider />
+                    <template #content>
+                        <div class="order-list" @scroll="onScroll" style="max-height: 300px; overflow-y: auto;">
+                            <div v-for="order in orders" :key="order.id" class="order-item"
+                                :class="{ selected: selectedOrderId === order.id }" @click="selectOrder(order)"
+                                style="padding: 15px 10px; cursor: pointer;">
+                                <Typography>제목: {{ order.title }}</Typography>
+                                <Typography type="caption">{{ order.createdAt }}</Typography>
+                            </div>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+        </div>
         <div class="flex-row content-between ml-l mr-xl">
             <button class="custom-button" @click="openSignatureModal('buyer')">매수인 서명</button>
             <button class="custom-button" @click="openSignatureModal('seller')"> 매도인 서명</button>
@@ -212,6 +231,28 @@ const initialHtml = `
 </html>
 `;
 
+// CKEditor 내용에서 데이터를 추출하는 함수
+const extractDataFromHTML = (html) => {
+    const parser = new DOMParser();
+
+    const doc = parser.parseFromString(html, "text/html");
+
+    const orderId = doc.querySelector(".orderId")?.innerText.trim() || "";
+
+    // 필요한 필드를 추가적으로 추출
+    return {
+        title: title.value,
+        orderId: orderId,
+        content: html // HTML 전체를 전송
+    };
+};
+
+const orders = ref([]);
+const page = ref(1);
+const hasMoreOrders = ref(true);
+const sortField = ref('orderDate'); // 정렬 기준 필드
+const sortOrder = ref('desc'); // 정렬 순서 (asc/desc)
+
 // props 변화 감지
 watch(
     () => props.visible,
@@ -219,26 +260,111 @@ watch(
         isVisible.value = newVal;
         if (newVal && !content.value) {
             content.value = initialHtml;
+            fetchOrders();
         }
     }
 );
 
-// CKEditor 내용에서 데이터를 추출하는 함수
-const extractDataFromHTML = (html) => {
-    const parser = new DOMParser();
+// 모달 열릴 때 초기 데이터 로드
+watch(() => props.visible, (newVal) => {
+    if (newVal) {
+        orders.value = []; // 기존 데이터 초기화
+        page.value = 1;
+        hasMoreOrders.value = true;
+        fetchOrders(); // 데이터 로드
+    }
+});
 
-    const doc = parser.parseFromString(html, "text/html");
+const isLoading = ref(false); // 요청 상태
 
-    // 필요한 필드를 추가적으로 추출
-    return {
-        title: title.value,
-        orderId: "ORD_000000001",
-        content: html // HTML 전체를 전송
+const fetchOrders = async () => {
+    if (!hasMoreOrders.value || isLoading.value) return; // 요청 중이거나 데이터가 없으면 실행하지 않음
+
+    isLoading.value = true; // 요청 시작
+    try {
+        const query = {
+            page: page.value - 1,
+            size: 10,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+        };
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString);
+
+        const response = await $api.order.getParams('search', queryString);
+        console.log("API 응답 데이터:", response);
+
+        const result = response?.result;
+        const orderData = result.content;
+        const totalPages = result.totalPages;
+
+        if (orderData.length) {
+            orders.value.push(...orderData);
+            page.value += 1;
+        }
+
+        if (page.value > totalPages) {
+            hasMoreOrders.value = false;
+        }
+    } catch (error) {
+        console.error('계약서 조회 중 오류 발생:', error);
+    } finally {
+        isLoading.value = false; // 요청 종료
+    }
+};
+
+const editorRef = ref(null);
+const ignoreUpdates = ref(false);
+const selectedOrderId = ref(null);
+
+// 계약서 선택 시 CKEditor 업데이트
+const selectOrder = (order) => {
+    const selectOrder = (order) => {
+        // 선택된 항목이 현재 선택된 항목과 동일한지 확인
+        if (selectedOrderId.value === order.id) {
+            selectedOrderId.value = null; // 같은 항목을 선택하면 선택 해제
+        } else {
+            selectedOrderId.value = order.id; // 새 항목 선택
+        }
     };
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
+
+    const orderCell = doc.querySelector('.orderId'); // .contractId 셀 찾기
+    if (!orderCell) {
+        console.error("HTML 구조에 .contractId 셀을 찾을 수 없습니다.");
+        console.log("HTML 구조:", doc.documentElement.outerHTML);
+        return;
+    }
+
+    // contractId 값 삽입
+    orderCell.textContent = order.orderId;
+    console.log("업데이트된 .contractId 셀:", orderCell);
+
+    // HTML 업데이트
+    const updatedHtml = doc.documentElement.outerHTML;
+    console.log("업데이트된 HTML:", updatedHtml);
+
+    // CKEditor와 동기화
+    ignoreUpdates.value = true; // 업데이트 플래그 설정
+    content.value = updatedHtml; // content.value 업데이트
+};
+
+// 무한 스크롤 이벤트 핸들러
+const onScroll = (event) => {
+    const target = event.target;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
+        fetchOrders();
+    }
 };
 
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
+    if (ignoreUpdates.value) {
+        ignoreUpdates.value = false; // 플래그 초기화
+        return; // CKEditor 업데이트 중 발생한 호출 무시
+    }
+
     content.value = newContent;
     console.log("Editor content updated:", newContent);
 };
@@ -377,5 +503,21 @@ const handleSignature = async (signatureImage) => {
     border-radius: 4px;
     cursor: pointer;
     font-size: 13px;
+}
+
+.order-item {
+    transition: background-color 0.2s ease-in-out;
+    border-radius: 4px;
+    border-bottom: 1px solid #e4e4e4;
+    padding: 0 10px;
+}
+
+.order-item.selected {
+    background-color: #e0e0e0; /* 선택된 상태 */
+    font-weight: bold;
+}
+
+.order-item:not(.selected):hover {
+    background-color: #f5f5f5; /* 선택되지 않은 상태에서 hover */
 }
 </style>

@@ -3,7 +3,7 @@
         v-model:visible="localVisible"
         modal
         :header="header"
-        :style="{ width: dialogWidth, height: dialogHeight }"
+        :style="{ width: dialogWidth }"
         @hide="handleHide"
     >
         <slot></slot>

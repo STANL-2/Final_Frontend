@@ -39,6 +39,9 @@ import Card from 'primevue/card';
 import Dialog from 'primevue/dialog';
 import ConfirmationService from 'primevue/confirmationservice';
 import RadioButton from 'primevue/radiobutton';
+import ScrollPanel from 'primevue/scrollpanel';
+import Timeline from 'primevue/timeline';
+
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 
@@ -82,6 +85,8 @@ app.component('ProgressSpinner', ProgressSpinner);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('Dialog', Dialog);
 app.component('RadioButton', RadioButton);
+app.component('ScrollPanel', ScrollPanel);
+app.component('Timeline', Timeline);
 app.component('TabPanel', TabPanel);
 app.component('TabView', TabView);
 

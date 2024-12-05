@@ -1,7 +1,7 @@
 <template>
     <div class="search-container">
         <!-- 행 단위 렌더링 -->
-        <template v-for="(fieldGroup, rowIndex) in fields" :key="rowIndex">
+        <template v-for="(fieldGroup, rowIndex) in displayedFields" :key="rowIndex">
             <div class="form-row">
                 <!-- 필드 그룹 렌더링 -->
                 <template v-for="(field, index) in fieldGroup" :key="`${rowIndex}_${index}`">
@@ -10,8 +10,8 @@
 
                         <!-- Input field -->
                         <template v-if="field.type === 'input'">
-                            <input type="text" v-model="formData[field.model]"  :placeholder="formData[field.model] ? '' : field.placeholder"
-                                class="form-input" />
+                            <input type="text" v-model="formData[field.model]"
+                                :placeholder="formData[field.model] ? '' : field.placeholder" class="form-input" />
                         </template>
 
                         <!-- Select field -->
@@ -30,7 +30,8 @@
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date"
+                                    placeholder="시작 날짜" />
                                 <span class="date-separator">~</span>
                                 <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
                             </div>
@@ -72,13 +73,17 @@
                 </template>
             </div>
             <!-- 행 아래 선 -->
-            <div v-if="rowIndex < fields.length - 1" class="row-divider"></div>
+            <div v-if="rowIndex < displayedFields.length - 1" class="row-divider"></div>
         </template>
+        <!-- 상세 조회 버튼 -->
+        <button class="details-button" v-if="props.fields.length > 2" @click="isExpanded = !isExpanded">
+            {{ isExpanded ? '간단히 보기' : '상세 조회' }}
+        </button>
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
+import { ref, defineProps, defineEmits, defineExpose, onMounted, computed } from 'vue';
 
 const emit = defineEmits(['open-modal']);
 const props = defineProps({
@@ -87,6 +92,13 @@ const props = defineProps({
         required: true,
         default: () => []
     }
+});
+
+// isExpanded를 ref로 변경
+const isExpanded = ref(false);
+
+const displayedFields = computed(() => {
+    return isExpanded.value ? props.fields : props.fields.slice(0, 2); // true면 모든 행, false면 첫 2개 행
 });
 
 // formData를 ref 객체로 정의
@@ -99,23 +111,30 @@ function resetForm() {
     });
 }
 
-// 컴포넌트 초기화 시 모든 필드 초기화
 function initializeFormData() {
     formData.value = {};
     props.fields.forEach((fieldGroup) => {
         fieldGroup.forEach((field) => {
+            // 모든 필드의 model을 초기화
             formData.value[field.model] = field.default || '';
+            if (field.relatedModel) {
+                // relatedModel도 초기화
+                formData.value[field.relatedModel] = '';
+            }
         });
     });
-
-    console.log('시작 폼 데이터:', formData.value);
 }
 
+function resetFields() {
+    Object.keys(formData.value).forEach((key) => {
+        formData.value[key] = ''; // 모든 필드 초기화
+    });
+}
 
 // 모달 열기 메서드
 function openModal(rowIndex, index) {
     const field = props.fields[rowIndex][index];
-    emit('open-modal', field.model); // `field.model`만 전달
+    emit('open-modal', field.model);
 }
 
 function updateFieldValue(fieldModel, displayValue, idValue) {
@@ -141,11 +160,17 @@ defineExpose({
     updateFieldValue,
     formDataIds,
     initializeFormData,
+    resetFields
 });
 
 // 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
     initializeFormData();
+    props.fields.forEach((group) => {
+        group.forEach((field) => {
+            formData.value[field.model] = ''; // 초기 값 설정
+        });
+    });
 });
 </script>
 
@@ -345,5 +370,21 @@ body {
     margin: 0 8px;
     font-weight: bold;
     color: #555;
+}
+
+.details-button {
+    position: absolute;
+    margin-left: 53rem;
+    background-color: #6360AB;
+    color: white;
+    border: none;
+    padding: 4px 28px;
+    font-size: 12px;
+    border-radius: 0 0 15px 15px;
+    cursor: pointer;
+}
+
+.details-button:hover {
+    background-color: #4a478f;
 }
 </style>

@@ -1,27 +1,32 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter ="select"/>
-            <div class="select">
-                <CommonButton label="조회" @click="select" />
+        <div class="search-wrapper content-end">
+            <div class="flex-row">
+                <div class="ml-l">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
+                </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="select" />
+                </div>
+            </div>
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                    @keyup.enter="select" />
             </div>
         </div>
 
-        <div class="flex-row content-between">
-            <div>전체목록</div>
+        <div class="flex-row content-between mt-l">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
-                <div>
-                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
-                </div>
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh"/>
                 </div>
             </div>
         </div>
@@ -29,10 +34,9 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows" 
-                @update:selection="updateSelectedRows"
-                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
-                @sort="onSort" @filter="onFilter">
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows"
+                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
                     <div class="custom-tag-wrapper">
                         <div :class="['custom-tag', getCustomTagClass(data.status)]">
@@ -44,15 +48,17 @@
 
 
             <OrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
-                @close="showDetailModal = false" @refresh="loadData" />
+                @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
+                :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
 
         <OrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
+
         <!-- 모달 -->
-        <Modal v-model="showModal" header="매장코드 검색" width="30rem" height="none" @confirm="confirmSelection" @cancel="resetModalState">
+        <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
+            height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
-                <label class="mr-m">매장명: </label>
-                <!-- Enter 키 입력 시 searchStore 함수 호출 -->
+                <label class="mr-m">{{ modalType === 'searchMemberName' ? '사원명:' : '사원명:' }}</label>
                 <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
                 <button class="search-button" @click="searchStore">
                     <span class="search-icon pi pi-search"></span>
@@ -61,14 +67,14 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in headers" :key="header">{{ header }}</th>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ row.매장코드 }}</td>
-                        <td>{{ row.매장명 }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.centerName : row.centerName }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -83,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
 import OrderDetail from '@/views/order/OrderDetail.vue';
@@ -93,20 +99,14 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import OrderRegister from './OrderRegister.vue';
 
-// 모달 테이블 값
-const headers = ['매장코드', '매장명'];
-const modalTableData = [
-    { 매장코드: 'A', '매장명': 50 },
-    { 매장코드: 'B', '매장명': 75 },
-];
-
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
         {
-            label: '수주자 검색',
+            label: '수주자명',
             type: 'inputWithButton',
-            model: 'searchMemberId',
+            model: 'searchMemberName',
+            relatedModel: 'searchMemberId',
             showDivider: false
         },
         {
@@ -117,14 +117,15 @@ const formFields = [
         },
         {
             type: 'select',
-            label: '승인여부',
+            label: '승인 상태',
             model: 'status',
             options: ['대기', '승인', '취소']
         },
         {
-            label: '담당자 검색',
+            label: '담당자명',
             type: 'inputWithButton',
-            model: 'adminId',
+            model: 'adminName',
+            relatedModel: 'adminId',
             showDivider: false
         }
 
@@ -137,7 +138,7 @@ const formFields = [
             showDivider: true
         },
         {
-            label: '수주일',
+            label: '수주일자',
             type: 'calendar', // 쌍으로 처리
             model: 'orderDate', // 시작과 종료를 모두 포함
             showIcon: true,
@@ -148,12 +149,13 @@ const formFields = [
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'orderId', label: '수주서 번호', width: '16%' },
+    { field: 'orderId', label: '수주서 번호', width: '14%' },
     { field: 'title', label: '수주서명', width: '18%' },
     { field: 'productName', label: '제품명', width: '17%' },
-    { field: 'memberName', label: '수주자', width: '17%' },
-    { field: 'createdAt', label: '수주일', width: '15%' },
-    { field: 'status', label: '승인 상태', width: '10%' }
+    { field: 'memberName', label: '수주자명', width: '10%' },
+    { field: 'createdAt', label: '수주일자', width: '15%' },
+    { field: 'status', label: '승인 상태', width: '10%' },
+    { field: 'adminName', label: '승인 담당자', width: '10%' }
 ]);
 
 // 상태 변수
@@ -162,7 +164,7 @@ const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(10); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
@@ -199,9 +201,16 @@ function getCustomTagClass(status) {
 const searchCriteria = ref({});
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    if (searchFormRef.value && searchFormRef.value.resetFields) {
+        searchFormRef.value.resetFields(); // CSearchForm의 초기화 메서드 호출
+    }
+
+    // 검색 조건 초기화
+    searchCriteria.value = {};
+
+    // 데이터 로드
     loadData();
-}
+};
 
 // 조회 버튼 클릭 시
 const select = () => {
@@ -214,8 +223,27 @@ const select = () => {
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        Object.entries(formData).filter(([key, value]) => {
+            if (key === 'searchMemberName') return false; // 표시용 name 제외
+            return value !== null && value !== undefined && value !== '';
+        })
     );
+
+    const updatedCriteria = {};
+    for (const [key, value] of Object.entries(searchCriteria.value)) {
+        if (key === 'orderDate_start') {
+            updatedCriteria.startDate = value;
+        } else if (key === 'orderDate_end') {
+            updatedCriteria.endDate = value;
+        } else {
+            updatedCriteria[key] = value; // 나머지 키는 그대로 유지
+        }
+    }
+
+    searchCriteria.value = updatedCriteria;
+
+    console.log("변경된 검색 조건:", searchCriteria.value);
+
     // 검색 실행
     loadData();
 };
@@ -289,7 +317,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'orderExcel.xlsx');
@@ -310,70 +338,70 @@ const exportCSV = async () => {
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
     console.log('선택된 항목 업데이트:', selectedRows.value);
-    };
+};
 
-    const printSelectedRows = () => {
-  if (selectedRows.value.length === 0) {
-    alert('인쇄할 행을 선택하세요.');
-    return;
-  }
+const printSelectedRows = () => {
+    if (selectedRows.value.length === 0) {
+        alert('인쇄할 행을 선택하세요.');
+        return;
+    }
 
-  const headersToPrint = tableHeaders.value.filter(
-    (header) => header.excludeFromPrint !== true
-  );
+    const headersToPrint = tableHeaders.value.filter(
+        (header) => header.excludeFromPrint !== true
+    );
 
-  const printContent = document.createElement('div');
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
+    const printContent = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
 
-  const headerRow = document.createElement('tr');
-  headersToPrint.forEach((header) => {
-    const th = document.createElement('th');
-    th.innerText = header.label;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  selectedRows.value.forEach((row) => {
-    const tr = document.createElement('tr');
+    const headerRow = document.createElement('tr');
     headersToPrint.forEach((header) => {
-      const td = document.createElement('td');
-      td.innerText = row[header.field] || '';
-      td.style.border = '1px solid #ddd';
-      td.style.padding = '8px';
-      tr.appendChild(td);
+        const th = document.createElement('th');
+        th.innerText = header.label;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
     });
-    table.appendChild(tr);
-  });
+    table.appendChild(headerRow);
 
-  printContent.appendChild(table);
+    selectedRows.value.forEach((row) => {
+        const tr = document.createElement('tr');
+        headersToPrint.forEach((header) => {
+            const td = document.createElement('td');
+            td.innerText = row[header.field] || '';
+            td.style.border = '1px solid #ddd';
+            td.style.padding = '8px';
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
 
-  // iframe 생성
-  const printFrame = document.createElement('iframe');
-  printFrame.style.position = 'absolute';
-  printFrame.style.top = '-10000px';
-  printFrame.style.left = '-10000px';
-  document.body.appendChild(printFrame);
+    printContent.appendChild(table);
 
-  const frameDoc = printFrame.contentWindow?.document;
-  if (frameDoc) {
-    frameDoc.open();
-    frameDoc.write('<html><head><title>Print</title></head><body>');
-    frameDoc.write(printContent.innerHTML);
-    frameDoc.write('</body></html>');
-    frameDoc.close();
+    // iframe 생성
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-10000px';
+    printFrame.style.left = '-10000px';
+    document.body.appendChild(printFrame);
 
-    // 인쇄 호출
-    printFrame.contentWindow?.focus();
-    printFrame.contentWindow?.print();
-  }
+    const frameDoc = printFrame.contentWindow?.document;
+    if (frameDoc) {
+        frameDoc.open();
+        frameDoc.write('<html><head><title>Print</title></head><body>');
+        frameDoc.write(printContent.innerHTML);
+        frameDoc.write('</body></html>');
+        frameDoc.close();
 
-  // iframe 제거
-  document.body.removeChild(printFrame);
+        // 인쇄 호출
+        printFrame.contentWindow?.focus();
+        printFrame.contentWindow?.print();
+    }
+
+    // iframe 제거
+    document.body.removeChild(printFrame);
 };
 
 // 페이지네이션 이벤트 처리
@@ -420,39 +448,120 @@ const selectedCode = ref('');
 const searchFormRef = ref(null);
 const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
+const modalType = ref(''); // 현재 열려 있는 모달의 유형
+const selectedStoreCode = ref('');
+const modalTableData = ref([]);
 
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
+const dynamicHeaders = computed(() => {
+    if (modalType.value === 'searchMemberName') {
+        return ['영업매장', '사원명'];
+    } else {
+        return ['영업매장', '사원명'];
+    }
+    return [];
+});
+
+function handleOpenModal(fieldModel) {
+    modalType.value = fieldModel;
+    showModal.value = true; // 모달 열기
+    selectedRow.value = null; // 선택 초기화
 }
 
 function selectStore(row, index) {
-    selectedRow.value = index;
-    selectedCode.value = row.매장코드;
+    selectedRow.value = index; // 선택된 행의 인덱스 저장
+
+    if (modalType.value === 'searchMemberName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberName', row.name);
+        console.log("선택된 매장명:", row.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('adminName', row.name);
+        console.log("선택된 사원명:", row.name);
+    }
 }
 
+// 모달 확인 및 값 전달
 function confirmSelection() {
-    if (selectedFieldIndex.value !== null) {
-        searchFormRef.value.updateFieldValue(selectedFieldIndex.value, selectedCode.value);
+    if (selectedRow.value === null) {
+        alert('항목을 선택하세요.');
+        return;
     }
-    closeModal();
+
+    // 선택된 데이터를 가져오기
+    const selectedData = modalTableData.value[selectedRow.value];
+
+    if (!selectedData) {
+        console.error("선택된 데이터가 없습니다.");
+        return;
+    }
+
+    // 부모 컴포넌트의 inputWithButton 필드 업데이트
+    if (modalType.value === 'searchMemberName') {
+        // 매장 검색의 경우
+        searchFormRef.value.updateFieldValue('searchMemberId', selectedData.memberId);
+        searchFormRef.value.updateFieldValue('searchMemberName', selectedData.name);
+    } else {
+        // 사원 검색의 경우
+        searchFormRef.value.updateFieldValue('adminName', selectedData.name); // 표시용 name
+        searchFormRef.value.updateFieldValue('adminId', selectedData.memberId);
+    }
+
+    // 모달 닫기
+    showModal.value = false;
 }
 
 function resetModalState() {
-    closeModal();
-}
-
-function closeModal() {
     showModal.value = false;
     selectedRow.value = null;
-    selectedCode.value = '';
+    searchQuery.value = ''; // 검색어 초기화
+    modalTableData.value = []; // 모달 테이블 데이터 초기화
+    selectedStoreCode.value = ''; // 선택된 매장 코드 초기화
 }
 
-function searchStore() {
-    if (searchQuery.value) {
-        alert(`검색어: ${searchQuery.value}`);
+async function searchStore() {
+    try {
+        // 검색 쿼리 확인
+        console.log("검색어:", searchQuery.value);
+        console.log("타입: ", modalType.value);
+
+        const query = modalType.value === 'searchMemberName'
+            ? { searchMemberName: searchQuery.value }
+            : { adminName: searchQuery.value };
+
+        const endpoint = modalType.value === 'searchMemberName'
+            ? $api.member
+            : $api.member;
+
+        // API 호출
+        const response = await endpoint.getParams('search', `?name=${searchQuery.value}`);
+
+        // API 응답 데이터 확인
+        console.log("API 응답 데이터:", response);
+
+        let result = [];
+        if (modalType.value === 'centerName') {
+            // center의 경우
+            result = response.result.content || []; // content 내부 데이터 추출
+        } else {
+            // member의 경우
+            result = response.result || []; // result 자체를 사용
+            console.log("result: ", result);
+        }
+
+        // 데이터가 배열인지 확인 후 modalTableData 업데이트
+        if (Array.isArray(result)) {
+            modalTableData.value = result; // 데이터 바인딩
+        } else {
+            console.warn("API 응답 데이터가 배열이 아닙니다.");
+            modalTableData.value = [];
+        }
+    } catch (error) {
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    } finally {
+        loading.value = false; // 로딩 종료
     }
-    searchQuery.value = '';
 }
 </script>
 
@@ -514,9 +623,12 @@ tr:hover {
 
 .custom-tag-wrapper {
     display: flex;
-    justify-content: center; /* 수평 가운데 정렬 */
-    align-items: center; /* 수직 가운데 정렬 */
-    height: 100%; /* 부모 높이에 맞게 정렬 */
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
 }
 
 .custom-tag {
@@ -552,5 +664,27 @@ tr:hover {
     display: flex;
     justify-content: right;
     margin-top: 16px;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>
