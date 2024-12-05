@@ -2,18 +2,24 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <div class="flex-row content-end">
+                <div class="ml-l">
+                    <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="handleSearch"/>
+                </div>
+            </div>
+            <SearchForm class="mb-l":fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-        <div class="flex-row content-end">
-            <CommonButton label="조회" @click="handleSearch"/>
-        </div>
-        <div class="flex-row content-between mt-l">
-            <div class="list">전체목록</div>
+        <div class="flex-row content-between mt-xxxxl">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
                 <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
 
@@ -25,7 +31,7 @@
                 :loading="loading" 
                 :totalRecords="totalRecords" 
                 :rows="rows" 
-                :rowsPerPageOptions="[5, 10, 20, 50]"
+                :rowsPerPageOptions="[10, 15, 20, 50]"
                 :selectable="true" 
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
@@ -99,7 +105,7 @@ const tableHeaders = [
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
-const rows = ref(5); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 
 function handleOpenModal() {
@@ -245,6 +251,28 @@ onMounted(() => {
 .list{
     font-size: 1.2rem;
     font-weight:bold;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>
 

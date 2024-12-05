@@ -50,12 +50,12 @@ const props = defineProps({
     totalRecords: Number,
     rows: {
         type: Number,
-        default: 10,
+        default: 20,
     },
     selection: Array,
     rowsPerPageOptions: {
         type: Array,
-        default: () => [5, 10, 20, 50]
+        default: () => [10, 15, 20, 50]
     },
     buttonLabel: String,
     buttonHeader: String,
