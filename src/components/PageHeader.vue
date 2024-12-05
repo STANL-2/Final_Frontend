@@ -2,11 +2,15 @@
     <header>
         <nav class="menu-bar">
             <div class="start">
-                <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
+                <!-- <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
                     <span class="title">영업관리</span>
-                </RouterLink>
+                </RouterLink> -->
+                <div class="nav-link" @click="handleNavigation">
+                    <img src="../assets/header/gradation.png" class="gradation" />
+                    <span class="title">영업관리</span>
+                </div>
             </div>
 
             <div class="end">
@@ -239,6 +243,22 @@ const onNodeCollapse = (node) => {
     console.log('노드 축소:', node);
 };
 
+const handleNavigation = () => {
+    switch (userStore.auth) {
+        case 'ADMIN':
+            router.push('/ADashboard');
+            break;
+        case 'DIRECTOR':
+            router.push('/DDashboard');
+            break;
+        case 'GOD':
+            router.push('/SDashboard');
+            break;
+        default:
+            router.push('/EDashboard');
+            break;
+    }
+};
 
 // 알람
 const fetchAlarmTypes = async () => {
