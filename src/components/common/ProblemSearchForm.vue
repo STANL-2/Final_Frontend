@@ -44,6 +44,7 @@
                     </div>
                 </template>
             </div>
+            <div v-if="rowIndex < fields.length - 1" class="row-divider"></div>
         </template>
     </div>
 </template>
