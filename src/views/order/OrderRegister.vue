@@ -83,9 +83,9 @@ const initialHtml = `
     <title>Order Sheet</title>
 </head>
 
-<body
+<body>
+    <div
     style="font-family: Arial, sans-serif; line-height: 1.5; display: flex; justify-content: center; padding: 20px; background-color: #f9f9f9;">
-
     <div style="width: 900px; border: 1px solid #000; padding: 20px; background-color: #fff;">
         <!-- Header Section -->
         <div
@@ -140,7 +140,7 @@ const initialHtml = `
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
             </tr>
             <tr>
-                <td style="border: 1px solid #000; padding: 6px; height: 20px;"></td>
+                <td style="border: 1px solid #000; padding: 6px; height: 20px;" class="no"></td>
                 <td style="border: 1px solid #000; padding: 6px;" class="serialNo"></td>
                 <td style="border: 1px solid #000; padding: 6px;" class="carName"></td>
                 <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles"></td>
@@ -149,6 +149,7 @@ const initialHtml = `
             </tr>
         </table>
     </div>
+</div>
 </body>
 </html>
 `;
@@ -160,13 +161,116 @@ const extractDataFromHTML = (html) => {
     const doc = parser.parseFromString(html, "text/html");
 
     const contractId = doc.querySelector(".contractId")?.innerText.trim() || "";
+    const createdAt = doc.querySelector(".createdAt")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".centerName")?.innerText.trim() || "";
+    const adminId = doc.querySelector(".adminId")?.innerText.trim() || "";
+    const serialNo = doc.querySelector(".serialNo")?.innerText.trim() || "";
+    const carName = doc.querySelector(".carName")?.innerText.trim() || "";
+    const no = doc.querySelector(".no")?.innerText.trim() || "";
+    const writerSignatureArea = doc.querySelector("#writer-signature-area")?.innerText.trim() || "";
+    const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
+    const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const stock = doc.querySelector(".stock")?.innerText.trim() || "";
 
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
-        contractId: contractId,
+        contractId,
+        createdAt,
+        centerName,
+        adminId,
+        serialNo,
+        numberOfVehicles,
+        totalSales,
+        stock,
+        writerSignatureArea,
+        carName,
+        no,
         content: html // HTML 전체를 전송
     };
+};
+
+const generateInitialHtml = (data) => {
+    return `
+        <!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Sheet</title>
+</head>
+
+<body>
+    <div
+    style="font-family: Arial, sans-serif; line-height: 1.5; display: flex; justify-content: center; padding: 20px; background-color: #f9f9f9;">
+    <div style="width: 900px; border: 1px solid #000; padding: 20px; background-color: #fff;">
+        <!-- Header Section -->
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative;">
+            <!-- 수주서 제목 -->
+            <div style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">
+                <h2 style="font-size: 20px; font-weight: bold; margin: 0;">수주서</h2>
+            </div>
+
+            <!-- Approval Table -->
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area">${data.writerSignatureArea || "-"}</td>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Table -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+            <tr>
+                <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">날짜
+                </td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="createdAt">${data.createdAt || "-"}</td>
+                <td style="width: 14%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
+                    번호</td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="contractId">${data.contractId || "-"}</td>
+                <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">매장
+                </td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="centerName">${data.centerName || "-"}</td>
+                <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">담당자
+                </td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="adminId">${data.adminId || "-"}</td>
+            </tr>
+        </table>
+
+        <!-- Middle Table -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+            <tr style="background-color: #f0f0f0;">
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">No.</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">일련번호</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">품명 / 규격</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">수주수량</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">단가 / 합계</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 6px; height: 20px;" class="no">${data.no || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="serialNo">${data.serialNo || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="carName">${data.carName || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles">${data.numberOfVehicles || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="totalSales">${data.totalSales || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="stock">${data.stock || "-"}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+    `;
 };
 
 const contracts = ref([]);
@@ -211,10 +315,8 @@ const fetchContracts = async () => {
             sortOrder: sortOrder.value,
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString);
 
         const response = await $api.contract.getParams('search', queryString);
-        console.log("API 응답 데이터:", response);
 
         const result = response?.result;
         const contractData = result.content;
@@ -248,17 +350,14 @@ const selectContract = (contract) => {
     const contractIdCell = doc.querySelector('.contractId'); // .contractId 셀 찾기
     if (!contractIdCell) {
         console.error("HTML 구조에 .contractId 셀을 찾을 수 없습니다.");
-        console.log("HTML 구조:", doc.documentElement.outerHTML);
         return;
     }
 
     // contractId 값 삽입
     contractIdCell.textContent = contract.contractId;
-    console.log("업데이트된 .contractId 셀:", contractIdCell);
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
-    console.log("업데이트된 HTML:", updatedHtml);
 
     // CKEditor와 동기화
     ignoreUpdates.value = true; // 업데이트 플래그 설정
@@ -281,24 +380,33 @@ const handleEditorUpdate = (newContent) => {
     }
 
     content.value = newContent;
-    console.log("Editor content updated:", newContent);
 };
 
 // 등록 버튼 클릭 시 호출되는 함수
 const onRegister = async () => {
     try {
-        console.log("Current editor content:", content.value);
 
         if (!content.value) {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const postData = extractDataFromHTML(content.value);
-        console.log("추출된 데이터:", postData);
+        // CKEditor의 현재 HTML 내용 추출
+        const extractedData = extractDataFromHTML(content.value);
+
+        // initialHtml을 업데이트
+        const updatedInitialHtml = generateInitialHtml(extractedData);
+
+        // content에 반영
+        content.value = updatedInitialHtml;
+
+        const postData = {
+            title: extractedData.title,
+            orderId: extractedData.orderId,
+            contractId: extractedData.contractId,
+            content: content.value,
+        };
 
         const response = await $api.order.post(postData, "");
-        console.log("POST 요청:", postData);
-        console.log("POST 응답:", response);
 
         alert("수주서가 성공적으로 등록되었습니다.");
 
