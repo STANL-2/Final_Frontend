@@ -7,20 +7,11 @@
                 <div class="status-display">
                     <span :class="['status-badge', statusClass]">{{ status }}</span>
                 </div>
-                <div class="ml-xs">
-                    <button @click="openStatusModal" class="custom-button">승인/취소</button>
-                </div>
             </div>
 
             <div class="flex-row content-end">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="수정" @click="openModifyModal" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
                 </div>
             </div>
         </div>
@@ -35,35 +26,6 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
-
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
-            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
-            <div class="status-content">
-                <p class="current-status">
-                    <strong>현재 상태:</strong>
-                    <span class="status-highlight ml-xs">{{ status }}</span>
-                </p>
-                <div class="status-options">
-                    <label>
-                        <input type="radio" value="WAIT" v-model="newStatus" />
-                        대기
-                    </label>
-                    <label>
-                        <input type="radio" value="APPROVED" v-model="newStatus" />
-                        승인
-                    </label>
-                    <label>
-                        <input type="radio" value="CANCEL" v-model="newStatus" />
-                        취소
-                    </label>
-                </div>
-            </div>
-            <SignatureCanvas @signatureSaved="saveSignature" />
-            <template #footer>
-                <CommonButton label="확인" @click="confirmStatusChange" />
-                <CommonButton label="취소" @click="closeStatusModal" />
-            </template>
-        </Modal>
 
         <template #footer>
             <CommonButton label="닫기" @click="onClose" />
@@ -82,7 +44,6 @@ import OrderModify from './OrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
-import SignatureCanvas from "@/components/common/signatureCanvas/SignatureCanvas.vue";
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩될 값
@@ -103,7 +64,6 @@ const getDetailId = ref(null);
 const showModifyModal = ref(false);
 const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
 const newStatus = ref(props.status); // 새로운 상태 값
-let signatureData = ref(null); // 서명 데이터 저장
 
 function openStatusModal() {
     showStatusChangeModal.value = true;
@@ -113,104 +73,34 @@ function closeStatusModal() {
     showStatusChangeModal.value = false;
 }
 
-// 서명 저장
-const saveSignature = (dataURL) => {
-    signatureData.value = dataURL;
-};
-
 // 상태 변경 확인
 const confirmStatusChange = async () => {
     try {
-        // 기본 검증
-        if (!getDetailId.value) {
-            throw new Error("계약 ID가 없습니다");
-        }
-        if (!signatureData.value) {
-            toast.add({
-                severity: 'warn',
-                summary: '경고',
-                detail: '서명이 필요합니다',
-                life: 3000
-            });
-            return;
-        }
-
-        // 상태 전환 검증
-        const allowedTransitions = {
-            'WAIT': ['APPROVED', 'CANCEL'],
-            'APPROVED': ['CANCEL'],
-            'CANCEL': []
-        };
-
-        if (!allowedTransitions[props.status]?.includes(newStatus.value)) {
-            toast.add({
-                severity: 'error',
-                summary: '오류',
-                detail: '허용되지 않은 상태 전환입니다',
-                life: 3000
-            });
-            return;
-        }
-
-        // 서버에서 HTML 가져오기
-        const response = await $api.order.get('', getDetailId.value);
-        const currentHtml = response.result.content;
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(currentHtml, "text/html");
-
-        const approvalTd = doc.querySelector("#approval-signature-area");
-
-        if (!approvalTd) {
-            toast.add({
-                severity: 'error',
-                summary: '오류',
-                detail: '서명 영역을 찾을 수 없습니다',
-                life: 3000
-            });
-            return;
-        }
-
-        // 서명 이미지 삽입
-        approvalTd.innerHTML = `
-            <div class="signature-container">
-                <img src="${signatureData.value}" 
-                    alt="서명" 
-                    style="max-width: 150px; max-height: 100px; object-fit: contain;" />
-                <p class="signature-date">${new Date().toLocaleDateString()}</p>
-            </div>
-        `;
-
-        const updatedHtml = doc.documentElement.outerHTML;
-
+    
         // 업데이트된 HTML과 상태 저장
-        await $api.order.put({
-            status: newStatus.value
-        }, `status/${getDetailId.value}`);
-
-        await $api.order.put({
-            content: updatedHtml,
-        }, `${getDetailId.value}`);
+        const response = await $api.order.put(
+            {
+                status: newStatus.value,
+            }, 
+            `status/` + getDetailId.value
+        );
 
         // UI 피드백
         toast.add({
             severity: 'success',
             summary: '성공',
-            detail: `상태가 "${newStatus.value}"로 변경되고 서명이 추가되었습니다`,
+            detail: `상태가 "${newStatus.value}"로 변경되었습니다`,
             life: 3000
         });
 
-        // 즉시 반영 및 업데이트
-        props.details.content = updatedHtml;
         emit('refresh');
         closeStatusModal();
-
     } catch (error) {
         console.error("상태 변경 오류:", error);
         toast.add({
             severity: 'error',
-            summary: '오류',
-            detail: '처리 중 오류가 발생했습니다',
+            summary: '실패',
+            detail: '상태 변경 중 오류가 발생했습니다',
             life: 3000
         });
     }

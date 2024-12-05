@@ -7,14 +7,17 @@
                 <div class="status-display">
                     <span :class="['status-badge', statusClass]">{{ status }}</span>
                 </div>
-                <div class="ml-xs">
-                    <button @click="openStatusModal" class="custom-button">승인/취소</button>
-                </div>
             </div>
 
             <div class="flex-row content-end">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="수정" @click="openModifyModal" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
                 </div>
             </div>
         </div>
