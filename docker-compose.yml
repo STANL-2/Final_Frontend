@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .  # frontend 폴더를 컨텍스트로 지정
+      dockerfile: Dockerfile  # frontend/Dockerfile 사용
+    container_name: frontend
+    ports:
+      - "5173:5173"  # Vite 개발 서버 포트
+    expose:
+      - "5173"
+    environment:
+      - NODE_ENV=development
+    healthcheck:  # 건강 상태 확인 추가
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always
+
+  nginx:
+    build:
+      context: ./nginx  # nginx 폴더를 컨텍스트로 지정
+      dockerfile: Dockerfile  # nginx 폴더의 Dockerfile 사용
+    container_name: nginx
+    ports:
+      - "80:80"  # Nginx 기본 HTTP 포트
+    depends_on:
+      - frontend
+    restart: always

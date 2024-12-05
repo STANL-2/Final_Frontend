@@ -32,7 +32,7 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
-
+    </Modal>
     <OrderModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
 </template>
 
