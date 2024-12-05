@@ -14,6 +14,13 @@ import { asideMenu } from '@/utils/constants';
 
 const route = useRoute();
 
+defineProps({
+    menu: {
+        type: Array,
+        required: true
+    }
+});
+
 const findMenuPath = (menu, path) => {
     for (const item of menu) {
         if (item.url === path) return [item];

@@ -17,10 +17,15 @@
 
 <script setup>
 import { ref } from 'vue';
-import { asideMenu } from '@/utils/constants';
 import { useRouter } from 'vue-router';
 
-const nodes = ref(asideMenu);
+defineProps({
+    nodes: {
+        type: Array,
+        required: true,
+    },
+});
+
 const expandedKeys = ref({});
 const router = useRouter();
 
