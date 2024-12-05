@@ -25,6 +25,7 @@ export default class ApiService extends BaseApiService {
                 myHeaders.append('Accept', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             }
 
+            // Authorization 헤더 추가
             if (this.#userStore.isLoggined && this.#userStore.accessToken) {
                 myHeaders.append('Authorization', `Bearer ${this.#userStore.accessToken}`);
             }
@@ -90,6 +91,9 @@ export default class ApiService extends BaseApiService {
 
         const response = await this.#callApi(url, options);
 
+        // 트랜잭션마다 refreshToken 재발급
+        await this.refreshToken(this.#userStore.refreshToken);
+
         // blob 응답이 아닌 경우에만 성공 메시지 표시
         if (!options?.responseType || options.responseType !== 'blob') {
             // DOMEventService.dispatchApiSuccess(response?.msg || '성공');
@@ -110,7 +114,10 @@ export default class ApiService extends BaseApiService {
         }
 
         const response = await this.#callApi(url);
-        console.log(url);
+
+        // 트랜잭션마다 refreshToken 재발급
+        await this.refreshToken(this.#userStore.refreshToken);
+
         return response;
     }
 
@@ -142,6 +149,7 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
+
         // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         if (responseData) {
             return responseData;
@@ -165,6 +173,10 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
+
+        // 트랜잭션마다 refreshToken 재발급
+        await this.refreshToken(this.#userStore.refreshToken);
+
         // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
 
         return responseData;
@@ -207,7 +219,12 @@ export default class ApiService extends BaseApiService {
             method: 'PUT',
             body: requestBody
         };
+
         const responseData = await this.#callApi(url, options);
+
+        // 트랜잭션마다 refreshToken 재발급
+        await this.refreshToken(this.#userStore.refreshToken);
+
         // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         if (responseData) {
             return responseData;
@@ -228,7 +245,34 @@ export default class ApiService extends BaseApiService {
         };
 
         const responseData = await this.#callApi(url, options);
+
+        // 트랜잭션마다 refreshToken 재발급
+        await this.refreshToken(this.#userStore.refreshToken);
+
         // DOMEventService.dispatchApiSuccess(responseData.msg || '성공');
         return responseData;
+    }
+
+    // 새로운 메소드 추가: refreshToken
+    async refreshToken(refreshToken) {
+        try {
+            const apiAuth = new ApiService('api/v1/auth');
+
+            const response = await apiAuth.post(
+                { refreshToken },
+                'refresh'
+            );
+
+            if (response?.result?.newAccessToken) {
+                this.#userStore.refreshTheToken(response.result.newAccessToken);
+                console.log('Access token refreshed successfully');
+                return response.result.newAccessToken;
+            } else {
+                throw new Error('Failed to refresh token');
+            }
+        } catch (error) {
+            console.error('Token refresh failed', error);
+            throw error;
+        }
     }
 }

@@ -99,7 +99,7 @@ const authCodeSent = ref(false); // 인증번호 발송 여부
 const verificationSuccess = ref(false); // 인증 성공 여부
 
 const goHome = () => {
-    router.replace('/dashboard');
+    router.replace('/EDashboard');
 };
 
 // 로그인
