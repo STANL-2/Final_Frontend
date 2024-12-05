@@ -26,8 +26,8 @@ jobs:
               with:
                 aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
                 aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-                application_name: stanl2_proj
-                environment_name: Stanl2proj-env
+                application_name: motive-v
+                environment_name: Motive-v-env
                 existing_bucket_name: elasticbeanstalk-ap-northeast-2-010438469029
                 region: ap-northeast-2
                 version_label: ${{ github.sha }}
