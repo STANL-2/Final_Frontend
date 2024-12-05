@@ -1,7 +1,7 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="search-wrapper">
+        <div class="search-wrapper content-end">
             <div class="flex-row">
                 <div class="ml-l">
                     <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
@@ -26,7 +26,7 @@
                     <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
@@ -37,10 +37,9 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows" 
-                @update:selection="updateSelectedRows"
-                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
-                @sort="onSort" @filter="onFilter">
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows"
+                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
                     <div class="custom-tag-wrapper">
                         <div :class="['custom-tag', getCustomTagClass(data.status)]">
@@ -51,12 +50,13 @@
             </ViewTable>
 
 
-            <PuchaseOrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <OrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
-                :statusClass="getCustomTagClass(selectedDetail?.status)"/>
+                :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
 
-        <PuchaseOrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
+        <OrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
+
         <!-- 모달 -->
         <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
             height="none" @confirm="confirmSelection" @cancel="resetModalState">
@@ -95,25 +95,25 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import PuchaseOrderDetail from '@/views/purchase-order/PuchaseOrderDetail.vue';
+import OrderDetail from '@/views/order/OrderDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderRegister from '@/views/purchase-order/PuchaseOrderRegister.vue';
+import OrderRegister from './OrderRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
         {
-            label: '발주자명',
+            label: '수주자명',
             type: 'inputWithButton',
             model: 'searchMemberName',
             relatedModel: 'searchMemberId',
             showDivider: false
         },
         {
-            label: '발주서명',
+            label: '제목',
             type: 'input',
             model: 'title',
             showDivider: false
@@ -141,9 +141,9 @@ const formFields = [
             showDivider: true
         },
         {
-            label: '발주일자',
+            label: '수주일자',
             type: 'calendar', // 쌍으로 처리
-            model: 'purchaseOrderDate', // 시작과 종료를 모두 포함
+            model: 'orderDate', // 시작과 종료를 모두 포함
             showIcon: true,
             manualInput: false,
         }
@@ -152,12 +152,13 @@ const formFields = [
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'purchaseOrderId', label: '발주서 번호', width: '16%' },
-    { field: 'title', label: '발주서명', width: '18%' },
+    { field: 'orderId', label: '수주서 번호', width: '14%' },
+    { field: 'title', label: '수주서명', width: '18%' },
     { field: 'productName', label: '제품명', width: '17%' },
-    { field: 'memberName', label: '발주자', width: '17%' },
-    { field: 'createdAt', label: '발주일자', width: '15%' },
-    { field: 'status', label: '승인 상태', width: '10%' }
+    { field: 'memberName', label: '수주자명', width: '10%' },
+    { field: 'createdAt', label: '수주일자', width: '15%' },
+    { field: 'status', label: '승인 상태', width: '10%' },
+    { field: 'adminName', label: '승인 담당자', width: '10%' }
 ]);
 
 // 상태 변수
@@ -214,6 +215,7 @@ const refresh = () => {
     loadData();
 };
 
+// 조회 버튼 클릭 시
 const select = () => {
     const formData = searchFormRef.value?.formData;
 
@@ -232,9 +234,9 @@ const select = () => {
 
     const updatedCriteria = {};
     for (const [key, value] of Object.entries(searchCriteria.value)) {
-        if (key === 'purchaseOrderDate_start') {
+        if (key === 'orderDate_start') {
             updatedCriteria.startDate = value;
-        } else if (key === 'purchaseOrderDate_end') {
+        } else if (key === 'orderDate_end') {
             updatedCriteria.endDate = value;
         } else {
             updatedCriteria[key] = value; // 나머지 키는 그대로 유지
@@ -242,6 +244,8 @@ const select = () => {
     }
 
     searchCriteria.value = updatedCriteria;
+
+    console.log("변경된 검색 조건:", searchCriteria.value);
 
     // 검색 실행
     loadData();
@@ -255,34 +259,51 @@ function handleView(rowData) {
 
 // 데이터 로드 함수
 const loadData = async () => {
-    loading.value = true;
-
+    loading.value = true; // 로딩 시작
     try {
+        // 검색 조건 필터링 및 유효한 값만 유지
+        const filteredCriteria = Object.fromEntries(
+            Object.entries(searchCriteria.value).filter(([key, value]) => {
+                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
+                if (value === null || value === undefined || value === '') return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+                return true;
+            })
+        );
+
+        // 쿼리 파라미터 설정
         const query = {
-            ...searchCriteria.value, // 기존 검색 조건 병합
-            page: first.value / rows.value,
-            size: rows.value,
-            sortField: sortField.value || null,
-            sortOrder: sortOrder.value || null,
+            page: first.value / rows.value, // 현재 페이지 번호
+            size: rows.value, // 한 페이지 데이터 수
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
+            ...filteredCriteria // 필터링된 검색 조건 병합
         };
 
         // 쿼리 문자열 생성
         const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.purchaseOrder.getParams('search', queryString);
+        const response = await $api.order.getParams('search', queryString);
 
-        // 데이터 설정
-        const result = response?.result;
+        // API 응답 데이터 확인
+        console.log("API 응답 데이터:", response);
+
+        const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content;
-            totalRecords.value = result.totalElements;
+            tableData.value = result.content; // 테이블 데이터 업데이트
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다.");
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
-        loading.value = false;
+        loading.value = false; // 로딩 종료
     }
 };
 
@@ -293,16 +314,16 @@ onMounted(() => {
 const exportCSV = async () => {
     loading.value = true;
     try {
-        const blob = await $api.purchaseOrder.get('excel', '', {
+        const blob = await $api.order.get('excel', '', {
             responseType: 'blob'
         });
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'contractExcel.xlsx');
+        link.setAttribute('download', 'orderExcel.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -320,70 +341,70 @@ const exportCSV = async () => {
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
     console.log('선택된 항목 업데이트:', selectedRows.value);
-    };
+};
 
-    const printSelectedRows = () => {
-  if (selectedRows.value.length === 0) {
-    alert('인쇄할 행을 선택하세요.');
-    return;
-  }
+const printSelectedRows = () => {
+    if (selectedRows.value.length === 0) {
+        alert('인쇄할 행을 선택하세요.');
+        return;
+    }
 
-  const headersToPrint = tableHeaders.value.filter(
-    (header) => header.excludeFromPrint !== true
-  );
+    const headersToPrint = tableHeaders.value.filter(
+        (header) => header.excludeFromPrint !== true
+    );
 
-  const printContent = document.createElement('div');
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
+    const printContent = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
 
-  const headerRow = document.createElement('tr');
-  headersToPrint.forEach((header) => {
-    const th = document.createElement('th');
-    th.innerText = header.label;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  selectedRows.value.forEach((row) => {
-    const tr = document.createElement('tr');
+    const headerRow = document.createElement('tr');
     headersToPrint.forEach((header) => {
-      const td = document.createElement('td');
-      td.innerText = row[header.field] || '';
-      td.style.border = '1px solid #ddd';
-      td.style.padding = '8px';
-      tr.appendChild(td);
+        const th = document.createElement('th');
+        th.innerText = header.label;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
     });
-    table.appendChild(tr);
-  });
+    table.appendChild(headerRow);
 
-  printContent.appendChild(table);
+    selectedRows.value.forEach((row) => {
+        const tr = document.createElement('tr');
+        headersToPrint.forEach((header) => {
+            const td = document.createElement('td');
+            td.innerText = row[header.field] || '';
+            td.style.border = '1px solid #ddd';
+            td.style.padding = '8px';
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
 
-  // iframe 생성
-  const printFrame = document.createElement('iframe');
-  printFrame.style.position = 'absolute';
-  printFrame.style.top = '-10000px';
-  printFrame.style.left = '-10000px';
-  document.body.appendChild(printFrame);
+    printContent.appendChild(table);
 
-  const frameDoc = printFrame.contentWindow?.document;
-  if (frameDoc) {
-    frameDoc.open();
-    frameDoc.write('<html><head><title>Print</title></head><body>');
-    frameDoc.write(printContent.innerHTML);
-    frameDoc.write('</body></html>');
-    frameDoc.close();
+    // iframe 생성
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-10000px';
+    printFrame.style.left = '-10000px';
+    document.body.appendChild(printFrame);
 
-    // 인쇄 호출
-    printFrame.contentWindow?.focus();
-    printFrame.contentWindow?.print();
-  }
+    const frameDoc = printFrame.contentWindow?.document;
+    if (frameDoc) {
+        frameDoc.open();
+        frameDoc.write('<html><head><title>Print</title></head><body>');
+        frameDoc.write(printContent.innerHTML);
+        frameDoc.write('</body></html>');
+        frameDoc.close();
 
-  // iframe 제거
-  document.body.removeChild(printFrame);
+        // 인쇄 호출
+        printFrame.contentWindow?.focus();
+        printFrame.contentWindow?.print();
+    }
+
+    // iframe 제거
+    document.body.removeChild(printFrame);
 };
 
 // 페이지네이션 이벤트 처리
@@ -605,9 +626,12 @@ tr:hover {
 
 .custom-tag-wrapper {
     display: flex;
-    justify-content: center; /* 수평 가운데 정렬 */
-    align-items: center; /* 수직 가운데 정렬 */
-    height: 100%; /* 부모 높이에 맞게 정렬 */
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
 }
 
 .custom-tag {

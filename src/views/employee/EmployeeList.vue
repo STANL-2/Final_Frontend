@@ -1,15 +1,26 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
-            <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" :key="formKey" />
-            <div class="select">
-                <CommonButton label="조회" @click="select" />
+        <div class="search-wrapper">
+            <div class="flex-row">
+                <div class="ml-l">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
+                </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="select" />
+                </div>
+            </div>
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" :key="formKey"
+                    @keyup.enter="select" />
             </div>
         </div>
 
-        <div class="flex-row content-between">
-            <div>전체목록</div>
+        <div class="flex-row content-between mt-l">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
@@ -17,17 +28,13 @@
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
-                </div>
             </div>
         </div>
 
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows"
                 @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
                 buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
@@ -288,13 +295,15 @@ const initialFormFields = [
             model: 'email',
             value: '',
             showDivider: false
-        },
+        }
+    ],
+    [
         {
             label: '소속 매장',
             type: 'input',
             model: 'centerName',
             value: '',
-            showDivider: false
+            showDivider: true
         },
         {
             label: '소속 부서',
@@ -322,7 +331,7 @@ const tableData = ref([]); // 테이블 데이터
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(10); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
@@ -672,5 +681,27 @@ tr:hover {
     margin-top: 10px;
     margin-bottom: 20px;
     text-align: center;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>

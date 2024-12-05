@@ -97,11 +97,11 @@ const routes = [
             },
             {
                 path: 'Elist',
-                component: () => import('@/views/contract/edit/EContractList.vue')
+                component: () => import('@/views/contract/edit/ContractAdminList.vue')
             },
             {
                 path: 'Edetail',
-                component: () => import('@/views/contract/edit/EContractDetail.vue')
+                component: () => import('@/views/contract/edit/ContractAdminDetail.vue')
             },
             {
                 path: 'modify',
