@@ -114,6 +114,10 @@ const routes = [
             {
                 path: 'progress',
                 component: () => import('@/views/contract/ContractProgress.vue')
+            },
+            {
+                path: 'emlist',
+                component: () => import('@/views/contract/edit/ContractEmployeeDetail.vue')
             }
         ]
     },
@@ -224,6 +228,18 @@ const routes = [
             {
                 path: 'register',
                 component: () => import('@/views/order/OrderRegister.vue')
+            },
+            {
+                path: 'adDetail',
+                component: () => import('@/views/order/edit/OrderAdminDetail.vue')
+            },
+            {
+                path: 'adList',
+                component: () => import('@/views/order/edit/OrderAdminList.vue')
+            },
+            {
+                path: 'emDetail',
+                component: () => import('@/views/order/edit/OrderEmployeeDetail copy.vue')
             }
         ]
     },
@@ -322,6 +338,14 @@ const routes = [
             {
                 path: 'register',
                 component: () => import('@/views/purchase-order/PuchaseOrderRegister.vue')
+            },
+            {
+                path: 'adlist',
+                component: () => import('@/views/purchase-order/edit/PuchaseOrderAdminList.vue')
+            },
+            {
+                path: 'adDetail',
+                component: () => import('@/views/purchase-order/edit/PuchaseOrderAdminDetail.vue')
             }
         ]
     },
