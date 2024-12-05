@@ -19,9 +19,8 @@ const routes = [
         children: [
             {
                 path: 'mypage',
-                component: () => import('@/views/member/Mypage.vue'),
-                // meta: { requiresAuth: true }                   
-            },
+                component: () => import('@/views/member/Mypage.vue')               
+            }
         ]
     },
     {
@@ -29,9 +28,20 @@ const routes = [
         component: () => import('@/layouts/MainLayout.vue'),
         children: [
             {
-                path: 'dashboard',
-                component: () => import ('@/views/DashBoard.vue'),
-                // meta: { requiresAuth: true }
+                path: 'EDashboard',
+                component: () => import ('@/views/EDashBoard.vue')
+            },
+            {
+                path: 'ADashboard',
+                component: () => import ('@/views/ADashBoard.vue')
+            },
+            {
+                path: 'DDashboard',
+                component: () => import ('@/views/DDashBoard.vue')
+            },
+            {
+                path: 'SDashboard',
+                component: () => import ('@/views/SDashBoard.vue')
             }
         ]
     },
