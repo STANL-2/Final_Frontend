@@ -42,6 +42,10 @@ import RadioButton from 'primevue/radiobutton';
 import ScrollPanel from 'primevue/scrollpanel';
 import Timeline from 'primevue/timeline';
 
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+
+
 
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -83,5 +87,7 @@ app.component('Dialog', Dialog);
 app.component('RadioButton', RadioButton);
 app.component('ScrollPanel', ScrollPanel);
 app.component('Timeline', Timeline);
+app.component('TabPanel', TabPanel);
+app.component('TabView', TabView);
 
 app.mount('#app');

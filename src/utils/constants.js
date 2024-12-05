@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { useUserStore } from '@/stores/user';
+// import { useUserStore } from '@/stores/user';
 
 export const EasideMenu = [
     {
@@ -209,16 +209,14 @@ export function getMenuByRole(role) {
 }
 
 // 권한에 따라 메뉴를 선택하는 함수
-export function setAsideMenu() {
-    const userStore = useUserStore(); // Pinia 스토어에서 권한 가져오기
-    const role = userStore.auth; // 사용자의 권한(auth 값)
+export function setAsideMenu(role) {
+    // const userStore = useUserStore(); // Pinia 스토어에서 권한 가져오기
+    // const role = userStore.auth; // 사용자의 권한(auth 값)
 
     console.log(role); // 현재 권한 확인
 
     asideMenu.value = getMenuByRole(role); // 권한에 맞는 메뉴 설정
 }
-
-
 
 
 setAsideMenu('ADMIN'); 
