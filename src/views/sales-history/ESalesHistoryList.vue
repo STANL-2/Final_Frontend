@@ -7,21 +7,8 @@
             <!-- 첫 번째 행: 검색 조건 -->
             <SSearchForm :fields="[firstRowFields]" ref="searchFormRef" />
 
-            <!-- 두 번째 행: 버튼 -->
-            <!-- <div class="form-row button-row">
-                <SCommonButton v-for="field in secondRowFields" :key="field.model" :label="field.label"
-                    @click="handleButtonClick(field)" />
-            </div> -->
-
-            <!-- 세 번째 행: 버튼 -->
-            <!-- <div class="form-row button-row">
-                <SCommonButton v-for="field2 in thirdRowFields" :key="field2.model" :label="field2.label"
-                    @click="handleButtonComparisonClick(field2)" />
-            </div> -->
-
             <TabView class="horizontal-tabs" @tab-change="handleTabChange">
                 <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
-
                     <!-- 테이블: POST 요청 데이터 -->
                     <div class="component-wrapper" v-if="method === 'POST'">
                         <div class="flex-row content-between">
@@ -33,10 +20,6 @@
                                 <div class="ml-xs">
                                     <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                                 </div>
-                                <!-- <div class="ml-xs">
-                            <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                                @click="refresh" />
-                        </div> -->
                             </div>
                         </div>
                         <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading"
@@ -62,35 +45,6 @@
             </TabView>
         </div>
 
-        <!-- 조회 버튼 -->
-
-        <!-- 테이블: POST 요청 데이터 -->
-        <!-- <div class="component-wrapper" v-if="method === 'POST'">
-            <div class="flex-row content-between">
-                <div>전체목록</div>
-                <div class="flex-row items-center mb-s">
-                    <div class="ml-xs">
-                        <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
-                    </div>
-                    <div class="ml-xs">
-                        <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                    </div> -->
-        <!-- <div class="ml-xs">
-                            <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                                @click="refresh" />
-                        </div> -->
-        <!-- </div>
-            </div>
-            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
-                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
-                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter"></ViewTable>
-        </div> -->
-
-        <!-- 차트: GET 요청 데이터 -->
-        <!-- <div v-if="method === 'GET'">
-            <BigCard :chart-data="[bigCardChartData, secondChartData]" />
-        </div> -->
     </PageLayout>
 </template>
 
@@ -201,7 +155,6 @@ const searchParams = ref({
     endDate: null
 });
 
-
 function handleView(rowData) {
     // 상세 데이터 설정 및 모달 열기
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달    
@@ -260,8 +213,7 @@ const handleButtonComparisonClick = async (field2) => {
 const handleTabChange = (event) => {
     const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
     const selectedTab = event.index; // 선택된 탭 인덱스
-            // 탭에 맞춰 method 값을 'POST' 또는 'GET'으로 변경
-    // 탭에 맞춰 method 값을 'POST' 또는 'GET'으로 변경
+
     if (selectedTab === 0) {
         method.value = 'POST';  // 판매내역 탭
     } else if ([1, 2, 3].includes(selectedTab)) {
@@ -284,8 +236,6 @@ const handleButtonClick = async (field) => {
         Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
     );
 
-    // API 요청 방법 설정
-    // method = field.model === 'salesHistory' ? 'POST' : 'GET';
     saveButton = field.model;
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
@@ -298,9 +248,6 @@ const handleButtonClick = async (field) => {
     const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
 
     console.log('searchCriteria:', searchCriteria.value);
-    console.log('searchType:', searchType);
-
-    console.log("model: ", field.model, "label: ", field.label);
 
     // 데이터 로드 및 차트 업데이트
     await loadData(method.value, searchType, field.model, field.label);
@@ -315,10 +262,7 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
             endDate: searchCriteria.value.salesHistorySearchDate_end || null,
         }
 
-
         let response;
-
-        console.log(method);
 
         if (method === 'POST') {
             // POST 요청
@@ -345,12 +289,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
             if (response && response.result) {
                 const result = response.result;
 
-                // 확인 로그 추가
-                console.log("response.result 확인:", result);
-                console.log("result.map 작동 여부 테스트");
-                console.log("searchType", searchType);
-                console.log("fieldModel", fieldModel);
-                // 데이터 매핑
                 if (Array.isArray(result)) {
                     // 데이터 매핑
                     const mappedData = result.map((item) => ({
@@ -363,7 +301,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                     // 차트 업데이트
                     updateChartData(mappedData, fieldLabel);
                 } else {
-                    // 여기에 값 주입
                     const mappedData = Object.entries(result).map(([key, value]) => ({
                         label: result.month || result.year || result.createdAt || '',  // 키를 label로 사용
                         value: result[fieldModel] || 0,  // 값이 없으면 0으로 처리
@@ -380,7 +317,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
         loading.value = false; // 로딩 종료
     }
 };
-
 
 const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
     console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
@@ -467,7 +403,6 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
             const result = response.result;
 
             console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
 
             // `saveButton` 값을 기반으로 매핑할 필드 결정
             const fieldMapping = {
@@ -502,8 +437,6 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
     }
 };
 
-
-
 onMounted(() => {
     loadData('POST');
 });
@@ -533,7 +466,6 @@ const exportCSV = async () => {
         loading.value = false;
     }
 };
-
 
 // 페이지네이션 이벤트 처리
 function onPage(event) {
@@ -711,7 +643,6 @@ const orderByValue = (saveButton) => {
             return ''; // 기본값 처리
     }
 };
-
 
 </script>
 

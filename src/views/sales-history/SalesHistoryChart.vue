@@ -2,23 +2,13 @@
     <PageLayout>
         <div class="component-wrapper">
             <!-- SearchForm -->
-            <div class="component-wrapper">
+            <div>
                 <div class="button-row">
                     <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
                         @click="refresh" />
                 </div>
-
                 <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-                <!-- <div class="select">
-                    <CommonButton label="조회" @click="select" />
-                </div> -->
-                <!-- <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh" /> -->
             </div>
-            <!-- 두 번째 행: 버튼(기존) -->
-            <!-- <div v-for="(row, rowIndex) in secondRowFields" :key="rowIndex" class="form-row button-row">
-                <SCommonButton v-for="field in row" :key="field.model" :label="field.label"
-                    @click="handleButtonClick(field)" />
-            </div> -->
 
             <TabView class="horizontal-tabs" @tab-change="handleTabChange">
                 <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label"
@@ -29,7 +19,11 @@
                             <SCommonButton :key="field.model" :label="field.label" @click="handleButtonClick(field)" />
                         </div>
                     </div>
-                    <BigCard ref="chartRef" :chartDataList="chartDataList" :chartOptions="chartOptions" />
+                    <div class="bigcard-container">
+                        <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
+                        <BigCard ref="chartRef" class="bigcard" :chartDataList="chartDataList" :chartOptions="chartOptions" />
+                    </div>
+
                 </TabPanel>
             </TabView>
         </div>
@@ -1195,4 +1189,23 @@ tr:hover {
     background-color: #4e4c96;
     /* 호버 시 배경색 */
 }
+
+.bigcard-container {
+    display: flex;
+    justify-content: center;  /* 가로 중앙 정렬 */
+    align-items: center;      /* 세로 중앙 정렬 */
+    width: 100%;              /* 부모 요소의 100% 폭 */
+    height: 100%;             /* 부모 요소의 100% 높이 */
+    padding: 16px;            /* 내부 여백 */
+}
+
+.bigcard {
+    width: 100%;              /* 가로 100% */
+    height: 100%;             /* 세로 100% */
+    min-height: 300px;        /* 최소 높이 보장 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 내용 중앙 정렬 */
+}
+
 </style>
