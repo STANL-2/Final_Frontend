@@ -243,7 +243,7 @@ const routes = [
             },
             {
                 path: 'emDetail',
-                component: () => import('@/views/order/edit/OrderEmployeeDetail copy.vue')
+                component: () => import('@/views/order/edit/OrderEmployeeDetailCopy.vue')
             }
         ]
     },
