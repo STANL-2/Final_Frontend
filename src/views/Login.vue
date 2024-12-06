@@ -99,7 +99,19 @@ const authCodeSent = ref(false); // 인증번호 발송 여부
 const verificationSuccess = ref(false); // 인증 성공 여부
 
 const goHome = () => {
-    router.replace('/EDashboard');
+    switch(userStore.auth){
+        case 'ADMIN':
+            router.push('/ADashboard');
+            break;
+        case 'DIRECTOR':
+            router.push('/DDashboard');
+            break;
+        case 'GOD':
+            router.push('/SDashboard');
+            break;
+        default:
+            router.push('/EDashboard');
+    }
 };
 
 // 로그인

@@ -198,6 +198,7 @@ const routes = [
             },
             {
                 path: 'Edetail',
+                name: 'NoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue')
             },
             {
@@ -241,10 +242,10 @@ const routes = [
                 path: 'adList',
                 component: () => import('@/views/order/edit/OrderAdminList.vue')
             },
-            {
-                path: 'emDetail',
-                component: () => import('@/views/order/edit/OrderEmployeeDetail copy.vue')
-            }
+            // {
+            //     path: 'emDetail',
+            //     component: () => import('@/views/order/edit/OrderEmployeeDetailCopy.vue')
+            // }
         ]
     },
     {
