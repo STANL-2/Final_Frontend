@@ -29,7 +29,6 @@
         </div>
         <div class="flex-row content-between ml-l mr-xl">
             <button class="custom-button" @click="openSignatureModal('buyer')">매수인 서명</button>
-            <button class="custom-button" @click="openSignatureModal('seller')"> 매도인 서명</button>
         </div>
         <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
@@ -73,159 +72,79 @@ const initialHtml = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>자동차 매매 계약서</title>
+    <title>발주서</title>
 </head>
 
-<body style="font-family: 'Noto Sans KR', sans-serif; background-color: #f9f9f9; padding: 20px;">
-    <div style="max-width: 800px; margin: auto; background-color: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
-        <!-- 상단 로고 및 계약 정보 -->
+<body style="font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px;">
+
+    <div style="width: 600px; border: 1px solid #000; padding: 20px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="font-size: 24px; margin-bottom: 10px;">기아 자동차 매매 계약서</h1>
+            <h1 style="margin: 0; font-size: 24px;">발 주 서</h1>
         </div>
 
-        <!-- 관리 번호 및 계약 정보 -->
-        <section style="margin-top: 20px;">
-            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">계약 정보</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;"></td>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약장소</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;"></td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">담당자</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">유혜진</td>
-                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">전화번호</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">010-2222-2222</td>
-                </tr>
-            </table>
-        </section>
-
-        <!-- 고객 사항 -->
-        <section style="margin-top: 20px;">
-            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">고객사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value"></td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">상호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value">-</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주민등록번호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-identifiNo-value">990212-2314152</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">사업자등록번호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-campanyNo-value">-</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주소</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-address-value">신대방삼거리</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">사업자등록주소</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-campanyAddresss-value"></td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">전화(휴대폰)</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value"></td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구분</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-classification-value">개인</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">E-mail</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-email-value">younghee@example.com</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구매조건</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-purchaseCondition-value">현금</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">나이</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-age-value">34</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성별</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-sex-value">남자</td>
-                </tr>
-            </table>
-        </section>
-
-        <!-- 차량 사항 -->
-        <section style="margin-top: 20px;">
-            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">차량사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차종</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-carName-value">셀토스</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">일련번호</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-serialNo-value">KNJFA42DALU3C00004</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">선택옵션</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-selectOption-value"></td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량대수</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-numberOfVehicles-value">1</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도예정일</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-deliveryDate-value">2024-12-15</td>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도장소</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-deliveryLocation-value">매장</td>
-                </tr>
-                <tr>
-                    <th colspan="1" style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">특약사항</th>
-                    <td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: left;">- 특약사항 내용이 여기에 표시됩니다.</td>
-                </tr>
-            </table>
-        </section>
-
-        <!-- 금액 사항 -->
-        <section style="margin-top: 20px;">
-            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">금액사항</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량가격</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-vehiclePrice-value">10000</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">계약금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-downPayment-value">2000</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">중도금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-intermediatePayment-value">1000</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도금</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-remainderPayment-value">1000</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">탁송료</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-consignmentPayment-value">1000</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">합계</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-totalSales-value">15000</td>
-                </tr>
-            </table>
-        </section>
-
-        <!-- 서명 -->
-        <section style="margin-top: 20px;">
-            <p style="margin-top: 30px;">본 계약서 주요 내용을 확인하고 계약을 체결하였음을 확인합니다.</p>
-            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <div>매수인:
-            <div
-            id="buyer-signature-area"
-            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
-        >
-            (서명)
-        </div></div>
-                <div>매도인:
-                    <div
-            id="seller-signature-area"
-            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
-        >
-            (서명)
-                </div>
+        <div style="display: flex; justify-content: end; font-size: 14px; margin-bottom: 10px;">
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area"></td>
+                    </tr>
+                </table>
             </div>
-        </section>
+        </div>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 10px; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주일자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="createdAt"></td>
+                <td style="padding: 5px; border: 1px solid #000;">수주서 번호</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="orderId"></td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="memberName"></td>
+                <td style="padding: 5px; border: 1px solid #000;">영업 매장</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="centerName"></td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 20px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 1px solid #000;">No</th>
+                    <th style="padding: 10px; border: 1px solid #000;">품목</th>
+                    <th style="padding: 10px; border: 1px solid #000;">수량</th>
+                    <th style="padding: 10px; border: 1px solid #000;">단가</th>
+                    <th style="padding: 10px; border: 1px solid #000;">금액</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #000;" class="no">1</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="productName"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1"></td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding: 10px; border: 1px solid #000; text-align: right;">합계</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="font-size: 12px; margin-top: 20px;">
+            <p style="margin: 5px 0;">* 특이사항: 없음</p>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 12px;">
+            <p style="margin: 5px 0; text-align: right;">감사합니다.</p>
+        </div>
     </div>
+
 </body>
 
 </html>
@@ -237,14 +156,122 @@ const extractDataFromHTML = (html) => {
 
     const doc = parser.parseFromString(html, "text/html");
 
+
     const orderId = doc.querySelector(".orderId")?.innerText.trim() || "";
+    const no = doc.querySelector(".no")?.innerText.trim() || "";
+    const memberName = doc.querySelector(".memberName")?.innerText.trim() || "";
+    const createdAt = doc.querySelector(".createdAt")?.innerText.trim() || "";
+    const productName = doc.querySelector(".productName")?.innerText.trim() || "";
+    const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
+    const vehiclePrice = doc.querySelector(".vehiclePrice")?.innerText.trim() || "";
+    const numberOfVehicles1 = doc.querySelector(".numberOfVehicles1")?.innerText.trim() || "";
+    const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
 
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
         orderId: orderId,
+        memberName,
+        createdAt,
+        productName,
+        numberOfVehicles,
+        vehiclePrice,
+        numberOfVehicles1,
+        vehiclePrice1,
+        totalSales,
+        centerName,
+        no,
         content: html // HTML 전체를 전송
     };
+};
+
+const generateInitialHtml = (data) => {
+    return `
+        <!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>발주서</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px;">
+
+    <div style="width: 600px; border: 1px solid #000; padding: 20px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="margin: 0; font-size: 24px;">발 주 서</h1>
+        </div>
+
+        <div style="display: flex; justify-content: end; font-size: 14px; margin-bottom: 10px;">
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">${data.writerSignatureArea || "-"}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 10px; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주일자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="createdAt">${data.createdAt || "-"}</td>
+                <td style="padding: 5px; border: 1px solid #000;">수주서 번호</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="orderId">${data.orderId || "-"}</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="memberName">${data.memberName || "-"}</td>
+                <td style="padding: 5px; border: 1px solid #000;">영업 매장</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="centerName">${data.centerName || "-"}</td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 20px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 1px solid #000;">No</th>
+                    <th style="padding: 10px; border: 1px solid #000;">품목</th>
+                    <th style="padding: 10px; border: 1px solid #000;">수량</th>
+                    <th style="padding: 10px; border: 1px solid #000;">단가</th>
+                    <th style="padding: 10px; border: 1px solid #000;">금액</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #000;" class="no">${data.no || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="productName">${data.productName || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles">${data.numberOfVehicles || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice">${data.vehiclePrice || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1">${data.vehiclePrice1 || "-"}</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding: 10px; border: 1px solid #000; text-align: right;">합계</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales">${data.totalSales || "-"}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="font-size: 12px; margin-top: 20px;">
+            <p style="margin: 5px 0;">* 특이사항: 없음</p>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 12px;">
+            <p style="margin: 5px 0; text-align: right;">감사합니다.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
+    `;
 };
 
 const orders = ref([]);
@@ -307,7 +334,7 @@ const fetchOrders = async () => {
             hasMoreOrders.value = false;
         }
     } catch (error) {
-        console.error('계약서 조회 중 오류 발생:', error);
+        console.error('수주서 조회 중 오류 발생:', error);
     } finally {
         isLoading.value = false; // 요청 종료
     }
@@ -332,14 +359,14 @@ const selectOrder = (order) => {
 
     const orderCell = doc.querySelector('.orderId'); // .contractId 셀 찾기
     if (!orderCell) {
-        console.error("HTML 구조에 .contractId 셀을 찾을 수 없습니다.");
+        console.error("HTML 구조에 .orderId 셀을 찾을 수 없습니다.");
         console.log("HTML 구조:", doc.documentElement.outerHTML);
         return;
     }
 
     // contractId 값 삽입
     orderCell.textContent = order.orderId;
-    console.log("업데이트된 .contractId 셀:", orderCell);
+    console.log("업데이트된 .orderId 셀:", orderCell);
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
@@ -378,8 +405,37 @@ const onRegister = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const postData = extractDataFromHTML(content.value);
-        console.log("추출된 데이터:", postData);
+        // CKEditor의 현재 HTML 내용 추출
+        const extractedData = extractDataFromHTML(content.value);
+
+        const data = {
+            ...extractedData
+        };
+
+        // initialHtml을 업데이트
+        const updatedInitialHtml = generateInitialHtml(data);
+
+        console.log("업데이트 HTMML@: " + updatedInitialHtml);
+
+        // content에 반영
+        content.value = updatedInitialHtml;
+
+        const postData = {
+            title: extractedData.title, // 계약서 제목
+            orderId: extractedData.orderId, // 고객 성명
+            memberName: extractedData.memberName, // 고객 주민등록번호
+            createdAt: extractedData.createdAt, // 고객 주소
+            productName: extractedData.productName, // 고객 전화번호
+            numberOfVehicles: extractedData.numberOfVehicles, // 고객 이메일
+            vehiclePrice: extractedData.vehiclePrice, // 상호
+            totalSales: extractedData.totalSales, // 고객 구분
+            vehiclePrice1: extractedData.vehiclePrice1, // 상호
+            totalSales1: extractedData.totalSales1, // 고객 구분
+            centerName: extractedData.centerName, // 구매 조건
+            no: extractedData.no, // 구매 조건
+            content: content.value, // HTML 내용
+        };
+
 
         const response = await $api.purchaseOrder.post(postData, "");
         console.log("POST 요청:", postData);
@@ -513,11 +569,13 @@ const handleSignature = async (signatureImage) => {
 }
 
 .order-item.selected {
-    background-color: #e0e0e0; /* 선택된 상태 */
+    background-color: #e0e0e0;
+    /* 선택된 상태 */
     font-weight: bold;
 }
 
 .order-item:not(.selected):hover {
-    background-color: #f5f5f5; /* 선택되지 않은 상태에서 hover */
+    background-color: #f5f5f5;
+    /* 선택되지 않은 상태에서 hover */
 }
 </style>

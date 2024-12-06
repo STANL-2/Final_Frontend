@@ -219,11 +219,9 @@ const generateInitialHtml = (data) => {
                     style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
                     <tr style="background-color: #f0f0f0;">
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
-                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area">${data.writerSignatureArea || "-"}</td>
-                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
                     </tr>
                 </table>
             </div>
