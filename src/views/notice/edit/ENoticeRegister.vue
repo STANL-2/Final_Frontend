@@ -103,7 +103,7 @@ const onFileError = (errorMessage) => {
 };
 
 const closePage = () => {
-    router.push('/notice/list'); // 취소 시 이동 경로
+    router.push('/notice/Elist'); // 취소 시 이동 경로
 };
 
 const onRegister = async () => {
@@ -129,7 +129,7 @@ const onRegister = async () => {
         );
 
         alert("등록되었습니다.");
-        router.push('/notice/list');
+        router.push('/notice/Elist');
         
     } catch (error) {
         console.error("등록 오류:", error);
