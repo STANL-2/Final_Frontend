@@ -241,10 +241,10 @@ const routes = [
                 path: 'adList',
                 component: () => import('@/views/order/edit/OrderAdminList.vue')
             },
-            {
-                path: 'emDetail',
-                component: () => import('@/views/order/edit/OrderEmployeeDetailCopy.vue')
-            }
+            // {
+            //     path: 'emDetail',
+            //     component: () => import('@/views/order/edit/OrderEmployeeDetailCopy.vue')
+            // }
         ]
     },
     {
