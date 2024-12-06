@@ -231,6 +231,15 @@ const transformToTree = (data) => {
 
 // 이벤트 핸들러
 const handleNodeSelect = (event) => {
+
+    if (expandedKeys.value[event.key]) {
+        // 이미 열려 있으면 닫기
+        expandedKeys.value[event.key] = false;
+    } else {
+        // 닫혀 있으면 열기
+        expandedKeys.value[event.key] = true;
+    }
+
     const selectedNode = event.data.organizationId;
     organizationId.value = selectedNode;
 };
@@ -498,7 +507,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.nav-link{
+.nav-link {
     cursor: pointer;
 }
 
