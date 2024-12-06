@@ -40,7 +40,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in educationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
+                        <th v-for="header in educationHeaders" :key="header.field" :style="{ width: header.width }">{{
+                            header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,7 +63,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in certificationHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
+                        <th v-for="header in certificationHeaders" :key="header.field" :style="{ width: header.width }">
+                            {{ header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +86,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in careerHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
+                        <th v-for="header in careerHeaders" :key="header.field" :style="{ width: header.width }">{{
+                            header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,7 +109,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="header in familyHeaders" :key="header.field" :style="{ width: header.width }">{{ header.label }}</th>
+                        <th v-for="header in familyHeaders" :key="header.field" :style="{ width: header.width }">{{
+                            header.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -194,12 +198,47 @@ const getMemberInfo = async () => {
             {
                 firstLabel: '입사일', firstValue: result.createdAt.substring(0, 10) || 'N/A',
                 secondLabel: '발령일', secondValue: result.updatedAt.substring(0, 10) || 'N/A',
-                thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
+                thirdLabel: '병역구분',
+                thirdValue: result.military === "FULFILLED"
+                                            ? "군필"
+                                                : result.military === "EXEMPTION"
+                                            ? "면제"
+                                                : result.military === "UNFULFILLED"
+                                            ? "미필"
+                                                : "N/A"
             },
             {
                 firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
-                secondLabel: '직책', secondValue: result.position || 'N/A',
-                thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
+                secondLabel: '직위',
+                secondValue: result.position === "INTERN" 
+                                            ? "인턴"
+                                                : result.position === "STAFF"
+                                            ? "사원"
+                                                : result.position === "ASSISTANT"
+                                            ? "대리"
+                                                : result.position === "MANAGER"
+                                            ? "과장"
+                                                : result.position === "SENIOR"
+                                            ? "차장"
+                                                : result.position === "EXECUTIVE"
+                                            ? "부장"
+                                                : result.position === "DIRECTOR"
+                                            ? "임원"
+                                                : result.position === "CEO"
+                                            ? "대표이사"
+                                                : "N/A",
+                thirdLabel: '학력구분',
+                thirdValue: result.grade === "High School"
+                                            ? "고졸"
+                                                : result.grade === "Associate"
+                                            ? "2년제"
+                                                : result.grade === "Bachelor"
+                                            ? "4년제"
+                                                : result.grade === "Master"
+                                            ? "석사"
+                                                : result.grade === "Doctoral"
+                                            ? "박사"
+                                                : "N/A"
             },
             {
                 firstLabel: '은행명', firstValue: result.bankName || 'N/A',
@@ -278,7 +317,7 @@ const getFamilyData = async () => {
             relation: family.relation || 'N/A',
             name: family.name || 'N/A',
             birth: family.birth || 'N/A',
-            identNo: family.identNo.substring(0, 9) + '******' || 'N/A',
+            identNo: family.identNo.substring(0, 8) + '******' || 'N/A',
             phone: family.phone || 'N/A',
             sex: family.sex === 'MALE' ? '남성' : '여성',
             disability: family.disability ? 'O' : 'X',
@@ -314,7 +353,8 @@ onMounted(() => {
 
 .subtitle {
     display: flex;
-    align-items: center;    /* 수직 중앙 정렬 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
 }
 
 .line {
@@ -332,14 +372,22 @@ onMounted(() => {
 
 .infomation {
     display: flex;
-    flex-wrap: wrap; /* 화면 크기에 따라 자동 줄바꿈 */
-    gap: 20px; /* 이미지와 정보 사이 간격 */
-    align-items: center; /* 수직 정렬 */
-    justify-content: flex-start; /* 좌측 정렬 */
-    padding: 20px; /* 내부 여백 */
-    border: 1px solid #838383; /* 외곽선 추가 */
-    border-radius: 8px; /* 모서리 둥글게 */
-    background-color: #fdfdfd; /* 배경색 추가 */
+    flex-wrap: wrap;
+    /* 화면 크기에 따라 자동 줄바꿈 */
+    gap: 20px;
+    /* 이미지와 정보 사이 간격 */
+    align-items: center;
+    /* 수직 정렬 */
+    justify-content: flex-start;
+    /* 좌측 정렬 */
+    padding: 20px;
+    /* 내부 여백 */
+    border: 1px solid #838383;
+    /* 외곽선 추가 */
+    border-radius: 8px;
+    /* 모서리 둥글게 */
+    background-color: #fdfdfd;
+    /* 배경색 추가 */
     margin-bottom: 24px;
 }
 
@@ -348,25 +396,34 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 120px; /* 이미지 컨테이너 고정 너비 */
-    height: 120px; /* 이미지 컨테이너 고정 높이 */
-    flex-shrink: 0; /* 컨테이너 크기 고정 */
+    width: 120px;
+    /* 이미지 컨테이너 고정 너비 */
+    height: 120px;
+    /* 이미지 컨테이너 고정 높이 */
+    flex-shrink: 0;
+    /* 컨테이너 크기 고정 */
 }
 
 /* 사용자 프로필 이미지 */
 .user-profile-image {
     width: 100px;
     height: 100px;
-    border-radius: 50%; /* 원형 이미지 */
-    object-fit: cover; /* 이미지 크기에 맞게 잘라내기 */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    border-radius: 50%;
+    /* 원형 이미지 */
+    object-fit: cover;
+    /* 이미지 크기에 맞게 잘라내기 */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    /* 그림자 효과 */
 }
 
 .memberInfo {
-    flex: 1; /* 남은 공간을 채우도록 설정 */
+    flex: 1;
+    /* 남은 공간을 채우도록 설정 */
     display: flex;
-    flex-direction: column; /* 세로 정렬 */
-    gap: 10px; /* 행 사이 간격 */
+    flex-direction: column;
+    /* 세로 정렬 */
+    gap: 10px;
+    /* 행 사이 간격 */
     margin-top: 10px;
     margin-bottom: 10px;
 }
@@ -376,14 +433,18 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 35px;   /* 각 행의 높이를 고정 */
-    border-bottom: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
-    border-top: 0.5px solid #EEEEEE;   /* 행 간의 구분선을 적용 */
+    height: 35px;
+    /* 각 행의 높이를 고정 */
+    border-bottom: 0.5px solid #EEEEEE;
+    /* 행 간의 구분선을 적용 */
+    border-top: 0.5px solid #EEEEEE;
+    /* 행 간의 구분선을 적용 */
 }
 
 .label,
 .value {
-    border-right: 1px solid #EEEEEE;    /* 좌우 구분선 추가 */
+    border-right: 1px solid #EEEEEE;
+    /* 좌우 구분선 추가 */
     font-family: 'Pretendard';
     font-size: 12px;
     line-height: 1.5;
