@@ -129,6 +129,7 @@ const confirmStatusChange = async () => {
         });
         emit('refresh');
         closeStatusModal();
+        onClose();
     }catch(error){
         console.error('상태 변경 실패:', error);
         toast.add({
