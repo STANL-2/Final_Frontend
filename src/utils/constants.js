@@ -6,7 +6,7 @@ export const EasideMenu = [
         children: [
             { key: '0-0', label: '계약서', url: '/commingsoon' },
             { key: '0-1', label: '수주서', url: '/commingsoon' },
-            { key: '0-2', label: '본인 판매내역', url: '/commingsoon' }
+            { key: '0-2', label: '본인 판매내역', url: '/sales-history/Elist' }
         ]
     },
     {
@@ -53,7 +53,7 @@ export const AasideMenu = [
             { key: '0-0', label: '계약서', url: '/contract/Elist' },
             { key: '0-1', label: '수주서', url: '/order/adList' },
             { key: '0-2', label: '발주서', url: '/purchase-order/adlist' },
-            { key: '0-3', label: '본인 판매내역', url: '/commingsoon' }
+            { key: '0-3', label: '본인 판매내역', url: '/sales-history/Elist' }
         ]
     },
     {
@@ -75,7 +75,7 @@ export const AasideMenu = [
             { key: '3-0', label: '영업매장', url: '/center/list' },
             { key: '3-1', label: '제품', url: '/product/list' },
             { key: '3-2', label: '판매내역 리스트', url: '/sales-history/list' },
-            { key: '3-3', label: '판매내역 통계', url: '/commingsoon' }
+            { key: '3-3', label: '판매내역 통계', url: '/sales-history/chart' }
         ]
     },
     {
@@ -123,7 +123,7 @@ export const DasideMenu = [
             { key: '3-0', label: '영업매장', url: '/center/list' },
             { key: '3-1', label: '제품', url: '/product/list' },
             { key: '3-2', label: '판매내역 리스트', url: '/sales-history/list' },
-            { key: '3-3', label: '판매내역 통계', url: '/commingsoon' }
+            { key: '3-3', label: '판매내역 통계', url: '/sales-history/chart' }
         ]
     },
     {
@@ -171,7 +171,7 @@ export const GasideMenu = [
             { key: '3-0', label: '영업매장', url: '/center/list' },
             { key: '3-1', label: '제품', url: '/product/list' },
             { key: '3-2', label: '판매내역 리스트', url: '/sales-history/list' },
-            { key: '3-3', label: '판매내역 통계', url: '/commingsoon' }
+            { key: '3-3', label: '판매내역 통계', url: '/sales-history/chart' }
         ]
     },
     {
