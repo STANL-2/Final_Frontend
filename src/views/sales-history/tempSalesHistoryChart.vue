@@ -804,44 +804,6 @@ const thirdChartData = ref({
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 });
 
-const fourthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '평균',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const fifthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '최고',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
 const orderByValue = (saveButton) => {
     switch (saveButton) {
         case 'incentive':

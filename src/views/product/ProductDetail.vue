@@ -8,10 +8,8 @@
         
         <div class="horizontal-layout">
             <!-- ***이미지 미리보기*** -->
-            <div class="image-preview">
-                <FilePreview v-if="imageUrl" :imageUrl="imageUrl" />
+                <FilePreview v-if="imageUrl" :imageUrl="imageUrl" class="file"/>
                 <p v-else>이미지가 없습니다.</p>
-            </div>
             <div class="info-card">
                 <div class="row" v-for="(item, index) in productData" :key="index">
                     <div class="label">{{ item.label }}</div>
@@ -39,7 +37,7 @@ import { $api } from '@/services/api/api';
 import ViewTable from '@/components/common/ViewTable.vue';
 
 // *** 파일 미리보기 import ***
-import FilePreview from '@/components/common/FilePreview.vue';
+import FilePreview from '@/components/common/CFilePreview.vue';
 
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩
@@ -208,18 +206,18 @@ onMounted(() => {
 
 <style scoped>
 
-.info-card {
+/* .info-card {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0px; /* 간격을 없앰 */
+    gap: 0px;
     height: none;
     border-top: 1px solid #EEEEEE;
     margin-top: 1rem;
     margin-left: 1.7rem;
     margin-bottom: 2rem;
     margin-right: 1.7rem;
-}
+} */
 
 .row {
     /* position: relative; */
@@ -260,23 +258,24 @@ onMounted(() => {
 }
 
 .horizontal-layout {
-  display: flex; /* Flexbox를 활성화합니다 */
-  /* align-items: center; */
-  gap: 16px; /* 두 요소 사이의 간격을 조절합니다 */
+    display: flex; /* Flexbox 활성화 */
+    align-items: center; /* 수평 중앙 정렬 */
+    gap: 16px; /* 이미지와 카드 사이 간격 */
+    height: auto; /* 높이를 내용에 맞게 조정 */
+    margin-bottom: 1rem;
 }
 
 .image-preview {
-  margin: 1rem 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 15rem; /* 고정 높이 */
-  min-height: 15rem; /* 최소 높이 설정 */
-  width: 100%; /* 가로 크기 고정 */
-  border: 1px solid #ddd; /* 테두리 */
-  border-radius: 8px; /* 모서리 둥글게 */
-  overflow: hidden;
-  background-color: #f9f9f9; /* 이미지 없을 때 배경색 */
+    flex: 0 0 300px; /* 고정된 크기로 설정 (필요 시 조정 가능) */
+    height: 200px; /* 고정된 높이 */
+}
+
+.info-card {
+    flex: 1; /* 나머지 공간을 차지 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
 }
 
 .view-table {
