@@ -498,6 +498,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.nav-link{
+    cursor: pointer;
+}
+
 .menu-bar {
     display: flex;
     flex-direction: row;
@@ -705,6 +709,7 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 
 .alarm-badge {
