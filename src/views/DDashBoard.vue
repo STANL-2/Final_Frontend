@@ -159,8 +159,9 @@ const loadData = async () => {
             {
                 "startDate": searchParams.value.startDate || '',
                 "endDate": searchParams.value.endDate || '',
+                "period": 'month',
             }
-            ,'statistics/all/month',
+            ,'statistics/search',
 
         );
 
@@ -176,7 +177,7 @@ const loadData = async () => {
             // 데이터 매핑
             bigCardChartData.value = {
                 ...bigCardChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...bigCardChartData.value.datasets[0],
@@ -187,7 +188,7 @@ const loadData = async () => {
             
             secondChartData.value = {
                 ...secondChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...secondChartData.value.datasets[0],
@@ -198,7 +199,7 @@ const loadData = async () => {
 
             thirdChartData.value = {
                 ...thirdChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...thirdChartData.value.datasets[0],
