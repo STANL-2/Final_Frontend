@@ -234,7 +234,12 @@ const getCustomerInfo = async () => {
                 thirdLabel: '나이', thirdValue: result.age
             },
             {
-                firstLabel: '성별', firstValue: result.sex,
+                firstLabel: '성별',
+                firstValue: (() => {
+                    if (result.sex === 'MALE') return '남성';
+                    if (result.sex === 'FEMALE') return '여성';
+                    return ''; // 성별 정보가 없을 경우 빈 문자열
+                })(),
                 secondLabel: '연락처', secondValue: result.phone,
                 thirdLabel: '이메일', thirdValue: result.email
             },
@@ -255,7 +260,11 @@ const getCustomerInfo = async () => {
             },
             {
                 firstLabel: '성별',
-                firstValue: result.sex || '',
+                firstValue: (() => {
+                    if (result.sex === 'MALE') return '남성';
+                    if (result.sex === 'FEMALE') return '여성';
+                    return ''; // 성별 정보가 없을 경우 빈 문자열
+                })(),
                 type: 'radio',
                 options: ['남성', '여성'],
                 secondLabel: '연락처',
@@ -328,7 +337,10 @@ const modifyModalBtn = async () => {
                 console.log('secondLabel 검사:', item.secondLabel); // 디버깅용 로그
                 return item.secondLabel === '나이';
             })?.secondValue || '0', 10),
-            sex: modifyInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '',
+            sex: (() => {
+                const sexValue = modifyInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '';
+                return sexValue === '남성' ? 'MALE' : sexValue === '여성' ? 'FEMALE' : '';
+            })(),
             phone: modifyInfo.value.find(item => item.secondLabel === '연락처')?.secondValue || '',
             emergePhone: modifyInfo.value.find(item => item.firstLabel === '비상연락처')?.firstValue || '',
             email: modifyInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
@@ -474,9 +486,11 @@ onMounted(() => {
     width: 75%;
     color: #000000;
 }
-.btn{
+
+.btn {
     margin-top: 16px;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
