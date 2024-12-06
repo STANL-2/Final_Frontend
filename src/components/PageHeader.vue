@@ -2,7 +2,7 @@
     <header>
         <nav class="menu-bar">
             <div class="start">
-                <RouterLink to="/dashboard" class="nav-link" active-class="router-link-active"
+                <RouterLink to="/Edashboard" class="nav-link" active-class="router-link-active"
                     exact-active-class="router-link-exact-active">
                     <img src="../assets/header/gradation.png" class="garadation" />
                     <span class="title">영업관리</span>
@@ -456,10 +456,6 @@ onMounted(() => {
 
     // Initial fetch of alarm types
     fetchAlarmTypes();
-
-    // 5분마다 알람 타입 자동 업데이트
-    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
-    const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
 
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
