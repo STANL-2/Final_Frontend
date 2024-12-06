@@ -221,24 +221,50 @@ const handleSearch = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        const params = new URLSearchParams();
-        
-        // 기본 파라미터 설정
-        params.append('page', Math.floor(first.value / rows.value)); // 페이지 계산
-        params.append('size', rows.value); // 페이지당 행 수 설정
-
-        // 조건별 파라미터 추가
-        if (searchParams.value.title) params.append('title', searchParams.value.title);
-        if (searchParams.value.tag) params.append('tag', searchParams.value.tag);
-        if (searchParams.value.memberId) params.append('memberId', searchParams.value.memberId);
-        if (searchParams.value.classification) params.append('classification', searchParams.value.classification);
-        if (searchParams.value.startDate) params.append('startDate', `${searchParams.value.startDate} 00:00:00`);
-        if (searchParams.value.endDate) params.append('endDate', `${searchParams.value.endDate} 23:59:59`);
-
-        // 쿼리 문자열로 변환된 파라미터를 API 요청에 전달
-        const response = await $api.notice.getParams('', `?${params.toString()}`);
-
-        // 받은 데이터 처리
+        const params = {
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
+            title: searchParams.value.title || '',
+            tag: searchParams.value.tag || '',
+            memberId: searchParams.value.memberId || '',
+            classification: searchParams.value.classification || '',
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
+        };
+        if(params.title!=''){
+            params.title='&title='+params.title;
+        }
+        if(params.tag!=''){
+            params.tag='&tag='+params.tag;
+        }
+        if(params.memberId!=''){
+            params.memberId='&memberId='+params.memberId;
+        }
+        if(params.classification!=''){
+            params.classification='&classification='+params.classification;
+        }
+        if(params.startDate==null){
+            params.startDate=''
+            console.log("1");
+            console.log(params.startDate);
+        }
+        else if(params.startDate!=''){
+            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
+            console.log("2");
+            console.log(params.startDate);
+        }
+        if(params.endDate==null){
+            params.endDate=''
+            console.log("3");
+            console.log(params.endDate);
+        }
+        else if(params.endDate!=''){
+            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
+            console.log("4");
+            console.log(params.endDate);
+        }
+        const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+        console.log(`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
     } catch (error) {
@@ -247,8 +273,6 @@ const loadData = async () => {
         loading.value = false;
     }
 };
-
-
 
 onMounted(() => {
     loadData();
