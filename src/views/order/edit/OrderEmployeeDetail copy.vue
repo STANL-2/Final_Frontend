@@ -32,7 +32,7 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
-
+    </Modal>
     <OrderModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
 </template>
 
@@ -41,7 +41,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderModify from './OrderModify.vue';
+import OrderModify from '../OrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
