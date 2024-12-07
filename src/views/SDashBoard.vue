@@ -1,52 +1,116 @@
 <template>
-    <div class="dashboard">
-        <!-- Top Summary Section -->
-        <div class="summary">
-            <div class="summary-item">계약서 <span>6건</span></div>
-            <div class="summary-item">영수증 <span>7건</span></div>
-            <div class="summary-item">현황 <span>10건</span></div>
-            <div class="summary-item">문서함 <span>3건</span></div>
-        </div>
-
-        <!-- Middle Content Section -->
-        <div class="content">
-            <div class="content-item text-content">
-                <p>문서 내용 표시</p>
-            </div>
-            <div class="content-item blank-content"></div>
-            <div class="content-item grid-content">
-                <div class="grid">
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
+    <main class="dashboard">
+        <div class="summary-cards">
+            <DashBoardCard class="summary-card custom-summary-card">
+                <div class="summary-icon-and-title">
+                    <div class="summary-icon">📄</div>
+                    <div class="summary-title">계약서 수</div>
                 </div>
-            </div>
+                <div class="summary-value">{{ contractCount }}</div>
+            </DashBoardCard>
+            <DashBoardCard class="summary-card">
+                <div class="summary-icon-and-title">
+                    <div class="summary-icon">📋</div>
+                    <div class="summary-title">수주서 수</div>
+                </div>
+                <div class="summary-value">{{ orderReceiptCount }}</div>
+            </DashBoardCard>
+            <DashBoardCard class="summary-card">
+                <div class="summary-icon-and-title">
+                    <div class="summary-icon">📦</div>
+                    <div class="summary-title">발주서 수</div>
+                </div>
+                <div class="summary-value">{{ purchaseOrderCount }}</div>
+            </DashBoardCard>
+            <DashBoardCard class="summary-card">
+                <div class="summary-icon-and-title">
+                    <div class="summary-icon">💰</div>
+                    <div class="summary-title">이번달 판매내역</div>
+                </div>
+                <div class="summary-value">{{ thisMonthSales }}원</div>
+            </DashBoardCard>
         </div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <p>PPL 및 메시지 표시</p>
+        <div class="chart-and-customer">
+            <div class="chart">
+                <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+            </div>
+
+            <!-- 내 고객 정보 -->
+            <DashBoardCard>
+                <div class="customer-info">
+                    <div class="content-title">내 고객 정보</div>                
+                    <CustomerRank :customers="customers" />
+                </div>
+            </DashBoardCard>
         </div>
-    </div>
+
+        <div class="small-cards">
+            <div class="announcement-card card">
+                <DashBoardCard>
+                    <div class="card-content">
+                        <div class="content-title">공지사항</div>
+                        <ul class="announcement-list">
+                            <li v-for="announcement in announcements" :key="announcement.id">
+                                {{ announcement.title }}
+                            </li>
+                        </ul>
+                    </div>
+                </DashBoardCard>
+            </div>
+            <div class="news-card">
+                <DashBoardCard>
+                    <div class="card-content">
+                        <div class="content-title">뉴스기사</div>
+                        <ul class="news-list">
+                            <li v-for="news in newsArticles" :key="news.id">
+                                {{ news.title }}
+                            </li>
+                        </ul>
+                    </div>
+                </DashBoardCard>
+            </div>
+        </div>
+    </main>
 </template>
+
 
 <script setup>
 import BigCard from '@/components/common/GraghCard.vue';
-import Card from '@/components/common/Card.vue';
+import DashBoardCard from '@/components/common/DashBoardCard.vue';
 import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
 import DashTimeLine from '@/components/common/DashTimeLine.vue';
-import NaverNews from '@/components/NaverNews.vue';
 import { ref, onMounted } from 'vue';
 import { $api } from '@/services/api/api';
 
+// New reactive references for summary cards
+const contractCount = ref(0);
+const orderReceiptCount = ref(0);
+const purchaseOrderCount = ref(0);
+const thisMonthSales = ref(0);
+const announcements = ref([]);
+const newsArticles = ref([]);
 
 const chartData = ref([]);
 const loading = ref(false);
 
+const loadSummaryData = async () => {
+    try {
+        // Assuming you have an API endpoint to fetch these summary details
+        const summaryResponse = await $api.dashboard.getSummary();
+
+        if (summaryResponse?.result) {
+            contractCount.value = summaryResponse.result.contractCount || 0;
+            orderReceiptCount.value = summaryResponse.result.orderReceiptCount || 0;
+            purchaseOrderCount.value = summaryResponse.result.purchaseOrderCount || 0;
+            thisMonthSales.value = summaryResponse.result.thisMonthSales || 0;
+        }
+    } catch (error) {
+        console.error("Summary data load failed:", error);
+        alert("요약 데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    }
+};
 
 const bigCardChartData = ref({
     labels: [],
@@ -108,32 +172,6 @@ const thirdChartData = ref({
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 });
 
-
-// 1번 차트 그림 value
-const gaugeChartValue = 40; // Gauge Chart에 전달할 값
-
-// 2번 차트 그림 value
-const resources = [
-    { id: 'a', title: 'Resource A' },
-    { id: 'b', title: 'Resource B' },
-    { id: 'c', title: 'Resource C' }
-];
-
-const events = [
-    { id: '1', resourceId: 'a', start: '2024-11-07T09:00:00', end: '2024-11-05T10:00:00', title: 'Meeting' },
-    { id: '2', resourceId: 'b', start: '2024-11-07T12:00:00', end: '2024-11-05T14:00:00', title: 'Lunch Break' },
-    { id: '3', resourceId: 'c', start: '2024-11-07T15:00:00', end: '2024-11-05T17:00:00', title: 'Work Session' }
-];
-
-// 3번 차트 고객 value
-const customers = [
-    { name: '기우석' },
-    { name: '김민석' },
-    { name: '방동호' },
-    { name: '송의혁' },
-    { name: '유혜진' },
-];
-
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
@@ -142,57 +180,55 @@ const loadData = async () => {
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
 
+        console.log("startTime: " + startTime + '\ncurrentTime: ' + currentTime);
+
         const searchParams = ref({
             startDate: startTime.toISOString(),
             endDate: currentTime.toISOString(),
         });
 
-        // API 호출
-        const response = await $api.salesHistory.post(
-            {
-                "startDate": searchParams.value.startDate || '',
-                "endDate": searchParams.value.endDate || '',
-                "period": 'month',
-            }
-            ,'statistics/search',
+        const query = {
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
+        };
 
-        );
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
+
+        // API 호출
+        const response = await $api.salesHistory.getParams('employee/statistics/search/month', queryString);
 
         const result = response?.result; // 응답 데이터 접근
 
-        console.log(response?.result);
-        console.log(result.content);        
-
-
-        if (result && Array.isArray(result.content)) {
-            chartData.value = result.content;
+        if (result && Array.isArray(result)) {
+            chartData.value = result;
 
             // 데이터 매핑
             bigCardChartData.value = {
                 ...bigCardChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...bigCardChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.totalIncentive || 0),
+                        data: chartData.value.map((item) => item.incentive || 0),
                     },
                 ],
             };
-            
+
             secondChartData.value = {
                 ...secondChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...secondChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.totalPerformance || 0),
+                        data: chartData.value.map((item) => item.performance || 0),
                     },
                 ],
             };
 
             thirdChartData.value = {
                 ...thirdChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...thirdChartData.value.datasets[0],
@@ -212,95 +248,140 @@ const loadData = async () => {
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        // alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
         loading.value = false; // 로딩 종료
     }
-
-
 };
+
+const loadAnnouncements = async () => {
+    try {
+        const response = await $api.dashboard.getAnnouncements();
+        announcements.value = response?.result || [];
+    } catch (error) {
+        console.error("Announcements load failed:", error);
+    }
+};
+
+const loadNewsArticles = async () => {
+    try {
+        const response = await $api.dashboard.getNewsArticles();
+        newsArticles.value = response?.result || [];
+    } catch (error) {
+        console.error("News articles load failed:", error);
+    }
+};
+
 
 onMounted(() => {
     loadData();
+    loadSummaryData();
+    loadAnnouncements();
+    loadNewsArticles();
 });
+
 </script>
 
 <style scoped>
 .dashboard {
-    padding: 20px;
-    background-color: #f9f9f9;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    background-color: #F1F1FD;
+    border-radius: 1rem;
+    padding: 2.5rem;
+    width: 1480px;
 }
 
-/* Summary Section */
-.summary {
+.summary-cards {
     display: flex;
-    justify-content: space-around;
-    background-color: #ffffff;
-    padding: 10px;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.summary-card {
+    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.summary-item {
-    flex: 1;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-}
-
-.summary-item span {
-    display: block;
-    margin-top: 5px;
-    font-size: 14px;
-    color: #666;
-}
-
-/* Content Section */
-.content {
-    display: flex;
-    gap: 20px;
-}
-
-.content-item {
-    flex: 1;
     background-color: #ffffff;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 50rem;
+    height: 10rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.text-content {
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.summary-icon-and-title {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    gap: 25px;
+    padding-bottom: 20px;
+}
+
+.summary-icon {
+    font-size: 36px; /* 아이콘 크기 */
+}
+
+.summary-title {
+    font-size: 20px; 
+    font-weight: bold; 
+    color: #333; 
+    margin-top: 11px;
+}
+
+.content-title{
+    font-size: 20px; 
+    font-weight: bold; 
+    color: #333; 
+    padding-left: 0.5rem;
+    padding-top: 0rem;
+}
+
+.chart-and-customer {
+    display: flex;
+    align-items: stretch;
+    gap: 30px;
+}
+
+.chart{
+    width: 71rem;
+}
+
+.customer-info {
+    width: 328px;
+}
+
+
+.small-cards {
+    display: flex;
+    gap: 2rem;
+    margin-top: 25px;
+}
+
+.card-content{
+    width: 40.7rem;
+    height: 18rem;
+}
+
+.announcement-list,
+.news-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.announcement-list li,
+.news-list li {
     font-size: 14px;
-    color: #555;
+    color: #555555;
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
 }
 
-.blank-content {
-    background-color: #f0f0f0;
-}
-
-.grid-content .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.grid-item {
-    height: 50px;
-    background-color: #e0e0e0;
-    border: 1px solid #ccc;
-}
-
-/* Footer Section */
-.footer {
-    text-align: center;
-    font-size: 14px;
-    color: #777;
-    padding: 10px;
+.announcement-list li:hover,
+.news-list li:hover {
+    background-color: #F1F1FD;
+    cursor: pointer;
 }
 </style>
