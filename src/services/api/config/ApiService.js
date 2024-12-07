@@ -72,8 +72,10 @@ export default class ApiService extends BaseApiService {
             return responseData;
 
         } catch (err) {
+            console.log('error', response);
             console.error('서버 에러 발생!', err);
-            // DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
+            
+            DOMEventService.dispatchApiError('서버와의 통신에 문제가 발생했습니다.');
             throw err;
         }
     }
@@ -181,10 +183,7 @@ export default class ApiService extends BaseApiService {
 
         return responseData;
     }
-
-   
-
-
+    
     async putParams(data = {}, subUrl, file = null) {
         let url = `${this.baseUrl}/${this.resource}`;
         if (subUrl) {

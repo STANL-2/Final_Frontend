@@ -393,10 +393,11 @@ onMounted(() => {
     align-items: center; /* 수직 정렬 */
     justify-content: flex-start; /* 좌측 정렬 */
     padding: 20px; /* 내부 여백 */
-    border: 1px solid #838383; /* 외곽선 추가 */
+    border: 1px solid #a3a3a3; /* 외곽선 추가 */
     border-radius: 8px; /* 모서리 둥글게 */
     background-color: #fdfdfd; /* 배경색 추가 */
     margin-bottom: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 사용자 이미지 컨테이너 */
