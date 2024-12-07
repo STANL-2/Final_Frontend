@@ -458,17 +458,41 @@ const loadData = async (searchType = null,
 
                     const mappedData = [
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalIncentive || item.totalIncentive || 0),
                             key: fieldMapping.totalIncentive,
                         },
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalPerformance || item.totalPerformance || 0),
                             key: fieldMapping.totalPerformance,
                         },
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalSales || item.totalSales || 0),
                             key: fieldMapping.totalSales,
                         },
@@ -492,9 +516,7 @@ const loadData = async (searchType = null,
                         value: selectedMappedData.data[index],
                         key: fieldMapping.totalSales
                     }));
-
-                    console.log("key 값이요: ",fieldMapping.totalIncentive);
-
+                    
                     // 기존 차트에 새 데이터 추가 (true로 설정)
                     updateChartData(transformedData, fieldMapping[saveButton], true);
                 }
