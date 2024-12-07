@@ -1,6 +1,8 @@
 <template>
     <div class="path" v-if="breadcrumbs.length">
         <div class="breadcrumb" v-for="(breadcrumb, index) in breadcrumbs" :key="breadcrumb.key">
+            <i v-if="index === 0" class="pi pi-home" style="margin-right: 0.5rem; color: #AAAAAA;"></i>
+            <span v-if="index < breadcrumbs.length - 1" class="fork"> > </span>
             <span class="name">{{ breadcrumb.label }}</span>
             <span v-if="index < breadcrumbs.length - 1" class="fork"> > </span>
         </div>
@@ -8,18 +10,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { asideMenu } from '@/utils/constants';
+import { useUserStore } from '@/stores/user';
+import { getMenuByRole } from '@/utils/constants'
 
 const route = useRoute();
 
-defineProps({
-    menu: {
-        type: Array,
-        required: true
-    }
-});
+const asideMenu = ref([]);
+
+// 사용자 권한에 따른 메뉴 설정
+const userStore = useUserStore();
 
 const findMenuPath = (menu, path) => {
     for (const item of menu) {
@@ -35,6 +36,10 @@ const findMenuPath = (menu, path) => {
 const breadcrumbs = computed(() => {
     const path = route.path;
     return findMenuPath(asideMenu.value, path);
+});
+
+onMounted(() => {
+    asideMenu.value = getMenuByRole(userStore.auth); // 권한에 맞는 메뉴 설정
 });
 </script>
 

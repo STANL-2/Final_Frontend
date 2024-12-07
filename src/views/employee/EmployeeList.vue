@@ -2,7 +2,12 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="flex-row">
+            <div class="flex-row head">
+
+                <div class="path">
+                    <PagePath />
+                </div>
+
                 <div class="ml-l">
                     <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
                         @click="refresh" />
@@ -100,6 +105,7 @@ import ViewTable from '@/components/common/ListTable.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
+import PagePath from '@/components/common/PagePath.vue';
 import { $api } from '@/services/api/api';
 import { useRouter } from 'vue-router';
 
@@ -513,6 +519,13 @@ function handleOpenModal(fieldIndex) {
 </script>
 
 <style scoped>
+.path {
+    margin-right: 490px; /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center; /* 수직 중앙 정렬 */
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

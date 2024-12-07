@@ -169,7 +169,11 @@ const registerModalBtn = async () => {
         const payload = {
             name: registerInfo.value.find(item => item.firstLabel === '고객명')?.firstValue || '',
             age: parseInt(registerInfo.value.find(item => item.secondLabel === '나이')?.secondValue || '0', 10),
-            sex: registerInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '',
+            // sex: registerInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '',
+            sex: (() => {
+                const sexValue = registerInfo.value.find(item => item.firstLabel === '성별')?.firstValue || '';
+                return sexValue === '남성' ? 'MALE' : sexValue === '여성' ? 'FEMALE' : '';
+            })(),
             phone: registerInfo.value.find(item => item.secondLabel === '연락처')?.secondValue || '',
             emergePhone: registerInfo.value.find(item => item.firstLabel === '비상연락처')?.firstValue || '',
             email: registerInfo.value.find(item => item.secondLabel === '이메일')?.secondValue || ''
@@ -401,8 +405,13 @@ const loadData = async () => {
         // 응답 데이터
         const result = response?.result;
         if (result && Array.isArray(result.content)) {
-            // 테이블 데이터 업데이트
-            tableData.value = result.content;
+            // // 테이블 데이터 업데이트
+            // tableData.value = result.content;
+            // 성별 변환: MALE -> 남성, FEMALE -> 여성
+            tableData.value = result.content.map(row => ({
+                ...row,
+                sex: row.sex === 'MALE' ? '남성' : row.sex === 'FEMALE' ? '여성' : ''
+            }));
             // 전체 데이터 수
             totalRecords.value = result.totalElements;
         } else {

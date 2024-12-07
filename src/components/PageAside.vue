@@ -42,7 +42,14 @@ const onNodeSelect = (event) => {
     if (event.url) {
         router.push(event.url);
     } else {
-        console.error('Selected node does not contain a URL:', selectedNode);
+
+        if (expandedKeys.value[event.key]) {
+            // 이미 열려 있으면 닫기
+            expandedKeys.value[event.key] = false;
+        } else {
+            // 닫혀 있으면 열기
+            expandedKeys.value[event.key] = true;
+        }
     }
 };
 

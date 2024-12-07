@@ -198,6 +198,7 @@ const routes = [
             },
             {
                 path: 'Edetail',
+                name: 'NoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue')
             },
             {

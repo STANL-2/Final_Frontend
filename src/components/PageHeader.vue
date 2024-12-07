@@ -231,6 +231,15 @@ const transformToTree = (data) => {
 
 // 이벤트 핸들러
 const handleNodeSelect = (event) => {
+
+    if (expandedKeys.value[event.key]) {
+        // 이미 열려 있으면 닫기
+        expandedKeys.value[event.key] = false;
+    } else {
+        // 닫혀 있으면 열기
+        expandedKeys.value[event.key] = true;
+    }
+
     const selectedNode = event.data.organizationId;
     organizationId.value = selectedNode;
 };
@@ -477,10 +486,6 @@ onMounted(() => {
     // Initial fetch of alarm types
     fetchAlarmTypes();
 
-    // 5분마다 알람 타입 자동 업데이트
-    // const alarmTypesInterval = setInterval(fetchAlarmTypes, 5 * 60 * 1000);
-    const alarmTypesInterval = setInterval(fetchAlarmTypes, 10 * 1000);
-
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
         userStore.startTimer();
@@ -498,6 +503,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.nav-link {
+    cursor: pointer;
+}
+
 .menu-bar {
     display: flex;
     flex-direction: row;
@@ -705,6 +714,7 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 
 .alarm-badge {

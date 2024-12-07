@@ -1,31 +1,39 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+        <div class="search-wrapper">
+            <div class="flex-row content-end">
+                <div class="ml-l">
+                    <div class="ml-xs"><div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div></div>
+                </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="handleSearch"/>
+                </div>
+            </div>
+            <div class="search-fields">
+                <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            </div>
         </div>
-        <div class="flex-row content-end mr-m">
-            <CommonButton label="조회" @click="handleSearch"/>
-        </div>
-        <div class="flex-row content-between mt-l">
-            <div class="list ml-l">전체목록</div>
-            <div class="flex-row items-center mb-s mr-m">
-                <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+        <div class="flex-row content-between mt-m">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
+            <div class="flex-row items-center mb-s">
+                <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
 
         <!-- ViewTable -->
-        <div class="table-wrapper width-s ml-l">
+        <div class="table-wrapper">
             <ViewTable 
                 :headers="tableHeaders" 
                 :data="tableData" 
                 :loading="loading" 
                 :totalRecords="totalRecords" 
                 :rows="rows" 
-                :rowsPerPageOptions="[5, 10, 20, 50]"
+                :rowsPerPageOptions="[10, 15, 20, 50]"
                 :selectable="true" 
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
@@ -73,13 +81,15 @@ const formFields = [
             type: 'select',
             label: '태그',
             model: 'tag',
-            options: ['ALL','ADMIN','DIRECTOR']
+            options: ['ALL','ADMIN','DIRECTOR'],
+            showDivider: false
         },
         {
             type: 'select',
             label: '분류',
             model: 'classification',
-            options: ['NORMAL','GOAL','STRATEGY']
+            options: ['NORMAL','GOAL','STRATEGY'],
+            showDivider: false
         },
     ],
     [
@@ -93,7 +103,7 @@ const formFields = [
             label: '작성자',
             type: 'input',
             model: 'noticeWriter',
-            showDivider: true
+            showDivider: false
         },
         {
             label: '조회기간',
@@ -117,10 +127,11 @@ const tableHeaders = [
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
-const rows = ref(5); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 
 function handleOpenModal() {
+    console.log('모달 열기 호출됨');
 }
 const exportCSV = async () => {
     loading.value = true;
@@ -210,41 +221,24 @@ const handleSearch = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        const params = {
-            page: Math.floor(first.value / rows.value),
-            size: rows.value,
-            title: searchParams.value.title || '',
-            tag: searchParams.value.tag || '',
-            memberId: searchParams.value.memberId || '',
-            classification: searchParams.value.classification || '',
-            startDate: searchParams.value.startDate || '',
-            endDate: searchParams.value.endDate || '',
-        };
-        if(params.title!=''){
-            params.title='&title='+params.title;
-        }
-        if(params.tag!=''){
-            params.tag='&tag='+params.tag;
-        }
-        if(params.memberId!=''){
-            params.memberId='&memberId='+params.memberId;
-        }
-        if(params.classification!=''){
-            params.classification='&classification='+params.classification;
-        }
-        if(params.startDate==null){
-            params.startDate=''
-        }
-        else if(params.startDate!=''){
-            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
-        }
-        if(params.endDate==null){
-            params.endDate=''
-        }
-        else if(params.endDate!=''){
-            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
-        }
-        const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+        const params = new URLSearchParams();
+        
+        // 기본 파라미터 설정
+        params.append('page', Math.floor(first.value / rows.value)); // 페이지 계산
+        params.append('size', rows.value); // 페이지당 행 수 설정
+
+        // 조건별 파라미터 추가
+        if (searchParams.value.title) params.append('title', searchParams.value.title);
+        if (searchParams.value.tag) params.append('tag', searchParams.value.tag);
+        if (searchParams.value.memberId) params.append('memberId', searchParams.value.memberId);
+        if (searchParams.value.classification) params.append('classification', searchParams.value.classification);
+        if (searchParams.value.startDate) params.append('startDate', `${searchParams.value.startDate} 00:00:00`);
+        if (searchParams.value.endDate) params.append('endDate', `${searchParams.value.endDate} 23:59:59`);
+
+        // 쿼리 문자열로 변환된 파라미터를 API 요청에 전달
+        const response = await $api.notice.getParams('', `?${params.toString()}`);
+
+        // 받은 데이터 처리
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
     } catch (error) {
@@ -254,6 +248,8 @@ const loadData = async () => {
     }
 };
 
+
+
 onMounted(() => {
     loadData();
 });
@@ -262,8 +258,29 @@ onMounted(() => {
 
 <style scoped>
 .list{
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight:bold;
+}
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>
 
