@@ -1,36 +1,50 @@
 <template>
-    <div class="dashboard">
-        <!-- Top Summary Section -->
-        <div class="summary">
-            <div class="summary-item">계약서 <span>6건</span></div>
-            <div class="summary-item">영수증 <span>7건</span></div>
-            <div class="summary-item">현황 <span>10건</span></div>
-            <div class="summary-item">문서함 <span>3건</span></div>
+    <main class="dashboard">
+        <div>
+            <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+        </div>
+        <div class="small-cards">
+            <div class="sell-card card">
+                <Card>
+                    <div class="card-content">
+                        <div class="card-name">영업실적</div>
+                        <div class="gauge-chart-container">
+                            <GaugeChart :value="gaugeChartValue" /> <!-- GaugeChart에 value 데이터 전달 -->
+                        </div>
+                    </div>
+                </Card>
+            </div>
+            <div class="plan-card card">
+                <Card>
+                    <div class="card-content">
+                        <div class="card-name">일정표</div>
+                        <DashTimeLine :resources="resources" :events="events" />
+                    </div>
+                </Card>
+            </div>
+            <div class="customer-card card">
+                <Card>
+                    <div class="card-content">
+                        <div class="card-name">나의 고객</div>
+                        <div class="customer-rank">
+                            <CustomerRank :customers="customers" /> <!-- CustomerRank 컴포넌트에 고객 데이터를 props로 전달 -->
+                        </div>
+                    </div>
+                </Card>
+            </div>
         </div>
 
-        <!-- Middle Content Section -->
-        <div class="content">
-            <div class="content-item text-content">
-                <p>문서 내용 표시</p>
+        <div class="card-news card">
+                <Card>
+                    <div class="card-content">
+                        <div class="card-name">자동차 기사</div>
+                        <div class="news-list">
+                            <NaverNews/> 
+                        </div>
+                    </div>
+                </Card>
             </div>
-            <div class="content-item blank-content"></div>
-            <div class="content-item grid-content">
-                <div class="grid">
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                    <div class="grid-item"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>PPL 및 메시지 표시</p>
-        </div>
-    </div>
+    </main>
 </template>
 
 <script setup>
@@ -147,14 +161,18 @@ const loadData = async () => {
             endDate: currentTime.toISOString(),
         });
 
+        const query = {
+            "startDate": searchParams.value.startDate || '',
+            "endDate": searchParams.value.endDate || '',
+        };
+
         // API 호출
         const response = await $api.salesHistory.post(
             {
                 "startDate": searchParams.value.startDate || '',
                 "endDate": searchParams.value.endDate || '',
-                "period": 'month',
             }
-            ,'statistics/search',
+            ,'statistics/all/month',
 
         );
 
@@ -170,7 +188,7 @@ const loadData = async () => {
             // 데이터 매핑
             bigCardChartData.value = {
                 ...bigCardChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...bigCardChartData.value.datasets[0],
@@ -181,7 +199,7 @@ const loadData = async () => {
             
             secondChartData.value = {
                 ...secondChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...secondChartData.value.datasets[0],
@@ -192,7 +210,7 @@ const loadData = async () => {
 
             thirdChartData.value = {
                 ...thirdChartData.value,
-                labels: chartData.value.map((item) => item.period || ''),
+                labels: chartData.value.map((item) => item.month || ''),
                 datasets: [
                     {
                         ...thirdChartData.value.datasets[0],
@@ -227,80 +245,89 @@ onMounted(() => {
 
 <style scoped>
 .dashboard {
+    background-color: #F1F1FD;
     padding: 20px;
-    background-color: #f9f9f9;
-    font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /* 섹션 간의 간격 추가 */
 }
 
-/* Summary Section */
-.summary {
+.small-cards {
     display: flex;
-    justify-content: space-around;
-    background-color: #ffffff;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap; /* 작은 화면에서 줄바꿈을 허용 */
+    gap: 20px; /* 카드 사이의 간격 */
 }
 
-.summary-item {
+.card {
     flex: 1;
-    text-align: center;
-    font-size: 16px;
+    min-width: 280px; /* 카드의 최소 너비 설정 */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card:not(:last-child) {
+    margin-right: 0; /* 기본 마진을 제거하고 gap으로 간격 설정 */
+}
+
+.card-name {
+    font-size: 20px;
     font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
     color: #333;
 }
 
-.summary-item span {
-    display: block;
-    margin-top: 5px;
-    font-size: 14px;
-    color: #666;
-}
-
-/* Content Section */
-.content {
-    display: flex;
-    gap: 20px;
-}
-
-.content-item {
-    flex: 1;
-    background-color: #ffffff;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.text-content {
+.gauge-chart-container,
+.customer-rank,
+.news-list {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    height: 120px;
+    width: 100%;
+}
+
+.sell-card {
+    flex: 2;
+    min-width: 300px; /* 최소 너비를 설정해 카드 크기를 조정 */
+}
+
+.plan-card {
+    flex: 3;
+    min-width: 300px;
+}
+
+.customer-card {
+    flex: 1;
+    min-width: 250px;
+}
+
+.card-news {
+    flex: 2;
+    min-width: 300px;
+}
+
+/* 카드 내용 스타일 */
+.card-content {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    font-size: 14px;
-    color: #555;
-}
-
-.blank-content {
-    background-color: #f0f0f0;
-}
-
-.grid-content .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
 
-.grid-item {
-    height: 50px;
-    background-color: #e0e0e0;
-    border: 1px solid #ccc;
+/* 뉴스 목록 스타일링 */
+.news-list {
+    width: 100%;
+    max-height: 200px; /* 뉴스 목록 최대 높이 설정 */
+    overflow-y: auto; /* 스크롤을 허용하여 많은 뉴스가 있는 경우 대응 */
 }
 
-/* Footer Section */
-.footer {
-    text-align: center;
-    font-size: 14px;
-    color: #777;
-    padding: 10px;
+.news-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.news-list::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 4px;
 }
 </style>
