@@ -375,6 +375,10 @@ const routes = [
             {
                 path: 'Elist',
                 component: () => import('@/views/sales-history/ESalesHistoryList.vue')
+            },
+            {
+                path: 'Echart',
+                component: () => import('@/views/sales-history/ESalesHistoryChart.vue')
             }
         ]
     },
