@@ -1,12 +1,19 @@
 <template>
     <div class="dashboard">
-        <h1>시스템 관리자 대시보드</h1>
+        <div class="title">
+            시스템 관리자 대시보드
+        </div>
         <div class="card-container">
             <div v-for="domain in GasideMenu" :key="domain.key" class="card">
                 <h2>{{ domain.label }}</h2>
                 <div v-for="category in domain.children" :key="category.key" class="category">
-                    <h3>{{ category.label }}</h3>
-                    <div class="button-group">
+                    <h3 @click="toggleCategory(category.key)" :class="{ active: expandedCategories.includes(category.key) }">
+                        {{ category.label }}
+                    </h3>
+                    <div
+                        class="button-group"
+                        v-show="expandedCategories.includes(category.key)"
+                    >
                         <button v-for="item in category.children" :key="item.key" class="button"
                             @click="navigateTo(item.url)">
                             {{ item.label }}
@@ -19,6 +26,20 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+// 현재 확장된 카테고리를 관리하는 상태
+const expandedCategories = ref([]);
+
+// 카테고리 확장/축소 토글 함수
+const toggleCategory = (key) => {
+    if (expandedCategories.value.includes(key)) {
+        expandedCategories.value = expandedCategories.value.filter((k) => k !== key);
+    } else {
+        expandedCategories.value.push(key);
+    }
+};
+
 const GasideMenu = [
     {
         key: '0', label: '영업 사원', // depth1
@@ -209,20 +230,53 @@ const navigateTo = (url) => {
 
 <style scoped>
 .dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
     padding: 12px;
     font-family: Arial, sans-serif;
 }
 
-h1 {
+/* .title{
+    margin-bottom: 70px;
+    font-size: 70px;
+} */
+
+.title {
+    margin-bottom: 70px;
+    font-size: 60px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #6360AB, #FFD700, #4542AB);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
     text-align: center;
-    margin-bottom: 30px;
+    letter-spacing: 2px;
+    animation: glow 3s infinite;
+    text-shadow: 0px 0px 10px rgba(99, 96, 171, 0.8), 0px 0px 20px rgba(99, 96, 171, 0.5);
 }
+
+/* Title Glow Animation */
+@keyframes glow {
+    0% {
+        text-shadow: 0px 0px 10px rgba(99, 96, 171, 0.8), 0px 0px 20px rgba(99, 96, 171, 0.5);
+    }
+    50% {
+        text-shadow: 0px 0px 20px rgba(99, 96, 171, 1), 0px 0px 30px rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        text-shadow: 0px 0px 10px rgba(99, 96, 171, 0.8), 0px 0px 20px rgba(99, 96, 171, 0.5);
+    }
+}
+
 
 .card-container {
     display: flex;
     flex-wrap: wrap;
     gap: 50px;
-    justify-content: center;
+    margin-bottom: 200px;
 }
 
 .card {
@@ -232,6 +286,12 @@ h1 {
     width: 300px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .card h2 {
@@ -244,12 +304,24 @@ h1 {
     font-size: 16px;
     margin: 10px 0;
     color: #555;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.category h3.active {
+    color: #6360AB;
+    font-weight: bold;
+}
+
+.category h3:hover {
+    color: #333;
 }
 
 .button-group {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    margin-top: 10px;
 }
 
 .button {
@@ -261,9 +333,16 @@ h1 {
     cursor: pointer;
     font-size: 14px;
     text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .button:hover {
     background-color: #4542ab;
+    transform: scale(1.05);
+}
+
+.button:active {
+    transform: scale(0.95);
+    background-color: #333;
 }
 </style>
