@@ -89,5 +89,6 @@ app.component('ScrollPanel', ScrollPanel);
 app.component('Timeline', Timeline);
 app.component('TabPanel', TabPanel);
 app.component('TabView', TabView);
+app.component('Chart', Chart);
 
 app.mount('#app');

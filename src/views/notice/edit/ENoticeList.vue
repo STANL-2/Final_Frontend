@@ -25,7 +25,6 @@
             </div>
         </div>
 
-        <!-- ViewTable -->
         <div class="table-wrapper">
             <ViewTable 
                 :headers="tableHeaders" 

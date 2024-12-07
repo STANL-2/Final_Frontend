@@ -149,11 +149,6 @@ const loadData = async () => {
             endDate: currentTime.toISOString(),
         });
 
-        const query = {
-            "startDate": searchParams.value.startDate || '',
-            "endDate": searchParams.value.endDate || '',
-        };
-
         // API 호출
         const response = await $api.salesHistory.post(
             {

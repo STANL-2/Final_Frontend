@@ -25,10 +25,6 @@
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
-                </div>
             </div>
         </div>
 
@@ -153,7 +149,7 @@ const formFields = [
             showDivider: true,
         },
         {
-            label: '판매일자',
+            label: '조회기간',
             type: 'calendar',
             model: 'salesHistoryDate',
             showIcon: true,
@@ -423,7 +419,7 @@ const dynamicHeaders = computed(() => {
     } else if (modalType.value === 'productList') {
         return ['제품코드', '제품명']; // 가정
     } else if (modalType.value === 'customerList') {
-        return ['고객이름', '담당자']; // 가정
+        return ['고객코드', '고객명']; // 가정
     } else {
         return [];
     }

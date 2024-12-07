@@ -21,18 +21,13 @@
                     </div>
                     <div class="bigcard-container">
                         <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
-                        <BigCard ref="chartRef" class="bigcard" :chartDataList="chartDataList" :chartOptions="chartOptions" />
+                        <BigCard ref="chartRef" class="bigcard" :chartDataList="chartDataList"
+                            :chartOptions="chartOptions" />
                     </div>
 
                 </TabPanel>
             </TabView>
         </div>
-
-
-
-        <!-- <div>
-            <BigCard ref="chartRef" :chartDataList="chartDataList" :chartOptions="chartOptions" />
-        </div> -->
 
         <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
             modalType === 'memberList' ? '사원 검색' :
@@ -153,12 +148,12 @@ const secondRowFields = ref(
             model: 'totalSales',
             value: 'totalSales',
         },
-        // {
-        //     label: '기본',
-        //     type: 'button',
-        //     model: '',
-        //     value: '',
-        // },
+        {
+            label: '기본',
+            type: 'button',
+            model: '',
+            value: '',
+        },
     ],
 );
 
@@ -213,53 +208,10 @@ const refresh = () => {
     console.log('화면이 초기화되었습니다.');
 };
 
-const handleButtonComparisonClick = async (field2) => {
-    console.log(`${field2.model} 비교 버튼 클릭됨`);
-
-    const formData = searchFormRef.value?.formData;
-
-    if (!formData) {
-        console.error('FormData를 가져올 수 없습니다.');
-        return;
-    }
-
-    searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
-    );
-
-    const period = formData.period || '';
-    const searchTypeMap = {
-        '일별': null,
-        '월별': 'month',
-        '연도별': 'year',
-    };
-    const searchType = searchTypeMap[period];
-
-    const requestBody = {
-        groupBy: formData.groupBy === 'employee',
-        month: searchType === 'month' ? 'month' : null,
-        year: searchType === 'year' ? 'year' : null,
-        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
-        orderBy: orderByValue(saveButton),
-    };
-
-    console.log("Comparison Request Body:", requestBody);
-    if (field2.model === 'best') {
-        console.log("최고 데이터 요청:", requestBody);
-        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
-    } else {
-        console.log("평균 데이터 요청:", requestBody);
-        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
-    }
-
-};
-
 const handleTabChange = (event) => {
     const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
     handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
 };
-
 
 const handleButtonClick = async (field) => {
 
@@ -271,9 +223,6 @@ const handleButtonClick = async (field) => {
     try {
         const formData = searchFormRef.value?.formData;
         const formDataIds = searchFormRef.value?.formDataIds;
-
-        console.log("formDataIds: ", formDataIds);
-        console.log("formData: ", formData);
 
         if (!formData || !formDataIds) {
             console.error('formData를 가져올 수 없습니다.');
@@ -327,11 +276,18 @@ const handleButtonClick = async (field) => {
 
         console.log("Updated searchCriteria: ", searchCriteria.value);
 
-        if (field.value != '') {
+        // 개별 필드
+        if (field.model != '' && field.value != '') {
             saveButton = field.model;
             saveValue = field.value;
+            // 기본 필드
+        } else if (field.model == '' && field.value == '') {
+            saveButton = '';
+            saveValue = '';
+            // 비교 필드
+        } else {
+            saveValue = field.value;
         }
-        // saveButton = field.model ?
 
         const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
         const periodMap = {
@@ -339,7 +295,6 @@ const handleButtonClick = async (field) => {
             '월별': 'month',
             '연도별': 'year',
         };
-
 
         const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
         const groupBy = formData.groupBy || '';
@@ -363,7 +318,6 @@ const handleButtonClick = async (field) => {
         const apiPath = apiPathMap[field.value] || apiPathMap.default;
 
         console.log("API Path:", apiPath);
-
 
         // 데이터 로드 및 차트 업데이트
         await loadData(periodType, field.model, field.label, groupByType, apiPath);
@@ -409,6 +363,8 @@ const loadData = async (searchType = null,
         };
         // 필터링된 조건에 배열 처리 추가
         const preparedCriteria = ensureArrayFields(filteredCriteria);
+
+        console.log("마지막 saveButton: ", saveButton);
 
         // 최종 요청 본문
         const searchParams = {
@@ -498,28 +454,71 @@ const loadData = async (searchType = null,
                         totalSales: `${keyPrefix} 매출액`,
                     };
 
+                    console.log("saveButton: ", saveButton);
+
                     const mappedData = [
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalIncentive || item.totalIncentive || 0),
                             key: fieldMapping.totalIncentive,
                         },
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalPerformance || item.totalPerformance || 0),
                             key: fieldMapping.totalPerformance,
                         },
                         {
-                            labels: result.map((item) => item.period || ''),
+                            labels: result.map((item) => {
+                                if (groupBy === 'center') {
+                                    return `${item.centerId} (${item.period}) ` || '';
+                                } else if (groupBy === 'employee') {
+                                    return `${item.memberId} (${item.period}) ` || '';
+                                } else {
+                                    return item.period || '';
+                                }
+                            }),
                             data: result.map((item) => item.averageTotalSales || item.totalSales || 0),
                             key: fieldMapping.totalSales,
                         },
                     ];
 
+                    let mappingIndex;
+                    if (saveButton === 'totalIncentive') {
+                        mappingIndex = 0;
+                    } else if (saveButton === 'totalPerformance') {
+                        mappingIndex = 1;
+                    } else {
+                        mappingIndex = 2;
+                    }
+
                     console.log(`${saveValue} 데이터 매핑 완료:`, mappedData);
 
+                    const selectedMappedData = mappedData[mappingIndex];
+
+                    const transformedData = selectedMappedData.labels.map((label, index) => ({
+                        label,
+                        value: selectedMappedData.data[index],
+                        key: fieldMapping.totalSales
+                    }));
+                    
                     // 기존 차트에 새 데이터 추가 (true로 설정)
-                    updateChartData(mappedData, `${keyPrefix} 데이터`, true);
+                    updateChartData(transformedData, fieldMapping[saveButton], true);
                 }
             }
             else {
@@ -651,10 +650,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         console.log("Updated chartDataList:", chartDataList.value);
     }
 };
-
-
-
-
 
 const loadComparisonData = async (requestBody, fieldLabel) => {
     loading.value = true;
@@ -804,43 +799,6 @@ const thirdChartData = ref({
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 });
 
-const fourthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '평균',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const fifthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '최고',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
 
 const orderByValue = (saveButton) => {
     switch (saveButton) {
@@ -1230,20 +1188,28 @@ tr:hover {
 
 .bigcard-container {
     display: flex;
-    justify-content: center;  /* 가로 중앙 정렬 */
-    align-items: center;      /* 세로 중앙 정렬 */
-    width: 100%;              /* 부모 요소의 100% 폭 */
-    height: 100%;             /* 부모 요소의 100% 높이 */
-    padding: 16px;            /* 내부 여백 */
+    justify-content: center;
+    /* 가로 중앙 정렬 */
+    align-items: center;
+    /* 세로 중앙 정렬 */
+    width: 100%;
+    /* 부모 요소의 100% 폭 */
+    height: 100%;
+    /* 부모 요소의 100% 높이 */
+    padding: 16px;
+    /* 내부 여백 */
 }
 
 .bigcard {
-    width: 100%;              /* 가로 100% */
-    height: 100%;             /* 세로 100% */
-    min-height: 300px;        /* 최소 높이 보장 */
+    width: 100%;
+    /* 가로 100% */
+    height: 100%;
+    /* 세로 100% */
+    min-height: 300px;
+    /* 최소 높이 보장 */
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 내용 중앙 정렬 */
+    justify-content: center;
+    /* 내용 중앙 정렬 */
 }
-
 </style>

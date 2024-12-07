@@ -1,51 +1,28 @@
 <template>
     <PageLayout>
         <div class="component-wrapper">
+            <div class="button-row">
+                <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh" />
+            </div>
             <!-- 첫 번째 행: 검색 조건 -->
             <SSearchForm :fields="[firstRowFields]" ref="searchFormRef" />
 
-            <!-- 두 번째 행: 버튼 -->
-            <div class="form-row button-row">
-                <SCommonButton v-for="field in secondRowFields" :key="field.model" :label="field.label"
-                    @click="handleButtonClick(field)" />
-            </div>
-
-            <!-- 세 번째 행: 버튼 -->
-            <div class="form-row button-row">
-                <SCommonButton v-for="field2 in thirdRowFields" :key="field2.model" :label="field2.label"
-                    @click="handleButtonComparisonClick(field2)" />
-            </div>
-        </div>
-
-        <!-- 조회 버튼 -->
-
-        <!-- 테이블: POST 요청 데이터 -->
-        <div class="component-wrapper" v-if="method === 'POST'">
-            <div class="flex-row content-between">
-                <div>전체목록</div>
-                    <div class="flex-row items-center mb-s">
-                        <div class="ml-xs">
-                            <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
-                        </div>
-                        <div class="ml-xs">
-                            <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                        </div>
-                        <div class="ml-xs">
-                            <SCommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                                @click="refresh" />
+            <TabView class="horizontal-tabs" @tab-change="handleTabChange">
+                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
+                    <!-- <p class="m-0">{{ field.label }}</p> -->
+                    <div class="flex-container">
+                        <div v-for="(field2, index) in thirdRowFields" :key="index" class="form-row button-row">
+                            <SCommonButton :key="field2.model" :label="field2.label"
+                                @click="handleButtonComparisonClick(field2)" />
                         </div>
                     </div>
-            </div>
-            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
-                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
-                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter"></ViewTable>
+                    <div>
+                        <BigCard :chart-data="[bigCardChartData, secondChartData]" />
+                    </div>
+                </TabPanel>
+            </TabView>
         </div>
 
-        <!-- 차트: GET 요청 데이터 -->
-        <div v-if="method === 'GET'">
-            <BigCard :chart-data="[bigCardChartData, secondChartData]" />
-        </div>
     </PageLayout>
 </template>
 
@@ -58,6 +35,7 @@ import SSearchForm from '@/components/common/SSearchForm.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
+import CommonButton from '@/components/common/Button/CommonButton.vue';
 
 // SearchForm.vue 검색조건 값
 const firstRowFields = ref([
@@ -66,7 +44,9 @@ const firstRowFields = ref([
         type: 'select',
         model: 'period',
         value: '',
-        options: ['일별', '월별', '연도별'],
+        // options: ['일별', '월별', '연도별'],
+        // options: ['','월별', '연도별'],
+        options: ['조회기간별', '월별'],
         showDivider: false,
     },
     {
@@ -79,12 +59,6 @@ const firstRowFields = ref([
 ]);
 
 const secondRowFields = ref([
-    {
-        label: '판매내역',
-        type: 'button',
-        model: 'salesHistory',
-        value: '',
-    },
     {
         label: '수당',
         type: 'button',
@@ -146,19 +120,12 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
-let method = "POST";
+const method = ref(null);
 let saveButton;
 const searchParams = ref({
     startDate: null,
     endDate: null
 });
-
-
-function handleView(rowData) {
-    // 상세 데이터 설정 및 모달 열기
-    selectedDetail.value = rowData; // 클릭된 행 데이터 전달    
-    showDetailModal.value = true;
-}
 
 const searchCriteria = ref({});
 
@@ -183,7 +150,7 @@ const handleButtonComparisonClick = async (field2) => {
 
     const period = formData.period || '';
     const searchTypeMap = {
-        '일별': null,
+        '': 'daily',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -196,19 +163,30 @@ const handleButtonComparisonClick = async (field2) => {
         startDate: searchCriteria.value.salesHistorySearchDate_start || null,
         endDate: searchCriteria.value.salesHistorySearchDate_end || null,
         orderBy: orderByValue(saveButton),
+        period: searchType,
     };
 
     console.log("Comparison Request Body:", requestBody);
     if (field2.model === 'best') {
         console.log("최고 데이터 요청:", requestBody);
-        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
+        await loadBestData(requestBody, field2.label); // 최고 데이터 로드
     } else {
         console.log("평균 데이터 요청:", requestBody);
         await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
     }
 };
 
+const handleTabChange = (event) => {
+    const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
+    const selectedTab = event.index; // 선택된 탭 인덱스
 
+    if (selectedTab === 0) {
+        method.value = 'POST';  // 판매내역 탭
+    } else if ([1, 2, 3].includes(selectedTab)) {
+        method.value = 'GET';  // 다른 탭들
+    }
+    handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
+};
 
 const handleButtonClick = async (field) => {
     // FormData 가져오기
@@ -224,13 +202,11 @@ const handleButtonClick = async (field) => {
         Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
     );
 
-    // API 요청 방법 설정
-    method = field.model === 'salesHistory' ? 'POST' : 'GET';
     saveButton = field.model;
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const searchTypeMap = {
-        '일별': '',
+        '': '',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -238,10 +214,9 @@ const handleButtonClick = async (field) => {
     const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
 
     console.log('searchCriteria:', searchCriteria.value);
-    console.log('searchType:', searchType);
 
     // 데이터 로드 및 차트 업데이트
-    await loadData(method, searchType, field.model, field.label);
+    await loadData(method.value, searchType, field.model, field.label);
 };
 
 
@@ -253,60 +228,51 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
             endDate: searchCriteria.value.salesHistorySearchDate_end || null,
         }
 
-
         let response;
 
-        if (method === 'POST') {
-            // POST 요청
-            const queryString = `?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
-            response = await $api.salesHistory.post(searchParams.value, 'employee/search' + queryString);
+        // GET 요청
+        const subUrl = ref(null);
+        if (searchType != null)
+            subUrl.value = `employee/statistics/search/${searchType}`;
+        else
+            subUrl.value = `employee/statistics/search`;
+        const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
+        response = await $api.salesHistory.getParams(subUrl.value, queryString);
 
-            if (response && response.result) {
-                tableData.value = response.result.content || [];
-                totalRecords.value = response.result.totalElements || 0;
+        console.log("queryString: " + queryString);
+        console.log("subUrl" + subUrl);
+
+        if (response && response.result) {
+            const result = response.result;
+
+            if (Array.isArray(result)) {
+                // 데이터 매핑
+                const mappedData = result.map((item) => ({
+                    label: item.month || item.year || item.createdAt || '',
+                    value: item[fieldModel] || 0,
+                }));
+
+                console.log("mappedData:", mappedData);
+
+                // 차트 업데이트
+                updateChartData(mappedData, fieldLabel);
+            } else {
+                const mappedData = Object.entries(result).map(([key, value]) => ({
+                    label: result.month || result.year || result.createdAt || '',  // 키를 label로 사용
+                    value: result[fieldModel] || 0,  // 값이 없으면 0으로 처리
+                }));
+                updateChartData(mappedData, fieldLabel);
             }
-        }  else if (method === 'GET') {
-            // GET 요청
-            const subUrl = `employee/statistics/search/${searchType}`;
-            const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
-            response = await $api.salesHistory.getParams(subUrl, queryString);
-            
-            console.log("queryString: "+ queryString);
-            console.log("subUrl" + subUrl);
+        } else {
+            throw new Error('Unsupported method');
+        }
 
-            if (response && response.result) {
-                const result = response.result;
-
-                // 확인 로그 추가
-                console.log("response.result 확인:", result);
-                console.log("result.map 작동 여부 테스트");
-
-
-                if (response && response.result) {
-                    const result = response.result;
-
-                    // 데이터 매핑
-                    const mappedData = result.map((item) => ({
-                        label: item.month || item.year || item.date || '',
-                        value: item[fieldModel] || 0,
-                    }));
-
-                    console.log("mappedData:", mappedData);
-
-                    // 차트 업데이트
-                    updateChartData(mappedData, fieldLabel);
-                    }
-                } else {
-                    throw new Error('Unsupported method');
-                }
-            }
     } catch (error) {
         console.error('데이터 로드 실패:', error.message);
     } finally {
         loading.value = false; // 로딩 종료
     }
 };
-
 
 const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
     console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
@@ -329,7 +295,7 @@ const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
                 pointRadius: 5,
                 fill: true,
                 tension: 0.4,
-                type: 'line',
+                type: 'bar',
             },
         ],
     };
@@ -340,7 +306,7 @@ const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
 const loadComparisonData = async (requestBody, fieldLabel) => {
     loading.value = true;
     try {
-        const response = await $api.salesHistory.post(requestBody, 'statistics/average/employee');
+        const response = await $api.salesHistory.post(requestBody, 'statistics/average');
 
         if (response && response.result) {
             const result = response.result;
@@ -384,13 +350,15 @@ const loadComparisonData = async (requestBody, fieldLabel) => {
 const loadBestData = async (requestBody, fieldLabel, searchType) => {
     loading.value = true;
     try {
-        const response = await $api.salesHistory.post(requestBody, `statistics/all/${searchType}`);
+
+        console.log
+
+        const response = await $api.salesHistory.post(requestBody, `statistics/best`);
 
         if (response && response.result) {
             const result = response.result;
 
             console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
 
             // `saveButton` 값을 기반으로 매핑할 필드 결정
             const fieldMapping = {
@@ -425,58 +393,10 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
     }
 };
 
-
-
 onMounted(() => {
     loadData('POST');
 });
 
-
-const exportCSV = async () => {
-    loading.value = true;
-    try {
-        const blob = await $api.salesHistory.get('excel', '', {
-            responseType: 'blob'
-        });
-
-        // 이미 blob이 반환되었으므로 바로 URL 생성
-        const url = window.URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'customerExcel.xlsx');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('다운로드 에러:', error);
-        alert('엑셀 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-        loading.value = false;
-    }
-};
-
-
-// 페이지네이션 이벤트 처리
-function onPage(event) {
-    first.value = event.first; // 시작 인덱스
-    rows.value = event.rows; // 한 페이지당 데이터 수
-    loadData(); // 데이터 로드
-}
-// 정렬 이벤트 처리
-
-function onSort(event) {
-    sortField.value = event.sortField; // 정렬 필드
-    sortOrder.value = event.sortOrder > 0 ? 'asc' : 'desc'; // 정렬 순서
-    loadData(); // 데이터 로드
-}
-
-// 필터 이벤트 처리
-function onFilter(event) {
-    filters.value = event.filters;
-    loadData(); // 데이터 다시 로드
-}
 
 // 검색창 모달
 const showModal = ref(false);
@@ -634,7 +554,6 @@ const orderByValue = (saveButton) => {
             return ''; // 기본값 처리
     }
 };
-
 
 </script>
 
@@ -837,5 +756,24 @@ tr:hover {
 .common-button:hover {
     background-color: #4e4c96;
     /* 호버 시 배경색 */
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    /* 버튼 간 간격 */
+    margin-bottom: 20px;
+    /* 버튼 행 위쪽 간격 */
+    justify-content: end;
+    /* 버튼을 왼쪽 정렬 */
+}
+
+.flex-container {
+    display: flex;
+    align-items: center;
+    /* 세로로 중앙 정렬 */
+    justify-content: end;
+    gap: 16px;
+    /* 요소 간의 간격 */
 }
 </style>

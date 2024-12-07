@@ -197,6 +197,7 @@ const routes = [
         children: [
             {
                 path: 'list',
+                name: 'NoticeList',
                 component: () => import('@/views/notice/NoticeList.vue')
             },
             {
@@ -206,11 +207,12 @@ const routes = [
             },
             {
                 path: 'Elist',
+                name: 'ENoticeList',
                 component: () => import('@/views/notice/edit/ENoticeList.vue')
             },
             {
                 path: 'Edetail',
-                name: 'NoticeDetail',
+                name: 'ENoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue')
             },
             {
@@ -328,6 +330,7 @@ const routes = [
         children: [
             {
                 path: 'list',
+                name: 'PromotionList',
                 component: () => import('@/views/promotion/PromotionList.vue')
             },
             {
@@ -337,10 +340,12 @@ const routes = [
             },
             {
                 path: 'Elist',
+                name: 'EPromotionList',
                 component: () => import('@/views/promotion/edit/EPromotionList.vue')
             },
             {
                 path: 'Edetail',
+                name: 'EPromotionDetail',
                 component: () => import('@/views/promotion/edit/EPromotionDetail.vue')
             },
             {
@@ -410,6 +415,10 @@ const routes = [
             {
                 path: 'Elist',
                 component: () => import('@/views/sales-history/ESalesHistoryList.vue')
+            },
+            {
+                path: 'Echart',
+                component: () => import('@/views/sales-history/ESalesHistoryChart.vue')
             }
         ]
     },

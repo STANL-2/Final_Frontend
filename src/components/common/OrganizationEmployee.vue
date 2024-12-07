@@ -46,7 +46,7 @@ const goProfile = (member) => {
 
 const apiService = new ApiService('api/v1/member/organization');
 
-const organizationMemberHeader = ['사원번호', '성명', '직급', '고용 구분', '발령일', '상세보기'];
+const organizationMemberHeader = ['사원번호', '성명', '직위', '고용 구분', '발령일', '상세보기'];
 const organizationMembers = ref([]);
 
 const getOrganizationMembers = async (member) => {
@@ -59,7 +59,23 @@ const getOrganizationMembers = async (member) => {
         organizationMembers.value = result.map(member => ({
             loginId: member.loginId || 'N/A',
             name: member.name || 'N/A',
-            position: member.position || 'N/A',
+            position: member.position === "INTERN" 
+                                    ? "인턴"
+                                        : member.position === "STAFF"
+                                    ? "사원"
+                                        : member.position === "ASSISTANT"
+                                    ? "대리"
+                                        : member.position === "MANAGER"
+                                    ? "과장"
+                                        : member.position === "SENIOR"
+                                    ? "차장"
+                                        : member.position === "EXECUTIVE"
+                                    ? "부장"
+                                        : member.position === "DIRECTOR"
+                                    ? "임원"
+                                        : member.position === "CEO"
+                                    ? "대표이사"
+                                        : "N/A",
             jobType: member.jobType === 'REGULAR' ? '정규직' : '비정규직',
             createdAt: member.createdAt.substring(0, 10)
         }));
