@@ -4,11 +4,11 @@
     </div>
     <main class="main">
         <div class="aside" :class="{ hidden: isSidebarCollapsed }">
-            <PageAside />
+            <PageAside :nodes="asideMenu" />
         </div>
         <div class="body">
             <div class="path">
-                <PagePath />
+                <PagePath :menu="asideMenu" />
             </div>
             <div class="body-content">
                 <RouterView />
@@ -18,8 +18,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useUserStore } from '@/stores/user';
 import { RouterView } from 'vue-router';
+import { getMenuByRole } from '@/utils/constants'
 import PageHeader from '@/components/PageHeader.vue';
 import PagePath from '@/components/common/PagePath.vue';
 import PageAside from '@/components/PageAside.vue';
@@ -30,6 +32,14 @@ const isSidebarCollapsed = ref(false);
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
+
+const asideMenu = ref([]);
+
+// 사용자 권한에 따른 메뉴 설정
+const userStore = useUserStore();
+onMounted(() => {
+    asideMenu.value = getMenuByRole(userStore.auth); // 권한에 맞는 메뉴 설정
+});
 </script>
 
 <style scoped>

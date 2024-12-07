@@ -200,12 +200,47 @@ const getMemberInfo = async () => {
                 {
                     firstLabel: '입사일', firstValue: result.createdAt.substring(0, 10) || 'N/A', // 입사일 정보 없음
                     secondLabel: '발령일', secondValue: result.updatedAt.substring(0, 10) || 'N/A', // 발령일 정보 없음
-                    thirdLabel: '병역구분', thirdValue: result.military || 'N/A'
+                    thirdLabel: '병역구분',
+                    thirdValue: result.military === "FULFILLED"
+                                                ? "군필"
+                                                    : result.military === "EXEMPTION"
+                                                ? "면제"
+                                                    : result.military === "UNFULFILLED"
+                                                ? "미필"
+                                                    : "N/A"
                 },
                 {
                     firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
-                    secondLabel: '직책', secondValue: result.position || 'N/A',
-                    thirdLabel: '학력구분', thirdValue: result.grade || 'N/A'
+                    secondLabel: '직위',
+                    secondValue: result.position === "INTERN" 
+                                                ? "인턴"
+                                                    : result.position === "STAFF"
+                                                ? "사원"
+                                                    : result.position === "ASSISTANT"
+                                                ? "대리"
+                                                    : result.position === "MANAGER"
+                                                ? "과장"
+                                                    : result.position === "SENIOR"
+                                                ? "차장"
+                                                    : result.position === "EXECUTIVE"
+                                                ? "부장"
+                                                    : result.position === "DIRECTOR"
+                                                ? "임원"
+                                                    : result.position === "CEO"
+                                                ? "대표이사"
+                                                    : "N/A",
+                    thirdLabel: '학력구분',
+                    thirdValue: result.grade === "High School"
+                                                ? "고졸"
+                                                    : result.grade === "Associate"
+                                                ? "2년제"
+                                                    : result.grade === "Bachelor"
+                                                ? "4년제"
+                                                    : result.grade === "Master"
+                                                ? "석사"
+                                                    : result.grade === "Doctoral"
+                                                ? "박사"
+                                                    : "N/A"
                 },
                 {
                     firstLabel: '은행명', firstValue: result.bankName || 'N/A',
@@ -285,7 +320,7 @@ const getFamilyData = async () => {
             relation: family.relation || 'N/A',
             name: family.name || 'N/A',
             birth: family.birth || 'N/A',
-            identNo: family.identNo.substring(0, 9) + '******' || 'N/A',
+            identNo: family.identNo.substring(0, 8) + '******' || 'N/A',
             phone: family.phone || 'N/A',
             sex: family.sex === 'MALE' ? '남성' : '여성',
             disability: family.disability ? 'O' : 'X',

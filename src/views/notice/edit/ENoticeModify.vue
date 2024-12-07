@@ -95,7 +95,7 @@ export default {
 
         // 페이지 닫기
         const closePage = () => {
-            router.push('/notice/list');
+            router.push('/notice/Elist');
         };
 
         // 공지사항 정보 로드
@@ -132,7 +132,7 @@ export default {
                     file.value || null // 새 파일이 있으면 추가
                 );
                 alert('공지사항이 수정되었습니다.');
-                router.push('/notice/list');
+                router.push('/notice/Elist');
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
                 alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
