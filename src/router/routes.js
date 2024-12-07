@@ -156,29 +156,6 @@ const routes = [
         ]
     },
     {
-        path: '/evaluation',
-        component: () => import('@/layouts/MainLayout.vue'),
-        // meta: { requiresAuth: true, auth: 'GOD' },
-        children: [
-            {
-                path: 'list',
-                component: () => import('@/views/evaluation/EvaluationList.vue')
-            },
-            {
-                path: 'detail',
-                component: () => import('@/views/evaluation/EvaluationDetail.vue')
-            },
-            {
-                path: 'modify',
-                component: () => import('@/views/evaluation/EvaluationModify.vue')
-            },
-            {
-                path: 'register',
-                component: () => import('@/views/evaluation/EvaluationRegister.vue')
-            }
-        ]
-    },
-    {
         path: '/notice',
         component: () => import('@/layouts/MainLayout.vue'),
         // meta: { requiresAuth: true, auth: 'GOD' },
