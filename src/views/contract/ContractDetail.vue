@@ -16,6 +16,12 @@
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
                 </div>
+                <div class="ml-xs">
+                    <CommonButton label="수정" @click="openModifyModal" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
+                </div>
             </div>
         </div>
         <div id="printMe">
@@ -126,6 +132,7 @@ const confirmStatusChange = async () => {
 
         emit('refresh');
         closeStatusModal();
+        onClose();
     }catch(error){
         console.error('상태 변경 실패:', error);
         toast.add({

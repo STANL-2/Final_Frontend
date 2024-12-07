@@ -23,6 +23,9 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
+                <div>
+                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
+                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
@@ -182,9 +185,8 @@ const tableHeaders = ref([
     { field: 'title', label: '계약서명', width: '25%' },
     { field: 'carName', label: '제품명', width: '13%' },
     { field: 'customerName', label: '고객명', width: '13%' },
-    { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
-    { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'createdAt', label: '계약일자', width: '10%' },
+    { field: 'customerPurchaseCondition', label: '구매 조건', width: '10%' },
+    { field: 'createdAt', label: '계약일자', width: '15%' },
     { field: 'status', label: '승인 상태', width: '3%' },
 ]);
 

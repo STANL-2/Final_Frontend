@@ -120,8 +120,20 @@ const routes = [
                 component: () => import('@/views/contract/ContractProgress.vue')
             },
             {
-                path: 'emlist',
+                path: 'emdetail',
                 component: () => import('@/views/contract/edit/ContractEmployeeDetail.vue')
+            },
+            {
+                path: 'emlist',
+                component: () => import('@/views/contract/edit/ContractEmployeeList.vue')
+            },
+            {
+                path: 'ddetail',
+                component: () => import('@/views/contract/edit/ContractDDetail.vue')
+            },
+            {
+                path: 'dlist',
+                component: () => import('@/views/contract/edit/ContractDList.vue')
             }
         ]
     },
@@ -221,10 +233,30 @@ const routes = [
                 path: 'adList',
                 component: () => import('@/views/order/edit/OrderAdminList.vue')
             },
-            // {
-            //     path: 'emDetail',
-            //     component: () => import('@/views/order/edit/OrderEmployeeDetailCopy.vue')
-            // }
+            {
+                path: 'emDetail',
+                component: () => import('@/views/order/edit/OrderEmployeeDetail.vue')
+            },
+            {
+                path: 'emList',
+                component: () => import('@/views/order/edit/OrderEmployeeList.vue')
+            },
+            {
+                path: 'dDetail',
+                component: () => import('@/views/order/edit/OrderDDetail.vue')
+            },
+            {
+                path: 'dList',
+                component: () => import('@/views/order/edit/OrderDList.vue')
+            },
+            {
+                path: 'emregister',
+                component: () => import('@/views/order/edit/OrderEmployeeRegister.vue')
+            },
+            {
+                path: 'emmodify',
+                component: () => import('@/views/order/edit/OrderEmployeeModify.vue')
+            },
         ]
     },
     {
@@ -333,6 +365,14 @@ const routes = [
             {
                 path: 'adDetail',
                 component: () => import('@/views/purchase-order/edit/PuchaseOrderAdminDetail.vue')
+            },
+            {
+                path: 'ddlist',
+                component: () => import('@/views/purchase-order/edit/PuchaseOrderDList.vue')
+            },
+            {
+                path: 'dDetail',
+                component: () => import('@/views/purchase-order/edit/PuchaseOrderDDetail.vue')
             }
         ]
     },
