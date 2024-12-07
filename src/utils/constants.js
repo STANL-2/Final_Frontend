@@ -6,7 +6,9 @@ export const EasideMenu = [
         children: [
             { key: '0-0', label: '계약서', url: '/commingsoon' },
             { key: '0-1', label: '수주서', url: '/commingsoon' },
-            { key: '0-2', label: '본인 판매내역', url: '/sales-history/Elist' }
+            { key: '0-2', label: '판매내역', url: '/sales-history/Elist' },
+            { key: '0-3', label: '통계', url: '/sales-history/Echart' },
+
         ]
     },
     {
