@@ -62,9 +62,7 @@ const loading = ref(false); // 로딩 상태 변수
 
 const selectedDetail = ref(null);
 
-const navigateToRegisterPage = () => {
-    router.push({ name: 'ENoticeRegister' }); // 라우터 이름을 이용해 이동
-};
+
 
 const searchParams = ref({
     title: '',
