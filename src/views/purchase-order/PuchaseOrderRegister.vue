@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="flex-row content-between ml-l mr-xl">
-            <button class="custom-button" @click="openSignatureModal('buyer')">매수인 서명</button>
+            <button class="custom-button" @click="openSignatureModal()">작성인 서명</button>
         </div>
         <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
@@ -182,6 +182,7 @@ const extractDataFromHTML = (html) => {
         vehiclePrice1,
         totalSales,
         centerName,
+        writerSignature,
         no,
         content: html // HTML 전체를 전송
     };
@@ -213,7 +214,13 @@ const generateInitialHtml = (data) => {
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">${data.writerSignatureArea || "-"}</td>
+                        <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">
+                            ${
+                            data.writerSignature
+                                ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem; height: auto;">`
+                                : "(서명)"
+                        }
+                            </td>
                     </tr>
                 </table>
             </div>
@@ -346,31 +353,22 @@ const selectedOrderId = ref(null);
 
 // 계약서 선택 시 CKEditor 업데이트
 const selectOrder = (order) => {
-    const selectOrder = (order) => {
-        // 선택된 항목이 현재 선택된 항목과 동일한지 확인
-        if (selectedOrderId.value === order.id) {
-            selectedOrderId.value = null; // 같은 항목을 선택하면 선택 해제
-        } else {
-            selectedOrderId.value = order.id; // 새 항목 선택
-        }
-    };
+    selectedOrderId = order.id;
     const parser = new DOMParser();
     const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
 
-    const orderCell = doc.querySelector('.orderId'); // .contractId 셀 찾기
+    const orderCell = doc.querySelector('.orderId');
+
     if (!orderCell) {
         console.error("HTML 구조에 .orderId 셀을 찾을 수 없습니다.");
-        console.log("HTML 구조:", doc.documentElement.outerHTML);
         return;
     }
 
     // contractId 값 삽입
     orderCell.textContent = order.orderId;
-    console.log("업데이트된 .orderId 셀:", orderCell);
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
-    console.log("업데이트된 HTML:", updatedHtml);
 
     // CKEditor와 동기화
     ignoreUpdates.value = true; // 업데이트 플래그 설정
@@ -423,16 +421,15 @@ const onRegister = async () => {
         }
 
         // CKEditor의 현재 HTML 내용 추출
-        const extractedData = extractDataFromHTML(content.value);
+        const extractedData = extractDataFromHTML(content.value, writerSignature.value);
 
         const data = {
-            ...extractedData
+            ...extractedData,
+            writerSignature: writerSignature.value,
         };
 
         // initialHtml을 업데이트
         const updatedInitialHtml = generateInitialHtml(data);
-
-        console.log("업데이트 HTMML@: " + updatedInitialHtml);
 
         // content에 반영
         content.value = updatedInitialHtml;
@@ -455,8 +452,6 @@ const onRegister = async () => {
 
 
         const response = await $api.purchaseOrder.post(postData, "");
-        console.log("POST 요청:", postData);
-        console.log("POST 응답:", response);
 
         alert("발주서가 성공적으로 등록되었습니다.");
 
@@ -480,11 +475,11 @@ function closeModal() {
     emit('close'); // 부모 컴포넌트에 close 이벤트 전달
 }
 
-const openSignatureModal = (role) => {
-    currentSignatureRole.value = role;
+const openSignatureModal = () => {
     isSignatureModalVisible.value = true;
-    console.log('모달 열림:', isSignatureModalVisible.value); // 디버깅 로그
 };
+
+const writerSignature = ref(null);
 
 const handleSignature = async (signatureImage) => {
 
@@ -493,27 +488,17 @@ const handleSignature = async (signatureImage) => {
         return;
     }
 
+    writerSignature.value = signatureImage;
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(content.value, "text/html");
 
-    console.log("HTML 변환 결과:", doc); // 디버깅용 로그
-
-    if (currentSignatureRole.value === "buyer") {
-        const buyerSignatureArea = doc.querySelector('#buyer-signature-area');
-        console.log("매수인 서명 영역:", buyerSignatureArea); // 디버깅 로그
-        if (buyerSignatureArea) {
-            buyerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매수인 서명 이미지" style="width: 8rem; height: auto;">`;
-        }
-    } else if (currentSignatureRole.value === "seller") {
-        const sellerSignatureArea = doc.querySelector('#seller-signature-area'); // 고유 ID 사용
-        console.log("매도인 서명 영역:", sellerSignatureArea); // 디버깅 로그
-        if (sellerSignatureArea) {
-            sellerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매도인 서명 이미지" style="width: 8rem; height: auto;">`;
-        }
+    const writerSignatureArea = doc.querySelector('#writer-signature-area');
+    if (writerSignature) {
+        writerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="작성 서명 이미지" style="width: 6rem; height: auto;">`;
     }
 
     content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
-    console.log("업데이트된 HTML:", content.value); // 디버깅 로그
 
     isSignatureModalVisible.value = false; // 모달 닫기
 };

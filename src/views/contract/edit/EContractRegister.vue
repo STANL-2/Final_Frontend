@@ -70,15 +70,15 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;"></td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;" class="createdAt"></td>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약장소</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">서울 중앙 영업점</td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="centerName">서울 중앙 영업점</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">담당자</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">관리자1</td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="memberId">관리자1</td>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">전화번호</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;">010-2222-2222</td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="memberPhone">010-2222-2222</td>
                 </tr>
             </table>
         </section>
@@ -223,11 +223,22 @@ watch(
     }
 );
 
+const parseNumber = (value) => {
+    if (!value) return 0;
+    // 쉼표 제거 후 숫자로 변환
+    return parseFloat(value.replace(/,/g, ''));
+};
+
 // CKEditor 내용에서 데이터를 추출하는 함수
-const extractDataFromHTML = (html) => {
+const extractDataFromHTML = (html, buyerSignature, sellerSignature) => {
     const parser = new DOMParser();
 
     const doc = parser.parseFromString(html, "text/html");
+
+    const createdAt = doc.querySelector(".createdAt")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".centerName")?.innerText.trim() || "";
+    const memberId = doc.querySelector(".memberId")?.innerText.trim() || "";
+    const memberPhone = doc.querySelector(".memberPhone")?.innerText.trim() || "";
 
     // 고객 사항
     const customerName = doc.querySelector(".customer-name-value")?.innerText.trim() || "";
@@ -250,13 +261,12 @@ const extractDataFromHTML = (html) => {
     const deliveryLocation = doc.querySelector(".customer-deliveryLocation-value")?.innerText.trim() || "";
 
     // 금액 사항
-    const vehiclePrice = parseFloat(doc.querySelector(".customer-vehiclePrice-value")?.innerText.trim() || "0");
-    const downPayment = parseFloat(doc.querySelector(".customer-downPayment-value")?.innerText.trim() || "0");
-    const intermediatePayment = parseFloat(doc.querySelector(".customer-intermediatePayment-value")?.innerText.trim() || "0");
-    const remainderPayment = parseFloat(doc.querySelector(".customer-remainderPayment-value")?.innerText.trim() || "0");
-    const consignmentPayment = parseFloat(doc.querySelector(".customer-consignmentPayment-value")?.innerText.trim() || "0");
-    const totalSales = parseFloat(doc.querySelector(".customer-totalSales-value")?.innerText.trim() || "0");
-
+    const vehiclePrice = parseNumber(doc.querySelector(".customer-vehiclePrice-value")?.innerText.trim() || "0");
+    const downPayment = parseNumber(doc.querySelector(".customer-downPayment-value")?.innerText.trim() || "0");
+    const intermediatePayment = parseNumber(doc.querySelector(".customer-intermediatePayment-value")?.innerText.trim() || "0");
+    const remainderPayment = parseNumber(doc.querySelector(".customer-remainderPayment-value")?.innerText.trim() || "0");
+    const consignmentPayment = parseNumber(doc.querySelector(".customer-consignmentPayment-value")?.innerText.trim() || "0");
+    const totalSales = parseNumber(doc.querySelector(".customer-totalSales-value")?.innerText.trim() || "0");
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
@@ -282,10 +292,196 @@ const extractDataFromHTML = (html) => {
         remainderPayment,
         consignmentPayment,
         totalSales,
+        createdAt,
+        centerName,
+        memberId,
+        memberPhone,
+        buyerSignature,
+        sellerSignature,
         createdUrl: html // HTML 전체를 전송
     };
 };
 
+const generateInitialHtml = (data) => {
+    return `
+        <!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자동차 매매 계약서</title>
+</head>
+
+<body style="font-family: 'Noto Sans KR', sans-serif; background-color: #f9f9f9; padding: 20px;">
+    <div style="max-width: 800px; margin: auto; background-color: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+        <!-- 상단 로고 및 계약 정보 -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="font-size: 24px; margin-bottom: 10px;">기아 자동차 매매 계약서</h1>
+        </div>
+
+        <!-- 관리 번호 및 계약 정보 -->
+        <section style="margin-top: 20px;">
+            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">계약 정보</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;" class="createdAt">${data.createdAt || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약장소</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="centerName">${data.centerName || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">담당자</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="memberId">${data.memberId || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 11%;">전화번호</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="memberPhone">${data.memberPhone || "-"}</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- 고객 사항 -->
+        <section style="margin-top: 20px;">
+            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">고객사항</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성명</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-name-value">${data.customerName || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">상호</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-company-value">${data.companyName || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주민등록번호</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-identifiNo-value">${data.customerIdentifiNo || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">사업자등록번호</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-campanyNo-value">${data.businessNumber || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">주소</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-address-value">${data.customerAddress || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">사업자등록주소</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-campanyAddresss-value">${data.businessAddress || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">전화(휴대폰)</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-phone-value">${data.customerPhone || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구분</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-classification-value">${data.customerClassifcation || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">E-mail</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-email-value">${data.customerEmail || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">구매조건</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-purchaseCondition-value">${data.customerPurchaseCondition || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">나이</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-age-value">${data.customerAge || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">성별</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-sex-value">${data.customerSex || "-"}</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- 차량 사항 -->
+        <section style="margin-top: 20px;">
+            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">차량사항</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차종</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-carName-value">${data.carName || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">일련번호</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-serialNo-value">${data.serialNum || "-"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">선택옵션</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-selectOption-value">${data.selectOption || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량대수</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-numberOfVehicles-value format-number">${data.numberOfVehicles || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도예정일</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-deliveryDate-value">${data.deliveryDate || "-"}</td>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도장소</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;" class="customer-deliveryLocation-value">${data.deliveryLocation || "-"}</td>
+                </tr>
+                <tr>
+                    <th colspan="1" style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">특약사항</th>
+                    <td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: left;">${data.additionalTerms || "-"}</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- 금액 사항 -->
+        <section style="margin-top: 20px;">
+            <h2 style="background-color: #333; color: #fff; padding: 10px; font-size: 18px;">금액사항</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차량가격</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-vehiclePrice-value format-number">${data.vehiclePrice || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">계약금</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-downPayment-value format-number">${data.downPayment || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">중도금</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-intermediatePayment-value format-number">${data.intermediatePayment || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">인도금</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-remainderPayment-value format-number">${data.remainderPayment || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">탁송료</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-consignmentPayment-value format-number">${data.consignmentPayment || "0"}</td>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">합계</th>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 82%" class="customer-totalSales-value format-number">${data.totalSales || "0"}</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- 서명 -->
+        <section style="margin-top: 20px;">
+            <p style="margin-top: 30px;">본 계약서 주요 내용을 확인하고 계약을 체결하였음을 확인합니다.</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <div>매수인:
+            <div
+            id="buyer-signature-area"
+            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
+        >${
+                            data.buyerSignature
+                                ? `<img src="${data.buyerSignature}" alt="매수인 서명 이미지" style="width: 8rem; height: auto;">`
+                                : "(서명)"
+                        }
+        </div></div>
+                <div>매도인:
+                    <div
+            id="seller-signature-area"
+            style="border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer;"
+        > ${
+                            data.sellerSignature
+                                ? `<img src="${data.sellerSignature}" alt="매도인 서명 이미지" style="width: 8rem; height: auto;">`
+                                : "(서명)"
+                        }
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
+    `;
+};
+
+// 숫자 포맷 함수
+const formatNumberWithCommas = (num) => {
+    if (!num) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// 테이블 내 숫자 포맷 적용
 const formatNumbersInTable = (html) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -293,10 +489,10 @@ const formatNumbersInTable = (html) => {
     const tdElements = doc.querySelectorAll('td.format-number');
 
     tdElements.forEach((td) => {
-        const text = td.textContent.trim();
+        const text = td.textContent.trim().replace(/,/g, ''); // 기존 쉼표 제거
         if (!isNaN(text) && text !== '') {
             const number = parseFloat(text);
-            td.textContent = new Intl.NumberFormat('en-US').format(number);
+            td.textContent = formatNumberWithCommas(number); // 숫자 형식 적용
         }
     });
 
@@ -305,9 +501,11 @@ const formatNumbersInTable = (html) => {
 
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
+    // 숫자 포맷 적용
     const formattedContent = formatNumbersInTable(newContent);
-    content.value = formattedContent;
-    console.log('Editor content updated:', formattedContent);
+    if (formattedContent !== content.value) {
+        content.value = formattedContent; // 내용 업데이트
+    }
 };
 
 // 등록 버튼 클릭 시 호출되는 함수
@@ -319,7 +517,61 @@ const onRegister = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const postData = extractDataFromHTML(content.value);
+        // CKEditor의 현재 HTML 내용 추출
+        const extractedData = extractDataFromHTML(content.value, buyerSignature.value, sellerSignature.value);
+
+        const data = {
+            ...extractedData,
+            buyerSignature: buyerSignature.value, // 매수인 서명
+            sellerSignature: sellerSignature.value, // 매도인 서명
+        };
+
+        // initialHtml을 업데이트
+        const updatedInitialHtml = generateInitialHtml({
+            ...extractedData,
+            vehiclePrice: formatNumberWithCommas(extractedData.vehiclePrice),
+            downPayment: formatNumberWithCommas(extractedData.downPayment),
+            intermediatePayment: formatNumberWithCommas(extractedData.intermediatePayment),
+            remainderPayment: formatNumberWithCommas(extractedData.remainderPayment),
+            consignmentPayment: formatNumberWithCommas(extractedData.consignmentPayment),
+            totalSales: formatNumberWithCommas(extractedData.totalSales),
+        });
+
+        // content에 반영
+        // content.value = updatedInitialHtml;
+
+        const postData = {
+            title: extractedData.title, // 계약서 제목
+            customerName: extractedData.customerName, // 고객 성명
+            customerIdentifiNo: extractedData.customerIdentifiNo, // 고객 주민등록번호
+            customerAddress: extractedData.customerAddress, // 고객 주소
+            customerPhone: extractedData.customerPhone, // 고객 전화번호
+            customerEmail: extractedData.customerEmail, // 고객 이메일
+            companyName: extractedData.companyName, // 상호
+            customerClassifcation: extractedData.customerClassifcation, // 고객 구분
+            customerPurchaseCondition: extractedData.customerPurchaseCondition, // 구매 조건
+            customerAge: extractedData.customerAge, // 고객 나이
+            customerSex: extractedData.customerSex, // 고객 성별
+            carName: extractedData.carName, // 차량 이름
+            serialNum: extractedData.serialNum, // 차량 일련번호
+            selectOption: extractedData.selectOption, // 차량 선택 옵션
+            numberOfVehicles: extractedData.numberOfVehicles, // 차량 대수
+            deliveryDate: extractedData.deliveryDate, // 인도 예정일
+            deliveryLocation: extractedData.deliveryLocation, // 인도 장소
+            vehiclePrice: extractedData.vehiclePrice, // 차량 가격
+            downPayment: extractedData.downPayment, // 계약금
+            intermediatePayment: extractedData.intermediatePayment, // 중도금
+            remainderPayment: extractedData.remainderPayment, // 잔금
+            consignmentPayment: extractedData.consignmentPayment, // 탁송료
+            totalSales: extractedData.totalSales, // 총 판매 금액
+            createdAt: extractedData.createdAt, // 계약일
+            centerName: extractedData.centerName, // 계약 장소
+            memberId: extractedData.memberId, // 담당자
+            memberPhone: extractedData.memberPhone, // 담당자 전화번호
+            createdUrl: updatedInitialHtml, // HTML 내용
+        };
+
+        // const postData = extractDataFromHTML(content.value);
         console.log("추출된 데이터:", postData);
 
         const response = await $api.contract.post(postData, "");
@@ -354,6 +606,9 @@ const openSignatureModal = (role) => {
     console.log('모달 열림:', isSignatureModalVisible.value); // 디버깅 로그
 };
 
+const buyerSignature = ref(null); // 매수인 서명 데이터 저장
+const sellerSignature = ref(null); // 매도인 서명 데이터 저장
+
 const handleSignature = async (signatureImage) => {
 
     if (!signatureImage.startsWith("data:image/")) {
@@ -361,31 +616,32 @@ const handleSignature = async (signatureImage) => {
         return;
     }
 
+    if (currentSignatureRole.value === "buyer") {
+        buyerSignature.value = signatureImage; // 매수인 서명 업데이트
+    } else if (currentSignatureRole.value === "seller") {
+        sellerSignature.value = signatureImage; // 매도인 서명 업데이트
+    }
+
+    // 기존 HTML에서 서명 영역만 업데이트
     const parser = new DOMParser();
     const doc = parser.parseFromString(content.value, "text/html");
 
-    console.log("HTML 변환 결과:", doc); // 디버깅용 로그
-
     if (currentSignatureRole.value === "buyer") {
-        const buyerSignatureArea = doc.querySelector('#buyer-signature-area');
-        console.log("매수인 서명 영역:", buyerSignatureArea); // 디버깅 로그
+        const buyerSignatureArea = doc.querySelector("#buyer-signature-area");
         if (buyerSignatureArea) {
             buyerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매수인 서명 이미지" style="width: 8rem; height: auto;">`;
         }
     } else if (currentSignatureRole.value === "seller") {
-        const sellerSignatureArea = doc.querySelector('#seller-signature-area'); // 고유 ID 사용
-        console.log("매도인 서명 영역:", sellerSignatureArea); // 디버깅 로그
+        const sellerSignatureArea = doc.querySelector("#seller-signature-area");
         if (sellerSignatureArea) {
             sellerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="매도인 서명 이미지" style="width: 8rem; height: auto;">`;
         }
     }
 
-    content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
-    console.log("업데이트된 HTML:", content.value); // 디버깅 로그
+    content.value = doc.documentElement.outerHTML; // 수정된 HTML 저장
 
-    isSignatureModalVisible.value = false; // 모달 닫기
+    isSignatureModalVisible.value = false; // 서명 모달 닫기
 };
-
 </script>
 
 <style scoped>
