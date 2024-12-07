@@ -288,9 +288,29 @@ export const GasideMenu = [
                 ]
             }
         ]
+    },
+    {
+        key: 3, label: '개발자 도구',
+        children: [
+            { key: '3-0', label: '로그', url: '/log' },
+            { key: '3-1', label: '자동 쿼리 생성기', url: '/sample/f12' },
+            {
+                key: '3-2', label: '샘플',
+                children: [
+                    { key: '3-2-0', label: 'CKEditorTest', url: '/sample/ckeditor' },
+                    { key: '3-2-1', label: 'Confort', url: '/sample' },
+                    { key: '3-2-2', label: 'DashBoard', url: '/sample/dashboard' },
+                    { key: '3-2-3', label: 'Sample', url: '/sample' },
+                    { key: '3-2-4', label: 'SampleApiTest', url: '/sample/sample-api' },
+                    { key: '3-2-5', label: 'SearchFormTest', url: '/sample/searchform' },
+                    { key: '3-2-6', label: 'TableDataTest', url: '/sample/tabledata' },
+                    { key: '3-2-7', label: 'TableFormTest', url: '/sample/tableform' },
+                    { key: '3-2-8', label: 'TableViewTest', url: '/sample/tableview' }
+                ]
+            }
+        ]
     }
 ];
-
 
 
 export const asideMenu = ref([]);
