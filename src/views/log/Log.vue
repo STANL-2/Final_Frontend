@@ -121,6 +121,12 @@ const initialFormFields = [
             showDivider: false
         },
         {
+            label: '유저명',
+            type: 'input',
+            model: 'loginId',
+            showDivider: false
+        },
+        {
             label: '요청 시간',
             type: 'calendar',
             model: 'requestTime',
@@ -162,10 +168,11 @@ const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'logId', label: '로그 번호', width: '12%' }, // 짧고 고유한 ID
-    { field: 'requestTime', label: '요청 시간', width: '18%' }, // 날짜 형식
-    { field: 'method', label: '요청메소드', width: '12%' }, // HTTP 메서드 (GET, POST 등)
-    { field: 'uri', label: 'URI', width: '30%' }, // 상대적으로 긴 문자열
+    { field: 'logId', label: '로그 번호', width: '10%' }, // 짧고 고유한 ID
+    { field: 'loginId', label: '유저명', width: '10%' },
+    { field: 'requestTime', label: '요청 시간', width: '20%' }, // 날짜 형식
+    { field: 'method', label: '요청메소드', width: '10%' }, // HTTP 메서드 (GET, POST 등)
+    { field: 'uri', label: 'URI', width: '25%' }, // 상대적으로 긴 문자열
     { field: 'ipAddress', label: 'IP 주소', width: '15%' }, // 짧은 문자열
     { field: 'status', label: '상태', width: '10%' } // 숫자 값
 ]);
