@@ -178,13 +178,6 @@ const handleButtonComparisonClick = async (field2) => {
 
 const handleTabChange = (event) => {
     const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
-    const selectedTab = event.index; // 선택된 탭 인덱스
-
-    if (selectedTab === 0) {
-        method.value = 'POST';  // 판매내역 탭
-    } else if ([1, 2, 3].includes(selectedTab)) {
-        method.value = 'GET';  // 다른 탭들
-    }
     handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
 };
 
@@ -299,6 +292,8 @@ const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
             },
         ],
     };
+
+    isComparison = false;
 
     console.log("Updated Chart Data:", targetChartData.value);
 };
@@ -506,7 +501,7 @@ const secondChartData = ref({
     labels: [],
     datasets: [
         {
-            label: '실적',
+            label: '',
             data: [],
             yAxisID: 'y1',
             borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루

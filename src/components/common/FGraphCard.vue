@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, defineProps, defineExpose } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, defineProps, defineExpose, nextTick } from 'vue';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -27,41 +27,49 @@ const props = defineProps({
 
 const chartInstances = []; // 차트 인스턴스 배열 (반응형 필요 없음)
 const chartCanvasRefs = []; // Canvas 참조 배열 (반응형 필요 없음)
+let updateTimeout;
 
 // 차트 생성 또는 업데이트
-const updateCharts = () => {
-    props.chartDataList.forEach((chartData, index) => {
-        const canvas = chartCanvasRefs[index];
-        if (!canvas) {
-            console.warn(`Canvas not found for chart index ${index}`);
-            return;
-        }
+const updateCharts = async () => {
+    // 기존 타이머 클리어
+    clearTimeout(updateTimeout);
 
-        // 차트가 이미 존재하면 업데이트
-        if (chartInstances[index]) {
-            const chart = chartInstances[index];
-            chart.data = chartData;
-            chart.update();
-        } else {
-            // 새로운 차트 생성
-            const ctx = canvas.getContext('2d');
-            const chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: chartData,
-                options: {
-                    ...props.chartOptions, // 부모 컴포넌트에서 받은 chartOptions 사용
-                },
-            });
-            chartInstances[index] = chartInstance;
-        }
-    });
+    // 디바운싱: 일정 시간 후에만 실행
+    updateTimeout = setTimeout(async () => {
+        await nextTick(); // DOM 업데이트 완료 후 실행
 
-    // 필요 없는 차트 제거
-    while (chartInstances.length > props.chartDataList.length) {
-        const removedChart = chartInstances.pop();
-        if (removedChart) removedChart.destroy();
-    }
+        props.chartDataList.forEach((chartData, index) => {
+            const canvas = chartCanvasRefs[index];
+            if (!canvas) {
+                console.warn(`Canvas not found for chart index ${index}`);
+                return;
+            }
+
+            if (chartInstances[index]) {
+                const chart = chartInstances[index];
+                chart.data = chartData;
+                chart.update();
+            } else {
+                const ctx = canvas.getContext('2d');
+                const chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        ...props.chartOptions,
+                    },
+                });
+                chartInstances[index] = chartInstance;
+            }
+        });
+
+        // 필요 없는 차트 제거
+        while (chartInstances.length > props.chartDataList.length) {
+            const removedChart = chartInstances.pop();
+            if (removedChart) removedChart.destroy();
+        }
+    }, 50); // 50ms 디바운스
 };
+
 
 const destroyCharts = () => {
     // chartInstances 배열의 모든 차트 인스턴스 제거
@@ -75,11 +83,15 @@ const destroyCharts = () => {
 // watch로 데이터 변경 감지
 watch(
     () => props.chartDataList,
-    (newData) => {
-        if (newData && newData.length > 0) {
+    async (newData, oldData) => {
+        // 데이터 변경 확인
+        if (
+            JSON.stringify(newData) !== JSON.stringify(oldData) &&
+            newData &&
+            newData.length > 0
+        ) {
+            await nextTick(); // DOM 업데이트 완료 후 실행
             updateCharts();
-        } else {
-            destroyCharts();
         }
     },
     { immediate: true, deep: true }
@@ -90,7 +102,10 @@ defineExpose({
 });
 
 onMounted(() => {
-    updateCharts();
+    // watch가 초기 호출을 처리하므로, onMounted에서는 초기화만 수행
+    if (props.chartDataList && props.chartDataList.length > 0) {
+        nextTick().then(() => updateCharts());
+    }
 });
 
 onBeforeUnmount(() => {
@@ -102,7 +117,7 @@ onBeforeUnmount(() => {
 .chart-container {
     position: relative;
     width: 100%;
-    height: 400px;
+    height: 100%;
     background: #FFFFFF;
     box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
     border-radius: 3px;

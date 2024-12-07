@@ -11,8 +11,7 @@
             </div>
 
             <TabView class="horizontal-tabs" @tab-change="handleTabChange">
-                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label"
-                    :index="index">
+                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
                     <!-- <p class="m-0">{{ field.label }}</p> -->
                     <div class="flex-container">
                         <div v-for="(field, index) in thridRowFields" :key="index" class="form-row button-row">
@@ -38,7 +37,7 @@
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">
                     {{ modalType === 'centerList' ? '매장명:' :
-                        modalType === 'memberList' ? '사원명:' :
+                        modalType === 'memberList' ? '담당자명:' :
                             modalType === 'productList' ? '제품명:' :
                                 modalType === 'customerList' ? '고객명:' : '' }}
                 </label>
@@ -459,9 +458,9 @@ const loadData = async (searchType = null,
                     const mappedData = [
                         {
                             labels: result.map((item) => {
-                                if (groupBy === 'center') {
+                                if (groupBy === 'center' && item.centerId != null) {
                                     return `${item.centerId} (${item.period}) ` || '';
-                                } else if (groupBy === 'employee') {
+                                } else if (groupBy === 'employee' && item.memberId != null) {
                                     return `${item.memberId} (${item.period}) ` || '';
                                 } else {
                                     return item.period || '';
@@ -472,9 +471,9 @@ const loadData = async (searchType = null,
                         },
                         {
                             labels: result.map((item) => {
-                                if (groupBy === 'center') {
+                                if (groupBy === 'center' && item.centerId != null) {
                                     return `${item.centerId} (${item.period}) ` || '';
-                                } else if (groupBy === 'employee') {
+                                } else if (groupBy === 'employee' && item.memberId != null) {
                                     return `${item.memberId} (${item.period}) ` || '';
                                 } else {
                                     return item.period || '';
@@ -485,9 +484,9 @@ const loadData = async (searchType = null,
                         },
                         {
                             labels: result.map((item) => {
-                                if (groupBy === 'center') {
+                                if (groupBy === 'center' && item.centerId != null) {
                                     return `${item.centerId} (${item.period}) ` || '';
-                                } else if (groupBy === 'employee') {
+                                } else if (groupBy === 'employee' && item.memberId != null) {
                                     return `${item.memberId} (${item.period}) ` || '';
                                 } else {
                                     return item.period || '';
@@ -516,9 +515,17 @@ const loadData = async (searchType = null,
                         value: selectedMappedData.data[index],
                         key: fieldMapping.totalSales
                     }));
-                    
+
+                    let fieldComparisonLabel;
+
+                    if(fieldMapping[saveButton]){
+                        fieldComparisonLabel = fieldMapping[saveButton];
+                    }
+                    else{
+                        fieldComparisonLabel = '조회기간별'
+                    }
                     // 기존 차트에 새 데이터 추가 (true로 설정)
-                    updateChartData(transformedData, fieldMapping[saveButton], true);
+                    updateChartData(transformedData, fieldComparisonLabel, true);
                 }
             }
             else {
@@ -601,8 +608,8 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
-        return;
-    } else {
+        return;}
+    else {
         // 기존 데이터셋이 있을 경우
         const datasets = mappedDataList.map((data, index) => {
             if (!data.data || !Array.isArray(data.data)) {
@@ -648,94 +655,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
-    }
-};
-
-const loadComparisonData = async (requestBody, fieldLabel) => {
-    loading.value = true;
-    try {
-        const response = await $api.salesHistory.post(requestBody, 'statistics/average/employee');
-
-        if (response && response.result) {
-            const result = response.result;
-
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'averageTotalIncentive',
-                performance: 'averageTotalPerformance',
-                totalSales: 'averageTotalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
-        }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
-    }
-};
-
-const loadBestData = async (requestBody, fieldLabel, searchType) => {
-    loading.value = true;
-    try {
-        const response = await $api.salesHistory.post(requestBody, `statistics/all/${searchType}`);
-
-        if (response && response.result) {
-            const result = response.result;
-
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'totalIncentive',
-                performance: 'totalPerformance',
-                totalSales: 'totalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
-        }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
     }
 };
 
@@ -1192,18 +1111,18 @@ tr:hover {
     /* 가로 중앙 정렬 */
     align-items: center;
     /* 세로 중앙 정렬 */
-    width: 100%;
+    width: 60%;
     /* 부모 요소의 100% 폭 */
-    height: 100%;
+    height: 60%;
     /* 부모 요소의 100% 높이 */
     padding: 16px;
     /* 내부 여백 */
 }
 
 .bigcard {
-    width: 100%;
+    width: 60%;
     /* 가로 100% */
-    height: 100%;
+    height: 60%;
     /* 세로 100% */
     min-height: 300px;
     /* 최소 높이 보장 */
