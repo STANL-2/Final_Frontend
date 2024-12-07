@@ -1,25 +1,34 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
-            <CSearchForm :fields="formFields" ref="searchFormRef" :key="formKey" />
-            <div class="select">
-                <CommonButton label="조회" @click="select" />
+        <div class="search-wrapper">
+
+            <div class="flex-row">
+                <div class="ml-l">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
+                </div>
+
+                <div class="select ml-s">
+                    <CommonButton label="조회" @click="select" />
+                </div>
+            </div>
+
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" ref="searchFormRef" :key="formKey" />
             </div>
         </div>
 
-        <div class="flex-row content-between">
-            <div>전체목록</div>
+        <div class="flex-row content-between mt-l">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
                 </div>
             </div>
         </div>
@@ -137,13 +146,6 @@ const initialFormFields = [
             showIcon: true,
             manualInput: false,
             showDivider: false
-        },
-        {
-            label: '요청 메소드',
-            type: 'select',
-            model: 'method',
-            options: ['GET', 'POST', 'PUT', 'DELETE'],
-            showDivider: false
         }
     ],
     [
@@ -157,6 +159,13 @@ const initialFormFields = [
             label: 'IP 주소',
             type: 'input',
             model: 'ipAddress',
+            showDivider: false
+        },
+        {
+            label: '요청 메소드',
+            type: 'select',
+            model: 'method',
+            options: ['GET', 'POST', 'PUT', 'DELETE'],
             showDivider: false
         },
         {
@@ -524,10 +533,7 @@ tr:hover {
 }
 
 .select {
-    display: flex;
-    justify-content: right;
-    margin-top: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 1rem;
 }
 
 .log-detail-container {
@@ -567,5 +573,22 @@ tr:hover {
     width: 30%;
     text-align: right;
     color: #555;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>
