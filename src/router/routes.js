@@ -185,6 +185,7 @@ const routes = [
         children: [
             {
                 path: 'list',
+                name: 'NoticeList',
                 component: () => import('@/views/notice/NoticeList.vue')
             },
             {
@@ -194,11 +195,12 @@ const routes = [
             },
             {
                 path: 'Elist',
+                name: 'ENoticeList',
                 component: () => import('@/views/notice/edit/ENoticeList.vue')
             },
             {
                 path: 'Edetail',
-                name: 'NoticeDetail',
+                name: 'ENoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue')
             },
             {
