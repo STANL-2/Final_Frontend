@@ -298,6 +298,7 @@ const routes = [
         children: [
             {
                 path: 'list',
+                name: 'PromotionList',
                 component: () => import('@/views/promotion/PromotionList.vue')
             },
             {
@@ -307,10 +308,12 @@ const routes = [
             },
             {
                 path: 'Elist',
+                name: 'EPromotionList',
                 component: () => import('@/views/promotion/edit/EPromotionList.vue')
             },
             {
                 path: 'Edetail',
+                name: 'EPromotionDetail',
                 component: () => import('@/views/promotion/edit/EPromotionDetail.vue')
             },
             {

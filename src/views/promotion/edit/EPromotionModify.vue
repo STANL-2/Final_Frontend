@@ -95,7 +95,7 @@ export default {
 
         // 페이지 닫기
         const closePage = () => {
-            router.push('/promotion/list');
+            router.push('/promotion/Elist');
         };
 
         // 공지사항 정보 로드
@@ -133,7 +133,7 @@ export default {
                 );
                 console.log("title",updateData.title);
                 alert('게시글이 수정되었습니다.');
-                router.push('/promotion/list');
+                router.push('/promotion/Elist');
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
                 alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
