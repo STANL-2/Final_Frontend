@@ -349,7 +349,6 @@ const selectedContractId = ref(null);
 const selectContract = async (contract) => {
     selectedContractId.value = contract.contractId;
 
-    console.log("selectedContractId.value: " + selectedContractId.value);
 
     // 서버에 상세조회 요청
     const response = await $api.contract.get(

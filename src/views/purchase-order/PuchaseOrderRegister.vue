@@ -11,16 +11,19 @@
                 ref="editorRef" />
             <div class="p-20">
                 <Card
-                    style="width: 25rem; height: 98%; margin-top: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
+                    style="width: 25rem; height: 37rem; overflow: visible; margin-top: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
                     <template #title>수주서 선택</template>
                     <Divider />
                     <template #content>
-                        <div class="order-list" @scroll="onScroll" style="max-height: 300px; overflow-y: auto;">
+                        <div class="order-list" @scroll="onScroll" style="max-height: 32rem; overflow-y: auto;">
                             <div v-for="order in orders" :key="order.id" class="order-item"
-                                :class="{ selected: selectedOrderId === order.id }" @click="selectOrder(order)"
+                                :class="{ 'selected': selectedOrderId === order.id }" @click="selectOrder(order)"
                                 style="padding: 15px 10px; cursor: pointer;">
                                 <Typography>제목: {{ order.title }}</Typography>
                                 <Typography type="caption">{{ order.createdAt }}</Typography>
+                            </div>
+                            <div v-if="isLoading" style="text-align: center; padding: 10px;">
+                                <Typography type="caption">로딩 중...</Typography>
                             </div>
                         </div>
                     </template>
@@ -164,7 +167,6 @@ const extractDataFromHTML = (html) => {
     const productName = doc.querySelector(".productName")?.innerText.trim() || "";
     const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
     const vehiclePrice = doc.querySelector(".vehiclePrice")?.innerText.trim() || "";
-    const numberOfVehicles1 = doc.querySelector(".numberOfVehicles1")?.innerText.trim() || "";
     const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
     const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
@@ -172,13 +174,12 @@ const extractDataFromHTML = (html) => {
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
-        orderId: orderId,
+        orderId,
         memberName,
         createdAt,
         productName,
         numberOfVehicles,
         vehiclePrice,
-        numberOfVehicles1,
         vehiclePrice1,
         totalSales,
         centerName,
@@ -211,7 +212,7 @@ const generateInitialHtml = (data) => {
                 <table
                     style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
                     <tr style="background-color: #f0f0f0;">
-                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                        <td style="border: 1px solid #000; text-align: center; font-weight: bold;">작성</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">
@@ -352,12 +353,34 @@ const ignoreUpdates = ref(false);
 const selectedOrderId = ref(null);
 
 // 계약서 선택 시 CKEditor 업데이트
-const selectOrder = (order) => {
-    selectedOrderId = order.id;
+const selectOrder = async (order) => {
+    selectedOrderId.value = order.orderId;
+
+    console.log("orderId: " + selectedOrderId.value);
+    // 서버에 상세조회 요청
+    const response = await $api.order.get(
+        '',
+        selectedOrderId.value
+    );
+
+    const orderDetail = response.result.contractId;
+
+    const response1 = await $api.contract.get(
+        '',
+        orderDetail
+    );
+
+    const contractDetails = response1.result;
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
 
     const orderCell = doc.querySelector('.orderId');
+    const productNameCell = doc.querySelector(".productName");
+    const numberOfVehiclesCell = doc.querySelector(".numberOfVehicles");
+    const vehiclePriceCell = doc.querySelector(".vehiclePrice");
+    const vehiclePrice1Cell = doc.querySelector(".vehiclePrice1");
+    const totalSalesCell = doc.querySelector(".totalSales");
 
     if (!orderCell) {
         console.error("HTML 구조에 .orderId 셀을 찾을 수 없습니다.");
@@ -366,6 +389,11 @@ const selectOrder = (order) => {
 
     // contractId 값 삽입
     orderCell.textContent = order.orderId;
+    productNameCell.textContent = contractDetails.carName;
+    vehiclePriceCell.textContent = contractDetails.vehiclePrice;
+    numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
+    vehiclePrice1Cell.textContent = contractDetails.vehiclePrice;
+    totalSalesCell.textContent = contractDetails.totalSales;
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
