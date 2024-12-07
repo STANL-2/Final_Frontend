@@ -51,6 +51,10 @@
                                 <td>{{ selectedDetail.logId || 'N/A' }}</td>
                             </tr>
                             <tr>
+                                <td><strong>사원 번호:</strong></td>
+                                <td>{{ selectedDetail.loginId || 'N/A' }}</td>
+                            </tr>
+                            <tr>
                                 <td><strong>트랜잭션 번호:</strong></td>
                                 <td>{{ selectedDetail.transactionId || 'N/A' }}</td>
                             </tr>
@@ -121,7 +125,7 @@ const initialFormFields = [
             showDivider: false
         },
         {
-            label: '유저명',
+            label: '사원번호',
             type: 'input',
             model: 'loginId',
             showDivider: false
@@ -169,7 +173,7 @@ const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기
 // table 헤더 값
 const tableHeaders = ref([
     { field: 'logId', label: '로그 번호', width: '10%' }, // 짧고 고유한 ID
-    { field: 'loginId', label: '유저명', width: '10%' },
+    { field: 'loginId', label: '사원번호', width: '10%' },
     { field: 'requestTime', label: '요청 시간', width: '20%' }, // 날짜 형식
     { field: 'method', label: '요청메소드', width: '10%' }, // HTTP 메서드 (GET, POST 등)
     { field: 'uri', label: 'URI', width: '25%' }, // 상대적으로 긴 문자열
