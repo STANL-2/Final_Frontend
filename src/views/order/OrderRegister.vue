@@ -101,11 +101,9 @@ const initialHtml = `
                     style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
                     <tr style="background-color: #f0f0f0;">
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
-                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area"></td>
-                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
                     </tr>
                 </table>
             </div>
@@ -116,16 +114,16 @@ const initialHtml = `
             <tr>
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">날짜
                 </td>
-                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="createdAt"></td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="createdAt">2024-12-06</td>
                 <td style="width: 14%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">계약서
                     번호</td>
                 <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="contractId"></td>
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">매장
                 </td>
-                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="centerName"></td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="centerName">서울센터</td>
                 <td style="width: 10%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">담당자
                 </td>
-                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="adminId"></td>
+                <td style="width: 15%; border: 1px solid #000; padding: 6px;" class="adminId">신하늘</td>
             </tr>
         </table>
 
@@ -140,11 +138,11 @@ const initialHtml = `
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
             </tr>
             <tr>
-                <td style="border: 1px solid #000; padding: 6px; height: 20px;" class="no"></td>
+                <td style="border: 1px solid #000; padding: 6px; height: 20px;" class="no">1</td>
                 <td style="border: 1px solid #000; padding: 6px;" class="serialNo"></td>
                 <td style="border: 1px solid #000; padding: 6px;" class="carName"></td>
-                <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles"></td>
-                <td style="border: 1px solid #000; padding: 6px;" class="totalSales"></td>
+                <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles format-number"></td>
+                <td style="border: 1px solid #000; padding: 6px;" class="totalSales format-number"></td>
                 <td style="border: 1px solid #000; padding: 6px;" class="stock"></td>
             </tr>
         </table>
@@ -219,9 +217,11 @@ const generateInitialHtml = (data) => {
                     style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
                     <tr style="background-color: #f0f0f0;">
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
+                        <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">검토</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area">${data.writerSignatureArea || "-"}</td>
+                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="approval-signature-area"></td>
                     </tr>
                 </table>
             </div>
@@ -250,7 +250,7 @@ const generateInitialHtml = (data) => {
             <tr style="background-color: #f0f0f0;">
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">No.</th>
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">일련번호</th>
-                <th style="border: 1px solid #000; padding: 6px; text-align: center;">품명 / 규격</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: center;">품명</th>
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">수주수량</th>
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">단가 / 합계</th>
                 <th style="border: 1px solid #000; padding: 6px; text-align: center;">현재고</th>
@@ -259,8 +259,8 @@ const generateInitialHtml = (data) => {
                 <td style="border: 1px solid #000; padding: 6px; height: 20px;" class="no">${data.no || "-"}</td>
                 <td style="border: 1px solid #000; padding: 6px;" class="serialNo">${data.serialNo || "-"}</td>
                 <td style="border: 1px solid #000; padding: 6px;" class="carName">${data.carName || "-"}</td>
-                <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles">${data.numberOfVehicles || "-"}</td>
-                <td style="border: 1px solid #000; padding: 6px;" class="totalSales">${data.totalSales || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="numberOfVehicles format-number">${data.numberOfVehicles || "-"}</td>
+                <td style="border: 1px solid #000; padding: 6px;" class="totalSales format-number">${data.totalSales || "-"}</td>
                 <td style="border: 1px solid #000; padding: 6px;" class="stock">${data.stock || "-"}</td>
             </tr>
         </table>
@@ -345,7 +345,16 @@ const selectContract = (contract) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
 
-    const contractIdCell = doc.querySelector('.contractId'); // .contractId 셀 찾기
+    const contractIdCell = doc.querySelector('.contractId');
+    const centerCell = doc.querySelector('.centerName');
+    const serialNoCell = doc.querySelector('.serialNo');
+    const carNameCell = doc.querySelector('.carName');
+    const numberOfVehiclesCell = doc.querySelector('.numberOfVehicles');
+    const totalSalesCell = doc.querySelector('.totalSales');
+    const stockCell = doc.querySelector('.stock');
+
+
+     // .contractId 셀 찾기
     if (!contractIdCell) {
         console.error("HTML 구조에 .contractId 셀을 찾을 수 없습니다.");
         return;
@@ -353,6 +362,14 @@ const selectContract = (contract) => {
 
     // contractId 값 삽입
     contractIdCell.textContent = contract.contractId;
+    centerCell.textContent = contract.centerName; // name이 없음
+    serialNoCell.textContent = contract.serialNo;
+    carNameCell.textContent = contract.carName;
+    numberOfVehiclesCell.textContent = contract.numberOfVehicles;
+    totalSalesCell.textContent = contract.totalSales;
+    stockCell.textContent = 14;
+
+
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
@@ -370,14 +387,32 @@ const onScroll = (event) => {
     }
 };
 
+const formatNumbersInTable = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const tdElements = doc.querySelectorAll('td.format-number');
+
+    tdElements.forEach((td) => {
+        const text = td.textContent.trim();
+        if (!isNaN(text) && text !== '') {
+            const number = parseFloat(text);
+            td.textContent = new Intl.NumberFormat('en-US').format(number);
+        }
+    });
+
+    return doc.body.innerHTML;
+};
+
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
     if (ignoreUpdates.value) {
         ignoreUpdates.value = false; // 플래그 초기화
         return; // CKEditor 업데이트 중 발생한 호출 무시
     }
-
-    content.value = newContent;
+    const formattedContent = formatNumbersInTable(newContent);
+    content.value = formattedContent;
+    console.log('Editor content updated:', formattedContent);
 };
 
 // 등록 버튼 클릭 시 호출되는 함수

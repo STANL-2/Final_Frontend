@@ -22,6 +22,9 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
+                <div>
+                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
+                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>

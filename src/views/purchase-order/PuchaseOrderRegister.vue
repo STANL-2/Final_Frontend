@@ -125,13 +125,13 @@ const initialHtml = `
                 <tr>
                     <td style="padding: 10px; border: 1px solid #000;" class="no">1</td>
                     <td style="padding: 10px; border: 1px solid #000;" class="productName"></td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles"></td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice"></td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles format-number"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice format-number"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1 format-number"></td>
                 </tr>
                 <tr>
                     <td colspan="4" style="padding: 10px; border: 1px solid #000; text-align: right;">합계</td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales"></td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales format-number"></td>
                 </tr>
             </tbody>
         </table>
@@ -248,13 +248,13 @@ const generateInitialHtml = (data) => {
                 <tr>
                     <td style="padding: 10px; border: 1px solid #000;" class="no">${data.no || "-"}</td>
                     <td style="padding: 10px; border: 1px solid #000;" class="productName">${data.productName || "-"}</td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles">${data.numberOfVehicles || "-"}</td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice">${data.vehiclePrice || "-"}</td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1">${data.vehiclePrice1 || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles format-number">${data.numberOfVehicles || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice format-number">${data.vehiclePrice || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1 format-number">${data.vehiclePrice1 || "-"}</td>
                 </tr>
                 <tr>
                     <td colspan="4" style="padding: 10px; border: 1px solid #000; text-align: right;">합계</td>
-                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales">${data.totalSales || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales format-number">${data.totalSales || "-"}</td>
                 </tr>
             </tbody>
         </table>
@@ -385,15 +385,32 @@ const onScroll = (event) => {
     }
 };
 
+const formatNumbersInTable = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const tdElements = doc.querySelectorAll('td.format-number');
+
+    tdElements.forEach((td) => {
+        const text = td.textContent.trim();
+        if (!isNaN(text) && text !== '') {
+            const number = parseFloat(text);
+            td.textContent = new Intl.NumberFormat('en-US').format(number);
+        }
+    });
+
+    return doc.body.innerHTML;
+};
+
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
     if (ignoreUpdates.value) {
         ignoreUpdates.value = false; // 플래그 초기화
         return; // CKEditor 업데이트 중 발생한 호출 무시
     }
-
-    content.value = newContent;
-    console.log("Editor content updated:", newContent);
+    const formattedContent = formatNumbersInTable(newContent);
+    content.value = formattedContent;
+    console.log('Editor content updated:', formattedContent);
 };
 
 // 등록 버튼 클릭 시 호출되는 함수

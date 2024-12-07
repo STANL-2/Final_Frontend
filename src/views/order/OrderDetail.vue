@@ -7,6 +7,9 @@
                 <div class="status-display">
                     <span :class="['status-badge', statusClass]">{{ status }}</span>
                 </div>
+                <div class="ml-xs">
+                    <button @click="openStatusModal" class="custom-button">승인/취소</button>
+                </div>
             </div>
 
             <div class="flex-row content-end">
@@ -26,6 +29,34 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
+
+        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="수주 승인/취소 처리" width="20rem"
+            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
+            <div class="status-content">
+                <p class="current-status">
+                    <strong>현재 상태:</strong>
+                    <span class="status-highlight ml-xs">{{ status }}</span>
+                </p>
+                <div class="status-options">
+                    <label>
+                        <input type="radio" value="WAIT" v-model="newStatus" />
+                        대기
+                    </label>
+                    <label>
+                        <input type="radio" value="APPROVED" v-model="newStatus" />
+                        승인
+                    </label>
+                    <label>
+                        <input type="radio" value="CANCEL" v-model="newStatus" />
+                        취소
+                    </label>
+                </div>
+            </div>
+            <template #footer>
+                <CommonButton label="확인" @click="confirmStatusChange" />
+                <CommonButton label="취소" @click="closeStatusModal" />
+            </template>
+        </Modal>
 
         <template #footer>
             <CommonButton label="닫기" @click="onClose" />
@@ -95,6 +126,7 @@ const confirmStatusChange = async () => {
 
         emit('refresh');
         closeStatusModal();
+        onClose();
     } catch (error) {
         console.error("상태 변경 오류:", error);
         toast.add({
