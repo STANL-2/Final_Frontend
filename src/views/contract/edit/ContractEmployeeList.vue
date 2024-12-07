@@ -51,7 +51,7 @@
             </ViewTable>
 
 
-            <ContractAdminDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <ContractEmployeeDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
@@ -96,23 +96,16 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ContractAdminDetail from '@/views/contract/edit/ContractAdminDetail.vue';
+import ContractEmployeeDetail from './ContractEmployeeDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import EContractRegister from '@/views/contract/edit/EContractRegister.vue';
+import EContractRegister from './EContractRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
-        {
-            label: '사원명',
-            type: 'inputWithButton',
-            model: 'searchMemberName',
-            relatedModel: 'searchMemberId',
-            showDivider: false
-        },
         {
             label: '매장명',
             type: 'inputWithButton',
@@ -185,9 +178,8 @@ const tableHeaders = ref([
     { field: 'title', label: '계약서명', width: '25%' },
     { field: 'carName', label: '제품명', width: '13%' },
     { field: 'customerName', label: '고객명', width: '13%' },
-    { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
-    { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'createdAt', label: '계약일자', width: '10%' },
+    { field: 'customerPurchaseCondition', label: '구매 조건', width: '10%' },
+    { field: 'createdAt', label: '계약일자', width: '15%' },
     { field: 'status', label: '승인 상태', width: '3%' },
 ]);
 
@@ -313,7 +305,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('center/search', queryString);
+        const response = await $api.contract.getParams('employee/search', queryString);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {

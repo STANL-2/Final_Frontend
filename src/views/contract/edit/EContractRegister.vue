@@ -132,7 +132,7 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">차종</th>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-carName-value">셀토스</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-carName-value">기아 셀토스 2022</td>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f0f0f0; font-weight: bold;">일련번호</th>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 30%;" class="customer-serialNo-value">KNJFA42DALU3C00004</td>
                 </tr>
@@ -536,9 +536,6 @@ const onRegister = async () => {
             consignmentPayment: formatNumberWithCommas(extractedData.consignmentPayment),
             totalSales: formatNumberWithCommas(extractedData.totalSales),
         });
-
-        // content에 반영
-        // content.value = updatedInitialHtml;
 
         const postData = {
             title: extractedData.title, // 계약서 제목

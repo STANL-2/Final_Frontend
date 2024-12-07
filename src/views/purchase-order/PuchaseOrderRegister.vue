@@ -65,7 +65,6 @@ const emit = defineEmits(['update:visible', 'close']);
 // 내부 상태 변수
 const isVisible = ref(props.visible);
 const isSignatureModalVisible = ref(false);
-const currentSignatureRole = ref(''); // 현재 서명 역할 (buyer/seller)
 const content = ref(''); // CKEditor의 현재 내용
 const title = ref('');
 const initialHtml = `
@@ -326,7 +325,7 @@ const fetchOrders = async () => {
         const queryString = `?${new URLSearchParams(query).toString()}`;
         console.log("API 호출 URL:", queryString);
 
-        const response = await $api.order.getParams('search', queryString);
+        const response = await $api.order.getParams('', queryString);
         console.log("API 응답 데이터:", response);
 
         const result = response?.result;

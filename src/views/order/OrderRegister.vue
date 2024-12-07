@@ -320,7 +320,7 @@ const fetchContracts = async () => {
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        const response = await $api.contract.getParams('search', queryString);
+        const response = await $api.contract.getParams('', queryString);
 
         const result = response?.result;
         const contractData = result.content;

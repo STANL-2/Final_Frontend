@@ -77,7 +77,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import EContractModify from '../edit/EContractModify.vue';
+import EContractModify from './EContractModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -171,7 +171,7 @@ const getDetailRequest = async () => {
 
     try {
         const response = await $api.contract.get(
-            '', // 엔드포인트 설정
+            'center', // 엔드포인트 설정
             getDetailId.value // contractId 전달
         );
 

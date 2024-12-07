@@ -13,12 +13,6 @@
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
                 </div>
-                <div class="ml-xs">
-                    <CommonButton label="수정" @click="openModifyModal" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
-                </div>
             </div>
         </div>
         <div id="printMe">
@@ -96,7 +90,7 @@ const getDetailRequest = async () => {
 
     try {
         const response = await $api.contract.get(
-            'employee', // 엔드포인트 설정
+            '', // 엔드포인트 설정
             getDetailId.value // contractId 전달
         );
 
