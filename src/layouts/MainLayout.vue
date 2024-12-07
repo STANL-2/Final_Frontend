@@ -7,9 +7,6 @@
             <PageAside :nodes="asideMenu" />
         </div>
         <div class="body">
-            <div class="path">
-                <PagePath :menu="asideMenu" />
-            </div>
             <div class="body-content">
                 <RouterView />
             </div>

@@ -231,6 +231,7 @@ body {
     font-size: 13px;
     box-sizing: border-box;
     border-radius: 0px;
+    cursor: pointer;
 }
 
 .form-input {
@@ -358,6 +359,7 @@ body {
     border-radius: 0px;
     background-color: white;
     width: 10px;
+    cursor: pointer;
 }
 
 .date-range {
