@@ -79,7 +79,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'centerName' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerName' ? row.centerId : row.memberId }}</td>
                         <td>{{ modalType === 'centerName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -486,7 +486,7 @@ const dynamicHeaders = computed(() => {
     if (modalType.value === 'centerName') {
         return ['매장코드', '매장명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });

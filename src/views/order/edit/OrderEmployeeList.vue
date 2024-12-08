@@ -81,7 +81,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'searchMemberName' ? row.centerName : row.centerName }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.memberId : row.memberId }}</td>
                         <td>{{ modalType === 'searchMemberName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -119,7 +119,7 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '제목',
+            label: '수주서명',
             type: 'input',
             model: 'title',
             showDivider: false
@@ -463,9 +463,9 @@ const modalTableData = ref([]);
 
 const dynamicHeaders = computed(() => {
     if (modalType.value === 'searchMemberName') {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });

@@ -52,6 +52,7 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Typography from '@/components/Typography.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import { $api } from "@/services/api/api";
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     visible: {
@@ -64,7 +65,16 @@ const props = defineProps({
     },
 });
 
+const validateForm = () => {
+    if (!title.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '수주서 제목을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    return true;
+};
+
 const emit = defineEmits(['update:visible', 'close']);
+const toast = useToast();
 const isVisible = ref(props.visible);
 const content = ref('');
 const title = ref('');
@@ -81,13 +91,11 @@ watch(
 
 const getDetailRequest = async () => {
     try {
-        console.log("orderId: " + props.orderId);
+
         const response = await $api.order.get('center', props.orderId);
-        console.log('수주서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -96,7 +104,7 @@ const getDetailRequest = async () => {
 
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
-            console.log('Fetched HTML:', content.value);
+            title.value = response.result.title;
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -112,33 +120,41 @@ const onUpdate = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const data = extractDataFromHTML(content.value);
+        // 유효성 검사
+        if (!validateForm()) {
+            return; // 검사 실패 시 함수 종료
+        }
+
+        const extractedData = extractDataFromHTML(content.value);
 
         // initialHtml을 업데이트
-        const updatedInitialHtml = generateInitialHtml(data);
-
-        // content에 반영
-        content.value = updatedInitialHtml;
+        const updatedInitialHtml = generateInitialHtml({
+            ...extractedData,
+            numberOfVehicles: formatNumberWithCommas(extractedData.numberOfVehicles),
+            totalSales: formatNumberWithCommas(extractedData.totalSales),
+            stock: formatNumberWithCommas(extractedData.stock),
+            // writerSignature: writerSignature.value, // 서명 이미지 추가
+        });
 
         const postData = {
-            title: data.title,
-            orderId: data.orderId,
-            contractId: data.contractId,
-            content: content.value,
+            title: extractedData.title,
+            orderId: extractedData.orderId,
+            contractId: extractedData.contractId,
+            content: updatedInitialHtml,
         };
 
         const response = await $api.order.put(
             postData,
             props.orderId
         );
-        console.log("PUT 응답:", response);
 
-        alert("수주서가 성공적으로 수정되었습니다.");
+        toast.add({ severity: 'success', summary: '수정 완료', detail: '수주서가 성공적으로 수정되었습니다.', life: 3000 });
+
         closeModal();
         window.location.reload();
     } catch (error) {
         console.error("수정 중 오류:", error);
-        alert("수정 중 문제가 발생했습니다: " + error.message);
+        toast.add({ severity: 'error', summary: '수정 실패', detail: `수정 중 문제가 발생했습니다: ${error.message}`, life: 3000 });
     }
 };
 
@@ -159,6 +175,8 @@ const extractDataFromHTML = (html) => {
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
     const stock = doc.querySelector(".stock")?.innerText.trim() || "";
 
+    const writerSignature = doc.querySelector("#writer-signature-area img")?.getAttribute("src") || null;
+    
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
@@ -172,6 +190,7 @@ const extractDataFromHTML = (html) => {
         stock,
         carName,
         no,
+        writerSignature,
         content: html // HTML 전체를 전송
     };
 };
@@ -207,11 +226,12 @@ const generateInitialHtml = (data) => {
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">작성</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; width: 50px; text-align: center;" id="writer-signature-area">
-                            ${data.writerSignature
-            ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem; height: auto;">`
-            : "(서명)"
-        }
+                        <td style="border: 1px solid #000; text-align: center;" id="writer-signature-area">
+                                ${
+                                data.writerSignature
+                                    ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem;">`
+                                    : "(서명)"
+                            }
                             </td>
                     </tr>
                 </table>
@@ -315,7 +335,6 @@ const fetchContracts = async () => {
 };
 
 const editorRef = ref(null);
-const ignoreUpdates = ref(false);
 const selectedContractId = ref(null);
 
 // 계약서 선택 시 CKEditor 업데이트
@@ -366,7 +385,7 @@ const selectContract = async (contract) => {
     const updatedHtml = doc.documentElement.outerHTML;
 
     // CKEditor와 동기화
-    ignoreUpdates.value = true; // 업데이트 플래그 설정
+    // ignoreUpdates.value = true; // 업데이트 플래그 설정
     content.value = updatedHtml; // content.value 업데이트
 };
 
@@ -378,6 +397,12 @@ const onScroll = (event) => {
     }
 };
 
+// 숫자 포맷 함수
+const formatNumberWithCommas = (num) => {
+    if (!num) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 const formatNumbersInTable = (html) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -385,10 +410,10 @@ const formatNumbersInTable = (html) => {
     const tdElements = doc.querySelectorAll('td.format-number');
 
     tdElements.forEach((td) => {
-        const text = td.textContent.trim();
+        const text = td.textContent.trim().replace(/,/g, '');
         if (!isNaN(text) && text !== '') {
             const number = parseFloat(text);
-            td.textContent = new Intl.NumberFormat('en-US').format(number);
+            td.textContent = formatNumberWithCommas(number);
         }
     });
 
@@ -397,13 +422,12 @@ const formatNumbersInTable = (html) => {
 
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
-    if (ignoreUpdates.value) {
-        ignoreUpdates.value = false; // 플래그 초기화
-        return; // CKEditor 업데이트 중 발생한 호출 무시
-    }
+
     const formattedContent = formatNumbersInTable(newContent);
-    content.value = formattedContent;
-    console.log('Editor content updated:', formattedContent);
+
+    if (formattedContent !== content.value) {
+        content.value = formattedContent; // CKEditor 내용 업데이트
+    }
 };
 
 function closeModal() {
