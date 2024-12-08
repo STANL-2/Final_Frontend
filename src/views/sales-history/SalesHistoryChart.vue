@@ -345,7 +345,7 @@ const loadData = async (searchType = null,
     try {
         if ((searchCriteria.value.salesHistoryDate_start != saveStartDate) || (searchCriteria.value.salesHistoryDate_end != saveEndDate)) {
             saveStartDate = searchCriteria.value.salesHistoryDate_start;
-            saveEndDate = searchCriteria.value.salesHistoryDate_end + 1;
+            saveEndDate = searchCriteria.value.salesHistoryDate_end;
         }
         // 검색 조건 필터링 및 유효한 값만 유지
         const filteredCriteria = Object.fromEntries(
@@ -454,6 +454,8 @@ const loadData = async (searchType = null,
                     // 기존 chartDataList에서 첫 번째 차트 데이터를 가져옵니다.
                     existingChartData = chartDataList.value[0];
                     existingPeriod = [...existingChartData.datasets[0].period];
+
+                    console.log("existing", existingChartData);
 
                     const keyPrefix = saveValue === 'average' ? '평균' : '최고';
                     const fieldMapping = {
@@ -623,7 +625,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
 
         console.log("Updated chartDataList:", chartDataList.value);
     } else if (chartDataList.value.length > 0) { // average, best
-    console.log("=============isComparison 값은 : ", isComparison, "===================");
 
     // `saveButton`에 따라 `mappingIndex` 결정
     const mappingIndex = {
@@ -640,28 +641,36 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
     };
 
     // 기존 라벨 유지
-    const unifiedLabels = [...existingPeriod];
+    // const unifiedLabels = [...existingPeriod];
+    const unifiedLabels = [...existingChartData.labels];
 
     // 디버그용 출력
     console.log('Unified Labels:', unifiedLabels);
     console.log('Mapped Data Period:', mappedDataList[mappingIndex].period);
 
     // 기존 데이터셋 복사 및 라벨에 맞게 재매핑
+    // const updatedDatasets = existingChartData.datasets.map(dataset => ({
+    //     ...dataset,
+    //     data: unifiedLabels.map(label => {
+    //         const index = existingPeriod.indexOf(label);
+    //         return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
+    //     })
+    // }));
     const updatedDatasets = existingChartData.datasets.map(dataset => ({
         ...dataset,
-        data: unifiedLabels.map(label => {
-            const index = existingPeriod.indexOf(label);
-            return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
-        })
     }));
 
     // 새로운 데이터셋 생성
     const newDataset = {
         label: fieldMapping[saveButton],
-        data: unifiedLabels.map(label => {
+        data: existingPeriod.map(label => {
             const index = mappedDataList[mappingIndex].period.indexOf(label);
             return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
         }),
+        // data: unifiedLabels.map(label => {
+        //     const index = mappedDataList[mappingIndex].period.indexOf(label);
+        //     return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
+        // }),
         borderColor: saveValue === 'average' ? 'rgba(52, 115, 235, 0.8)' : 'rgba(46, 204, 113, 1)',
         backgroundColor: saveValue === 'average' ? 'rgba(52, 115, 235, 0.2)' : 'rgba(46, 204, 113, 0.6)',
         pointBackgroundColor: saveValue === 'average' ? 'rgba(152, 77, 249, 1)' : 'rgba(46, 204, 113, 1)',
