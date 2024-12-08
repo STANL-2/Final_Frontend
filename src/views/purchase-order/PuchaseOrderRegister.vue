@@ -365,7 +365,7 @@ const selectOrder = async (order) => {
     const orderDetail = response.result.contractId;
 
     const response1 = await $api.contract.get(
-        '',
+        'center',
         orderDetail
     );
 

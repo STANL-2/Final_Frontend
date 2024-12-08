@@ -32,8 +32,13 @@
                 HTML 파일 URL을 불러올 수 없습니다.
             </div>
         </div>
+
+        <template #footer>
+            <CommonButton label="닫기" @click="onClose" />
+        </template>
     </Modal>
-    <OrderModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
+
+    <OrderEmployeeModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
 </template>
 
 <script setup>
@@ -41,7 +46,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderModify from '../OrderModify.vue';
+import OrderEmployeeModify from './OrderEmployeeModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -63,49 +68,6 @@ const toast = useToast();
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
 const showModifyModal = ref(false);
-const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
-const newStatus = ref(props.status); // 새로운 상태 값
-
-function openStatusModal() {
-    showStatusChangeModal.value = true;
-}
-
-function closeStatusModal() {
-    showStatusChangeModal.value = false;
-}
-
-// 상태 변경 확인
-const confirmStatusChange = async () => {
-    try {
-    
-        // 업데이트된 HTML과 상태 저장
-        const response = await $api.order.put(
-            {
-                status: newStatus.value,
-            }, 
-            `status/` + getDetailId.value
-        );
-
-        // UI 피드백
-        toast.add({
-            severity: 'success',
-            summary: '성공',
-            detail: `상태가 "${newStatus.value}"로 변경되었습니다`,
-            life: 3000
-        });
-
-        emit('refresh');
-        closeStatusModal();
-    } catch (error) {
-        console.error("상태 변경 오류:", error);
-        toast.add({
-            severity: 'error',
-            summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다',
-            life: 3000
-        });
-    }
-};
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(
@@ -134,7 +96,7 @@ const getDetailRequest = async () => {
 
     try {
         const response = await $api.order.get(
-            '', // 엔드포인트 설정
+            'employee', // 엔드포인트 설정
             getDetailId.value // contractId 전달
         );
 

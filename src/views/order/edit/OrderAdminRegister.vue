@@ -318,7 +318,7 @@ const fetchContracts = async () => {
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        const response = await $api.contract.getParams('employee', queryString);
+        const response = await $api.contract.getParams('center', queryString);
 
         const result = response?.result;
         const contractData = result.content;
@@ -350,7 +350,7 @@ const selectContract = async (contract) => {
 
     // 서버에 상세조회 요청
     const response = await $api.contract.get(
-        'employee',
+        'center',
         selectedContractId.value
     );
 

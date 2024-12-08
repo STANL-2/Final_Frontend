@@ -86,6 +86,7 @@ const getDetailRequest = async () => {
 
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
+            title.value = response.result.title;
             console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
@@ -101,6 +102,7 @@ const onUpdate = async () => {
         if (!content.value) {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
+        console.log("props.contractId: " + props.contractId);
 
         const extractedData = extractDataFromHTML(content.value);
 
@@ -169,7 +171,7 @@ const parseNumber = (value) => {
 };
 
 // CKEditor 내용에서 데이터를 추출하는 함수
-const extractDataFromHTML = (html, buyerSignature, sellerSignature) => {
+const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
 
     const doc = parser.parseFromString(html, "text/html");
@@ -206,6 +208,9 @@ const extractDataFromHTML = (html, buyerSignature, sellerSignature) => {
     const remainderPayment = parseNumber(doc.querySelector(".customer-remainderPayment-value")?.innerText.trim() || "0");
     const consignmentPayment = parseNumber(doc.querySelector(".customer-consignmentPayment-value")?.innerText.trim() || "0");
     const totalSales = parseNumber(doc.querySelector(".customer-totalSales-value")?.innerText.trim() || "0");
+
+    const buyerSignature = doc.querySelector("#buyer-signature-area img")?.getAttribute("src") || null;
+    const sellerSignature = doc.querySelector("#seller-signature-area img")?.getAttribute("src") || null;
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,

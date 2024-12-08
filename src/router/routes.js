@@ -292,6 +292,14 @@ const routes = [
                 component: () => import('@/views/order/edit/OrderEmployeeModify.vue'),
                 meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE'] }
             },
+            {
+                path: 'dmodify',
+                component: () => import('@/views/order/edit/OrderAdminModify.vue')
+            },
+            {
+                path: 'dregister',
+                component: () => import('@/views/order/edit/OrderAdminRegister.vue')
+            }
         ]
     },
     {

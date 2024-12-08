@@ -51,7 +51,7 @@
             </ViewTable>
 
 
-            <PuchaseOrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <PuchaseOrderAdminDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)"/>
         </div>
@@ -95,7 +95,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import PuchaseOrderDetail from '@/views/purchase-order/PuchaseOrderDetail.vue';
+import PuchaseOrderAdminDetail from './PuchaseOrderAdminDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
@@ -270,7 +270,7 @@ const loadData = async () => {
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
         // API 호출
-        const response = await $api.purchaseOrder.getParams('search', queryString);
+        const response = await $api.purchaseOrder.getParams('admin/search', queryString);
 
         // 데이터 설정
         const result = response?.result;
