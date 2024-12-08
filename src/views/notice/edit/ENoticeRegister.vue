@@ -209,7 +209,7 @@ const onRegister = async () => {
 }
 .file-upload-container {
     margin-left: 1.1rem;
-    width: 86%;
+    width: 96%;
 }
 
 
