@@ -12,23 +12,25 @@
                 />
             </div>
 
-            <div class="tag-container">
-                <label for="tag-select">태그</label>
-                <select id="tag-select" >
-                    <option value="ALL">ALL</option>
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="DIRECTOR">DIRECTOR</option>
-                </select>
-            </div>
+            <div class="selectors-container">
+                <div class="tag-container">
+                    <label for="tag-select">태그</label>
+                    <select id="tag-select" >
+                        <option value="ALL">ALL</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="DIRECTOR">DIRECTOR</option>
+                    </select>
+                </div>
 
-            <div class="classification-container">
-                <label for="classification-select">분류</label>
-                <select id="classification-select" v-model="classification">
-                    <option value="NORMAL">NORMAL</option>
-                    <option value="GOAL">GOAL</option>
-                    <option value="STARETAGY">STARETAGY</option>
-                </select>
-            </div>
+                <div class="classification-container">
+                    <label for="classification-select">분류</label>
+                    <select id="classification-select" v-model="classification">
+                        <option value="NORMAL">NORMAL</option>
+                        <option value="GOAL">GOAL</option>
+                        <option value="STARETAGY">STARETAGY</option>
+                    </select>
+                </div>
+            </div>   
 
 
             <!-- 기존 파일 확인 및 새 파일 업로드 -->
@@ -212,6 +214,7 @@ export default {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+    padding-left:35px;
 }
 .title-container{
     width:20rem;
@@ -221,11 +224,23 @@ export default {
     width:8rem;
 }
 
+.selectors-container {
+    display: flex;
+    justify-content: space-between;
+    width: 50%;
+    gap: 20px;
+}
+
 .title-container label,
 .file-container label {
     font-weight: bold;
     margin-bottom: 8px;
 }
+
+.file-container{
+    width:90%;
+}
+
 
 .current-file {
     display: flex;
