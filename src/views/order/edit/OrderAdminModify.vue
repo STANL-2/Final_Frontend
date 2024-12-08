@@ -92,7 +92,7 @@ watch(
 const getDetailRequest = async () => {
     try {
 
-        const response = await $api.order.get('center', props.orderId);
+        const response = await $api.order.get('', props.orderId);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
@@ -112,7 +112,7 @@ const getDetailRequest = async () => {
         console.error('GET DETAIL 요청 실패: ', error);
     }
 };
-
+const writerSignature = ref(null);
 // 수정 버튼 클릭 시 호출되는 함수
 const onUpdate = async () => {
     try {
@@ -133,14 +133,16 @@ const onUpdate = async () => {
             numberOfVehicles: formatNumberWithCommas(extractedData.numberOfVehicles),
             totalSales: formatNumberWithCommas(extractedData.totalSales),
             stock: formatNumberWithCommas(extractedData.stock),
-            // writerSignature: writerSignature.value, // 서명 이미지 추가
+            writerSignature: extractedData.writerSignature, // 서명 이미지 추가
         });
+
+        content.value = updatedInitialHtml;
 
         const postData = {
             title: extractedData.title,
             orderId: extractedData.orderId,
             contractId: extractedData.contractId,
-            content: updatedInitialHtml,
+            content: content.value,
         };
 
         const response = await $api.order.put(
@@ -376,7 +378,7 @@ const selectContract = async (contract) => {
     serialNoCell.textContent = contractDetails.serialNum;
     carNameCell.textContent = contractDetails.carName;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
     stockCell.textContent = 14;
 
 
