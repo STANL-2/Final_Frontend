@@ -100,7 +100,7 @@ import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderRegister from './OrderRegister.vue';
+import OrderRegister from '../OrderRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
