@@ -1,15 +1,23 @@
 <template>
     <PageLayout>
         <div class="search-wrapper">
-            <div class="flex-row content-end">
-                <div class="ml-l">
-                    <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
                 </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="handleSearch"/>
+                <div class="flex-row content-end">
+                    <div class="ml-l">
+                        <div class="ml-xs">
+                            <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                        </div>
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="handleSearch" />
+                    </div>
                 </div>
             </div>
-            <SearchForm class="mb-l":fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <SearchForm class="mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
         <div class="flex-row content-between mt-m">
             <div class="title-pos">
@@ -17,29 +25,21 @@
             </div>
             <div class="flex-row items-center mb-s">
                 <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div class="ml-xs">
+                    <CommonButton label="인쇄" icon="pi pi-print" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                </div>
             </div>
         </div>
 
         <!-- ViewTable -->
         <div class="table-wrapper">
-            <ViewTable 
-                :headers="tableHeaders" 
-                :data="tableData" 
-                :loading="loading" 
-                :totalRecords="totalRecords" 
-                :rows="rows" 
-                :rowsPerPageOptions="[10, 15, 20, 50]"
-                :selectable="true" 
-                buttonLabel="조회" 
-                buttonHeader="상세조회"
-                :buttonAction="handleView" 
-                buttonField="code"
-                @page="onPage" 
-                @sort="onSort" 
-                @filter="onFilter" 
-            />
+            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" buttonLabel="조회"
+                buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage" @sort="onSort"
+                @filter="onFilter" />
         </div>
     </PageLayout>
 </template>
@@ -54,7 +54,7 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import PagePath from '@/components/common/PagePath.vue';
 
-const router = useRouter(); 
+const router = useRouter();
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
 const loading = ref(false); // 로딩 상태 변수
 
@@ -77,14 +77,14 @@ const formFields = [
             type: 'select',
             label: '태그',
             model: 'tag',
-            options: ['ALL','ADMIN','DIRECTOR'],
+            options: ['ALL', 'ADMIN', 'DIRECTOR'],
             showDivider: false
         },
         {
             type: 'select',
             label: '분류',
             model: 'classification',
-            options: ['NORMAL','GOAL','STRATEGY'],
+            options: ['NORMAL', 'GOAL', 'STRATEGY'],
             showDivider: false
         },
     ],
@@ -138,7 +138,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'noticeExcel.xlsx');
@@ -163,7 +163,7 @@ function handleView(rowData) {
         query: {
             tag: rowData.tag, // 태그
             classification: rowData.classification, // 분류
-            noticeTitle: rowData.title, 
+            noticeTitle: rowData.title,
             noticeContent: rowData.content,
             noticeId: rowData.noticeId,
         },
@@ -217,9 +217,9 @@ const handleSearch = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        console.log("response"+response);
+        console.log("response" + response);
         const params = new URLSearchParams();
-        
+
         // 기본 파라미터 설정
         params.append('page', Math.floor(first.value / rows.value)); // 페이지 계산
         params.append('size', rows.value); // 페이지당 행 수 설정
@@ -238,8 +238,8 @@ const loadData = async () => {
         // 받은 데이터 처리
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
-        console.log("response"+response);
-    
+        console.log("response" + response);
+
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     } finally {
@@ -270,10 +270,11 @@ onMounted(() => {
     display: flex;
 }
 
-.list{
+.list {
     font-size: 1.2rem;
-    font-weight:bold;
+    font-weight: bold;
 }
+
 .search-wrapper {
     display: flex;
     flex-direction: column;
@@ -296,5 +297,3 @@ onMounted(() => {
     font-size: 16px
 }
 </style>
-
-
