@@ -225,9 +225,13 @@ export default {
 .title-container{
     width:30rem;
 }
-.tag-container,
+.tag-container{
+    width:8rem;
+}
+
 .classification-container{
     width:8rem;
+    margin-left:100px;
 }
 
 select {
@@ -285,5 +289,19 @@ select {
 label {
     font-weight: bold;
     margin-bottom: 8px;
+}
+#tag-select{
+    padding: 3px;
+    width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+#classification-select{
+    padding: 3px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width:150px;
 }
 </style>
