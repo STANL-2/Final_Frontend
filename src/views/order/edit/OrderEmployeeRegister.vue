@@ -400,7 +400,7 @@ const selectContract = async (contract) => {
     serialNoCell.textContent = contractDetails.serialNum;
     carNameCell.textContent = contractDetails.carName;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
     stockCell.textContent = 14;
 
 

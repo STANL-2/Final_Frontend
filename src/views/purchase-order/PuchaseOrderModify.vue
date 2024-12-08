@@ -137,15 +137,17 @@ const onUpdate = async () => {
             return; // 검사 실패 시 함수 종료
         }
 
-        const extractedData = extractDataFromHTML(content.value, writerSignature.value);
+        const extractedData = extractDataFromHTML(content.value);
 
         // initialHtml을 업데이트
-        const updatedInitialHtml = generateInitialHtml(extractedData);
-
-        const data = {
+        const updatedInitialHtml = generateInitialHtml({
             ...extractedData,
-            writerSignature: writerSignature.value,
-        };
+            vehiclePrice: formatNumberWithCommas(extractedData.vehiclePrice),
+            vehiclePrice1: formatNumberWithCommas(extractedData.vehiclePrice1),
+            numberOfVehicles: formatNumberWithCommas(extractedData.numberOfVehicles),
+            totalSales: formatNumberWithCommas(extractedData.totalSales),
+            writerSignature: extractedData.writerSignature, // 서명 이미지 추가
+        });
 
         // content에 반영
         content.value = updatedInitialHtml;
@@ -197,7 +199,7 @@ const extractDataFromHTML = (html) => {
     const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
     const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
-    const writerSignature = doc.querySelector(".writer-signature-area")?.innerText.trim() || "(서명)";
+    const writerSignature = doc.querySelector("#writer-signature-area img")?.getAttribute("src") || null;
 
     // 필요한 필드를 추가적으로 추출
     return {
@@ -244,11 +246,10 @@ const generateInitialHtml = (data) => {
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">
-                            ${
-                            data.writerSignature
-                                ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem; height: auto;">`
-                                : "(서명)"
-                        }
+                            ${data.writerSignature
+            ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem; height: auto;">`
+            : "(서명)"
+        }
                             </td>
                     </tr>
                 </table>
@@ -408,7 +409,7 @@ const selectOrder = async (order) => {
     vehiclePriceCell.textContent = contractDetails.vehiclePrice;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
     vehiclePrice1Cell.textContent = contractDetails.vehiclePrice;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
@@ -426,6 +427,12 @@ const onScroll = (event) => {
     }
 };
 
+// 숫자 포맷 함수
+const formatNumberWithCommas = (num) => {
+    if (!num) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 const formatNumbersInTable = (html) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -433,10 +440,10 @@ const formatNumbersInTable = (html) => {
     const tdElements = doc.querySelectorAll('td.format-number');
 
     tdElements.forEach((td) => {
-        const text = td.textContent.trim();
+        const text = td.textContent.trim().replace(/,/g, '');
         if (!isNaN(text) && text !== '') {
             const number = parseFloat(text);
-            td.textContent = new Intl.NumberFormat('en-US').format(number);
+            td.textContent = formatNumberWithCommas(number);
         }
     });
 
@@ -445,13 +452,11 @@ const formatNumbersInTable = (html) => {
 
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
-    if (ignoreUpdates.value) {
-        ignoreUpdates.value = false; // 플래그 초기화
-        return; // CKEditor 업데이트 중 발생한 호출 무시
-    }
     const formattedContent = formatNumbersInTable(newContent);
-    content.value = formattedContent;
-    console.log('Editor content updated:', formattedContent);
+
+    if (formattedContent !== content.value) {
+        content.value = formattedContent; // CKEditor 내용 업데이트
+    }
 };
 
 function closeModal() {

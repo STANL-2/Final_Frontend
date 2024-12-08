@@ -409,7 +409,7 @@ const selectOrder = async (order) => {
     vehiclePriceCell.textContent = contractDetails.vehiclePrice;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
     vehiclePrice1Cell.textContent = contractDetails.vehiclePrice;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
