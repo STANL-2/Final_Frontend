@@ -606,6 +606,7 @@ async function searchStore() {
     width: 100%; /* 부모 요소 기준 크기 */
     box-sizing: border-box; /* 테두리 포함 크기 계산 */
 }
+
 .path {
     /* 나머지 요소를 오른쪽으로 밀어냄 */
     margin-bottom: 10px;
