@@ -174,17 +174,37 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.title-container,
+.title-container{
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    margin-left:40px;
+}
+
 .file-container {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+    margin-left:40px;
+    width : 880px;
 }
 
 .title-container label,
 .file-container label {
     font-weight: bold;
     margin-bottom: 8px;
+}
+
+.file-container FileUpload{
+    margin-left: 40px;
+}
+.title-container input{
+    padding:10px;
+    font-size:16px;
+    border: 1px solid #ddd;
+    padding-left: 1rem;
+    border-radius: 4px;
+    width:880px;
 }
 
 .current-file {
@@ -200,4 +220,5 @@ export default {
     gap: 10px;
     margin-top: 20px;
 }
+
 </style>
