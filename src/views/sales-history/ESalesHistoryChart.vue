@@ -161,7 +161,7 @@ const handleButtonComparisonClick = async (field2) => {
         month: searchType === 'month' ? 'month' : null,
         year: searchType === 'year' ? 'year' : null,
         startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+        endDate: searchCriteria.value.salesHistorySearchDate_end+1 || null,
         orderBy: orderByValue(saveButton),
         period: searchType,
     };

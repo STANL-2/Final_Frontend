@@ -1,6 +1,7 @@
 <template>
     <div class="chart-container" v-for="(chartData, index) in chartDataList" :key="index">
-        <canvas :ref="el => { if (el) chartCanvasRefs[index] = el; }"></canvas>
+        <!-- <canvas :ref="el => { if (el) chartCanvasRefs[index] = el; }"></canvas> -->
+        <canvas :ref="setCanvasRef(index)"></canvas>
     </div>
 </template>
 
@@ -26,20 +27,25 @@ const props = defineProps({
 });
 
 const chartInstances = []; // 차트 인스턴스 배열 (반응형 필요 없음)
-const chartCanvasRefs = []; // Canvas 참조 배열 (반응형 필요 없음)
+const chartCanvasRefs = ref([]); // Canvas 참조 배열 (반응형 필요 없음)
 let updateTimeout;
+
+const setCanvasRef = (index) => (el) => {
+    if (el) chartCanvasRefs.value[index] = el;
+    else chartCanvasRefs.value.splice(index, 1); // 제거 시 참조에서 삭제
+};
 
 // 차트 생성 또는 업데이트
 const updateCharts = async () => {
     // 기존 타이머 클리어
     clearTimeout(updateTimeout);
-
     // 디바운싱: 일정 시간 후에만 실행
     updateTimeout = setTimeout(async () => {
         await nextTick(); // DOM 업데이트 완료 후 실행
 
         props.chartDataList.forEach((chartData, index) => {
-            const canvas = chartCanvasRefs[index];
+            // const canvas = chartCanvasRefs[index];
+            const canvas = chartCanvasRefs.value[index];
             if (!canvas) {
                 console.warn(`Canvas not found for chart index ${index}`);
                 return;
@@ -67,7 +73,7 @@ const updateCharts = async () => {
             const removedChart = chartInstances.pop();
             if (removedChart) removedChart.destroy();
         }
-    }, 50); // 50ms 디바운스
+    }, 10); // 50ms 디바운스
 };
 
 
@@ -90,6 +96,7 @@ watch(
             newData &&
             newData.length > 0
         ) {
+            destroyCharts();
             await nextTick(); // DOM 업데이트 완료 후 실행
             updateCharts();
         }
