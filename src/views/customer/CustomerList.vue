@@ -414,6 +414,9 @@ const loadData = async () => {
 
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
+        console.log('###');
+        console.log(queryString);
+
         // API 호출
         const response = await $api.customer.getParams('search', queryString);
 
