@@ -373,7 +373,15 @@ const select = () => {
 
     // 검색 조건 생성
     searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+        Object.entries(formData)
+            .filter(([_, value]) => value !== null && value !== undefined && value !== '')
+            .map(([key, value]) => {
+                // 성별 값 변환
+                if (key === 'sex') {
+                    value = value === '남성' ? 'MALE' : value === '여성' ? 'FEMALE' : value;
+                }
+                return [key, value];
+            })
     );
     // 검색 실행
     loadData();
