@@ -157,8 +157,11 @@ const onRegister = async () => {
     margin-top: 5px;
 }
 
-/* 본인에 맞게 upload 상자 커스텀 */
-/* .file-upload-input{
-    
-} */
+.file-upload-input
+{
+    width: 102.5%;
+}
+.file-upload-container{
+    margin-left: 2.4rem;
+}
 </style>
