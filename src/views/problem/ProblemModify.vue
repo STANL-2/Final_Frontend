@@ -219,6 +219,7 @@ export default {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+    margin-right: 40px;
 }
 
 </style>
