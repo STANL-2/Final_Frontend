@@ -71,7 +71,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderModify from './OrderModify.vue';
+import OrderModify from '../OrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
