@@ -2,53 +2,49 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="component-wrapper">
-            <div class="flex-row content-end">
-                <div class="ml-l">
-                    <div class="ml-xs"><CommonButton label="초기화" @click="resetSearch"icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
                 </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="handleSearch"/>
+                <div class="flex-row content-end">
+                    <div class="ml-l">
+                        <div class="ml-xs">
+                            <CommonButton label="초기화" @click="resetSearch" icon="pi pi-refresh" color="#F1F1FD"
+                                textColor="#6360AB" />
+                        </div>
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="handleSearch" />
+                    </div>
                 </div>
             </div>
-            <SearchForm class="search-from mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="handleSearch"/>
+            <SearchForm class="search-from mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                @keyup.enter="handleSearch" />
         </div>
         <div class="flex-row content-between mt-xxxxl">
             <div class="title-pos">
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
+                <div class="ml-xs">
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                </div>
             </div>
         </div>
 
         <!-- ViewTable -->
         <div class="table-wrapper">
-            <ViewTable class="view-table" 
-                :headers="tableHeaders" 
-                :data="tableData" 
-                :loading="loading" 
-                :totalRecords="totalRecords" 
-                :rows="rows" 
-                :rowsPerPageOptions="[10, 15, 20, 50]"
-                :selectable="true" 
-                buttonLabel="조회" 
-                buttonHeader="상세조회"
-                :selection="selectedRows" 
-                @update:selection="updateSelectedRows"
-                :buttonAction="handleView" 
-                buttonField="code"
-                @page="onPage" 
-                @sort="onSort" 
-                @filter="onFilter" 
-            />
+            <ViewTable class="view-table" :headers="tableHeaders" :data="tableData" :loading="loading"
+                :totalRecords="totalRecords" :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true"
+                buttonLabel="조회" buttonHeader="상세조회" :selection="selectedRows" @update:selection="updateSelectedRows"
+                :buttonAction="handleView" buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter" />
 
-            <ProductDetail
-            v-model="showDetailModal"
-            :showModal="showDetailModal"
-            :details="selectedDetail"
-            @close="showDetailModal = false"
-        />
+            <ProductDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+                @close="showDetailModal = false" />
         </div>
     </PageLayout>
 </template>
@@ -61,6 +57,7 @@ import ProductDetail from '@/views/product/ProductDetail.vue';
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+import PagePath from '@/components/common/PagePath.vue';
 
 const formFields = [
     [
@@ -184,7 +181,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'productExcel.xlsx');
@@ -259,9 +256,9 @@ function closeModal() {
 
 const resetSearch = () => {
     searchParams.value = {
-    productId: '',
-    name: '',
-    serialNumber: '',
+        productId: '',
+        name: '',
+        serialNumber: '',
     };
     first.value = 0; // 페이지를 첫 번째로 초기화
     sortField.value = null; // 정렬 조건 초기화
@@ -273,78 +270,92 @@ const resetSearch = () => {
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
     console.log('선택된 항목 업데이트:', selectedRows.value);
-    };
+};
 
-    const printSelectedRows = () => {
-  if (selectedRows.value.length === 0) {
-    alert('인쇄할 행을 선택하세요.');
-    return;
-  }
+const printSelectedRows = () => {
+    if (selectedRows.value.length === 0) {
+        alert('인쇄할 행을 선택하세요.');
+        return;
+    }
 
-  const headersToPrint = tableHeaders.value.filter(
-    (header) => header.excludeFromPrint !== true
-  );
+    const headersToPrint = tableHeaders.value.filter(
+        (header) => header.excludeFromPrint !== true
+    );
 
-  const printContent = document.createElement('div');
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
+    const printContent = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
 
-  const headerRow = document.createElement('tr');
-  headersToPrint.forEach((header) => {
-    const th = document.createElement('th');
-    th.innerText = header.label;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  selectedRows.value.forEach((row) => {
-    const tr = document.createElement('tr');
+    const headerRow = document.createElement('tr');
     headersToPrint.forEach((header) => {
-      const td = document.createElement('td');
-      td.innerText = row[header.field] || '';
-      td.style.border = '1px solid #ddd';
-      td.style.padding = '8px';
-      tr.appendChild(td);
+        const th = document.createElement('th');
+        th.innerText = header.label;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
     });
-    table.appendChild(tr);
-  });
+    table.appendChild(headerRow);
 
-  printContent.appendChild(table);
+    selectedRows.value.forEach((row) => {
+        const tr = document.createElement('tr');
+        headersToPrint.forEach((header) => {
+            const td = document.createElement('td');
+            td.innerText = row[header.field] || '';
+            td.style.border = '1px solid #ddd';
+            td.style.padding = '8px';
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
 
-  // iframe 생성
-  const printFrame = document.createElement('iframe');
-  printFrame.style.position = 'absolute';
-  printFrame.style.top = '-10000px';
-  printFrame.style.left = '-10000px';
-  document.body.appendChild(printFrame);
+    printContent.appendChild(table);
 
-  const frameDoc = printFrame.contentWindow?.document;
-  if (frameDoc) {
-    frameDoc.open();
-    frameDoc.write('<html><head><title>Print</title></head><body>');
-    frameDoc.write(printContent.innerHTML);
-    frameDoc.write('</body></html>');
-    frameDoc.close();
+    // iframe 생성
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-10000px';
+    printFrame.style.left = '-10000px';
+    document.body.appendChild(printFrame);
 
-    // 인쇄 호출
-    printFrame.contentWindow?.focus();
-    printFrame.contentWindow?.print();
-  }
+    const frameDoc = printFrame.contentWindow?.document;
+    if (frameDoc) {
+        frameDoc.open();
+        frameDoc.write('<html><head><title>Print</title></head><body>');
+        frameDoc.write(printContent.innerHTML);
+        frameDoc.write('</body></html>');
+        frameDoc.close();
 
-  // iframe 제거
-  document.body.removeChild(printFrame);
+        // 인쇄 호출
+        printFrame.contentWindow?.focus();
+        printFrame.contentWindow?.print();
+    }
+
+    // iframe 제거
+    document.body.removeChild(printFrame);
 };
 
 </script>
 
 <style scoped>
-.list{
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.list {
     font-size: 1.5rem;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .search-wrapper {

@@ -2,13 +2,19 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="flex-row">
-                <div class="ml-l">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
                 </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="select" />
+                <div class="flex-row">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
                 </div>
             </div>
             <div class="search-fields">
@@ -23,7 +29,7 @@
             </div>
             <div class="flex-row items-center mb-s">
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
@@ -34,10 +40,9 @@
         <!-- ViewTable -->
         <div class="component-wrapper">
             <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows" 
-                @update:selection="updateSelectedRows"
-                buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage"
-                @sort="onSort" @filter="onFilter">
+                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" :selection="selectedRows"
+                @update:selection="updateSelectedRows" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                 <template #body-status="{ data }">
                     <div class="custom-tag-wrapper">
                         <div :class="['custom-tag', getCustomTagClass(data.status)]">
@@ -50,7 +55,7 @@
 
             <PuchaseOrderDDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
-                :statusClass="getCustomTagClass(selectedDetail?.status)"/>
+                :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
         <!-- 모달 -->
         <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
@@ -95,6 +100,7 @@ import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -293,7 +299,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'contractExcel.xlsx');
@@ -314,70 +320,70 @@ const exportCSV = async () => {
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
     console.log('선택된 항목 업데이트:', selectedRows.value);
-    };
+};
 
-    const printSelectedRows = () => {
-  if (selectedRows.value.length === 0) {
-    alert('인쇄할 행을 선택하세요.');
-    return;
-  }
+const printSelectedRows = () => {
+    if (selectedRows.value.length === 0) {
+        alert('인쇄할 행을 선택하세요.');
+        return;
+    }
 
-  const headersToPrint = tableHeaders.value.filter(
-    (header) => header.excludeFromPrint !== true
-  );
+    const headersToPrint = tableHeaders.value.filter(
+        (header) => header.excludeFromPrint !== true
+    );
 
-  const printContent = document.createElement('div');
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
+    const printContent = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
 
-  const headerRow = document.createElement('tr');
-  headersToPrint.forEach((header) => {
-    const th = document.createElement('th');
-    th.innerText = header.label;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  selectedRows.value.forEach((row) => {
-    const tr = document.createElement('tr');
+    const headerRow = document.createElement('tr');
     headersToPrint.forEach((header) => {
-      const td = document.createElement('td');
-      td.innerText = row[header.field] || '';
-      td.style.border = '1px solid #ddd';
-      td.style.padding = '8px';
-      tr.appendChild(td);
+        const th = document.createElement('th');
+        th.innerText = header.label;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
     });
-    table.appendChild(tr);
-  });
+    table.appendChild(headerRow);
 
-  printContent.appendChild(table);
+    selectedRows.value.forEach((row) => {
+        const tr = document.createElement('tr');
+        headersToPrint.forEach((header) => {
+            const td = document.createElement('td');
+            td.innerText = row[header.field] || '';
+            td.style.border = '1px solid #ddd';
+            td.style.padding = '8px';
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
 
-  // iframe 생성
-  const printFrame = document.createElement('iframe');
-  printFrame.style.position = 'absolute';
-  printFrame.style.top = '-10000px';
-  printFrame.style.left = '-10000px';
-  document.body.appendChild(printFrame);
+    printContent.appendChild(table);
 
-  const frameDoc = printFrame.contentWindow?.document;
-  if (frameDoc) {
-    frameDoc.open();
-    frameDoc.write('<html><head><title>Print</title></head><body>');
-    frameDoc.write(printContent.innerHTML);
-    frameDoc.write('</body></html>');
-    frameDoc.close();
+    // iframe 생성
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-10000px';
+    printFrame.style.left = '-10000px';
+    document.body.appendChild(printFrame);
 
-    // 인쇄 호출
-    printFrame.contentWindow?.focus();
-    printFrame.contentWindow?.print();
-  }
+    const frameDoc = printFrame.contentWindow?.document;
+    if (frameDoc) {
+        frameDoc.open();
+        frameDoc.write('<html><head><title>Print</title></head><body>');
+        frameDoc.write(printContent.innerHTML);
+        frameDoc.write('</body></html>');
+        frameDoc.close();
 
-  // iframe 제거
-  document.body.removeChild(printFrame);
+        // 인쇄 호출
+        printFrame.contentWindow?.focus();
+        printFrame.contentWindow?.print();
+    }
+
+    // iframe 제거
+    document.body.removeChild(printFrame);
 };
 
 // 페이지네이션 이벤트 처리
@@ -532,6 +538,20 @@ async function searchStore() {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -589,9 +609,12 @@ tr:hover {
 
 .custom-tag-wrapper {
     display: flex;
-    justify-content: center; /* 수평 가운데 정렬 */
-    align-items: center; /* 수직 가운데 정렬 */
-    height: 100%; /* 부모 높이에 맞게 정렬 */
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+    align-items: center;
+    /* 수직 가운데 정렬 */
+    height: 100%;
+    /* 부모 높이에 맞게 정렬 */
 }
 
 .custom-tag {
