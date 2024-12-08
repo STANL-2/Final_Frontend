@@ -95,7 +95,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import OrderDDetail from '@/views/order/editer/OrderDDetail.vue';
+import OrderDDetail from './OrderDDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
