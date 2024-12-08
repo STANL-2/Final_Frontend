@@ -33,34 +33,6 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
-            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
-            <div class="status-content">
-                <p class="current-status">
-                    <strong>현재 상태:</strong>
-                    <span class="status-highlight ml-xs">{{ status }}</span>
-                </p>
-                <div class="status-options">
-                    <label>
-                        <input type="radio" value="WAIT" v-model="newStatus" />
-                        대기
-                    </label>
-                    <label>
-                        <input type="radio" value="APPROVED" v-model="newStatus" />
-                        승인
-                    </label>
-                    <label>
-                        <input type="radio" value="CANCEL" v-model="newStatus" />
-                        취소
-                    </label>
-                </div>
-            </div>
-            <template #footer>
-                <CommonButton label="확인" @click="confirmStatusChange" />
-                <CommonButton label="취소" @click="closeStatusModal" />
-            </template>
-        </Modal>
-
         <template #footer>
             <CommonButton label="닫기" @click="onClose" />
         </template>
@@ -74,7 +46,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import EContractModify from '../edit/EContractModify.vue';
+import EContractModify from './EContractModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -96,49 +68,6 @@ const toast = useToast();
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
 const showModifyModal = ref(false);
-const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
-const newStatus = ref(props.status); // 새로운 상태 값
-
-function openStatusModal() {
-    showStatusChangeModal.value = true;
-}
-
-function closeStatusModal() {
-    showStatusChangeModal.value = false;
-}
-
-// 상태 변경 확인
-const confirmStatusChange = async () => {
-    try {
-        const response = await $api.contract.put(
-            {
-                status: newStatus.value,
-            },
-            'status/' + getDetailId.value
-        );
-
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
-
-        toast.add({
-            severity: 'success',
-            summary: '성공',
-            detail: `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-            life: 3000,
-        });
-
-        emit('refresh');
-        closeStatusModal();
-    }catch(error){
-        console.error('상태 변경 실패:', error);
-        toast.add({
-            severity: 'error',
-            summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다.',
-            life: 3000,
-        });
-    }
-}
 
 // details 값이 변경될 때마다 contractId를 업데이트
 watch(
@@ -167,7 +96,7 @@ const getDetailRequest = async () => {
 
     try {
         const response = await $api.contract.get(
-            '', // 엔드포인트 설정
+            'employee', // 엔드포인트 설정
             getDetailId.value // contractId 전달
         );
 

@@ -25,7 +25,7 @@
                         <tbody>
                             <tr v-if="noticeImage">
                                 <td>
-                                    <a :href="noticeImage" target="_blank" class="file-link">{{ noticeImage }}</a>
+                                    <a :href="noticeImage" target="_blank" class="file-link">첨부파일 다운로드하기</a>
                                 </td>
                             </tr>
                             <tr v-else>
@@ -77,22 +77,16 @@ const goBack = () => {
 
 // 첨부파일 조회를 위한 get 메소드
 const getNotice = async () => {
-    try {
-        const response = await $api.notice.get(
-            '',
-            noticeId
-        )
+  try {
+    const response = await $api.notice.get('', noticeId);
 
-        if (response.fileUrl) {
-            noticeImage.value = response.fileUrl; // API에서 반환된 fileUrl 할당
-        } else {
-            noticeImage.value = ''; // fileUrl이 없으면 빈 값
-        }
-    } catch (error) {
-        console.error('조회 중 오류 발생:', error);
-        alert('조회에 실패했습니다.');
-    }
-}
+    noticeImage.value = response.fileUrl || ''; // fileUrl이 없으면 빈 값
+  } catch (error) {
+    console.error('조회 중 오류 발생:', error);
+    alert('조회에 실패했습니다.');
+  }
+};
+
 
 
 

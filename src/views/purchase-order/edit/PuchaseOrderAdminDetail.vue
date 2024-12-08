@@ -46,7 +46,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderModify from '../PuchaseOrderModify.vue';
+import PuchaseOrderModify from '@/views/purchase-order/PuchaseOrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -68,46 +68,6 @@ const toast = useToast();
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
 const showModifyModal = ref(false);
-const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
-const newStatus = ref(props.status); // 새로운 상태 값
-
-function openStatusModal() {
-    showStatusChangeModal.value = true;
-}
-
-function closeStatusModal() {
-    showStatusChangeModal.value = false;
-}
-
-// 상태 변경 확인
-const confirmStatusChange = async () => {
-    try {
-        const response = await $api.purchaseOrder.put(
-            {
-                status: newStatus.value,
-            },
-            'status/' + getDetailId.value
-        );
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
-        toast.add({
-            severity: 'success',
-            summary: '성공',
-            detail: `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-            life: 3000,
-        });
-        emit('refresh');
-        closeStatusModal();
-    }catch(error){
-        console.error('상태 변경 실패:', error);
-        toast.add({
-            severity: 'error',
-            summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다.',
-            life: 3000,
-        });
-    }
-}
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(

@@ -82,7 +82,7 @@ watch(
 const getDetailRequest = async () => {
     try {
         console.log("orderId: " + props.orderId);
-        const response = await $api.order.get('', props.orderId);
+        const response = await $api.order.get('employee', props.orderId);
         console.log('수주서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
@@ -293,7 +293,7 @@ const fetchContracts = async () => {
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        const response = await $api.contract.getParams('', queryString);
+        const response = await $api.contract.getParams('employee', queryString);
 
         const result = response?.result;
         const contractData = result.content;
@@ -325,7 +325,7 @@ const selectContract = async (contract) => {
 
     // 서버에 상세조회 요청
     const response = await $api.contract.get(
-        '',
+        'employee',
         selectedContractId.value
     );
 

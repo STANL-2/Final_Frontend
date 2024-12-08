@@ -213,21 +213,21 @@ const getMemberInfo = async () => {
                     firstLabel: '비상연락처', firstValue: result.emergePhone || 'N/A',
                     secondLabel: '직위',
                     secondValue: result.position === "INTERN" 
-                                                ? "인턴"
+                                                        ? "인턴"
                                                     : result.position === "STAFF"
-                                                ? "사원"
+                                                        ? "사원"
                                                     : result.position === "ASSISTANT"
-                                                ? "대리"
+                                                        ? "대리"
                                                     : result.position === "MANAGER"
-                                                ? "과장"
+                                                        ? "과장"
                                                     : result.position === "SENIOR"
-                                                ? "차장"
+                                                        ? "차장"
                                                     : result.position === "EXECUTIVE"
-                                                ? "부장"
+                                                        ? "부장"
                                                     : result.position === "DIRECTOR"
-                                                ? "임원"
+                                                        ? "임원"
                                                     : result.position === "CEO"
-                                                ? "대표이사"
+                                                        ? "대표이사"
                                                     : "N/A",
                     thirdLabel: '학력구분',
                     thirdValue: result.grade === "High School"
@@ -393,10 +393,11 @@ onMounted(() => {
     align-items: center; /* 수직 정렬 */
     justify-content: flex-start; /* 좌측 정렬 */
     padding: 20px; /* 내부 여백 */
-    border: 1px solid #838383; /* 외곽선 추가 */
+    border: 1px solid #a3a3a3; /* 외곽선 추가 */
     border-radius: 8px; /* 모서리 둥글게 */
     background-color: #fdfdfd; /* 배경색 추가 */
     margin-bottom: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 사용자 이미지 컨테이너 */

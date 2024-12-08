@@ -1,7 +1,8 @@
+
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
+    <Modal :visible="modelValue" header="수주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -36,7 +37,7 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
+        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="수주 승인/취소 처리" width="20rem"
             height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
             <div class="status-content">
                 <p class="current-status">
@@ -69,7 +70,7 @@
         </template>
     </Modal>
 
-    <PuchaseOrderModify v-model:visible="showModifyModal" :purchaseOrder-id="getDetailId" @close="closeModifyModal" />
+    <OrderModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
 </template>
 
 <script setup>
@@ -77,7 +78,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderModify from './PuchaseOrderModify.vue';
+import OrderModify from '@/views/order/OrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -85,11 +86,11 @@ import ConfirmDialog from 'primevue/confirmdialog';
 const props = defineProps({
     modelValue: Boolean, // v-model로 바인딩될 값
     details: Object, // 상세 데이터
-    status: String, // 현재 상태
-    statusClass: String, // 상태 표시 스타일
+    status: String, // 상태 레이블
+    statusClass: String // 상태 스타일 클래스
 });
 
-const emit = defineEmits(['update:modelValue', 'refresh', 'update-status']);
+const emit = defineEmits(['update:modelValue', 'refresh']);
 
 // PrimeVue 훅
 const confirm = useConfirm();
@@ -113,41 +114,44 @@ function closeStatusModal() {
 // 상태 변경 확인
 const confirmStatusChange = async () => {
     try {
-        const response = await $api.purchaseOrder.put(
+    
+        // 업데이트된 HTML과 상태 저장
+        const response = await $api.order.put(
             {
                 status: newStatus.value,
-            },
-            'status/' + getDetailId.value
+            }, 
+            `status/` + getDetailId.value
         );
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
+
+        // UI 피드백
         toast.add({
             severity: 'success',
             summary: '성공',
-            detail: `상태가 "${newStatus.value}"(으)로 변경되었습니다.`,
-            life: 3000,
+            detail: `상태가 "${newStatus.value}"로 변경되었습니다`,
+            life: 3000
         });
+
         emit('refresh');
         closeStatusModal();
         onClose();
-    }catch(error){
-        console.error('상태 변경 실패:', error);
+    } catch (error) {
+        console.error("상태 변경 오류:", error);
         toast.add({
             severity: 'error',
             summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다.',
-            life: 3000,
+            detail: '상태 변경 중 오류가 발생했습니다',
+            life: 3000
         });
     }
-}
+};
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(
     () => props.details,
     (newDetails) => {
-        if (newDetails?.purchaseOrderId) {
-            console.log('PurchaseOrderId:', newDetails.purchaseOrderId);
-            getDetailId.value = newDetails.purchaseOrderId; // orderId를 저장
+        if (newDetails?.orderId) {
+            console.log('Iframe URL:', newDetails.content);
+            getDetailId.value = newDetails.orderId; // orderId를 저장
             getDetailRequest(); // 데이터 요청
         }
     },
@@ -162,12 +166,12 @@ function onClose() {
 // GET 요청 함수
 const getDetailRequest = async () => {
     if (!getDetailId.value) {
-        console.error('purchaseOrderId가 없습니다.');
+        console.error('orderId가 없습니다.');
         return;
     }
 
     try {
-        const response = await $api.purchaseOrder.get(
+        const response = await $api.order.get(
             '', // 엔드포인트 설정
             getDetailId.value // contractId 전달
         );
@@ -231,10 +235,10 @@ function deleteModal() {
         accept: async () => {
             try {
                 if (!getDetailId.value) {
-                    throw new Error("purchaseOrderId가 없습니다.");
+                    throw new Error("orderId가 없습니다.");
                 }
 
-                await $api.purchaseOrder.delete(getDetailId.value);
+                await $api.order.delete(getDetailId.value);
                 toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
                 emit('refresh');
                 emit('update:modelValue', false); // 모달 닫기
@@ -313,21 +317,16 @@ iframe {
 .status-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    /* 수평 중앙 정렬 */
-    justify-content: center;
-    /* 수직 중앙 정렬 */
-    text-align: center;
-    /* 텍스트 중앙 정렬 */
-    gap: 1.5rem;
-    /* 요소 간격 */
+    align-items: center; /* 수평 중앙 정렬 */
+    justify-content: center; /* 수직 중앙 정렬 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+    gap: 1.5rem; /* 요소 간격 */
     margin-bottom: 1rem;
 }
 
 /* 현재 상태 스타일 */
 .current-status {
-    font-size: 18px;
-    /* 텍스트 크기 증가 */
+    font-size: 18px; /* 텍스트 크기 증가 */
     margin-bottom: 1.5rem;
 }
 
@@ -335,35 +334,28 @@ iframe {
 .status-highlight {
     color: #6360ab;
     font-weight: bold;
-    font-size: 18px;
-    /* 강조된 텍스트 크기 증가 */
+    font-size: 18px; /* 강조된 텍스트 크기 증가 */
 }
 
 /* 라디오 버튼 옵션 정렬 */
 .status-options {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    /* 옵션 중앙 정렬 */
-    gap: 15px;
-    /* 옵션 간격 확대 */
-    font-size: 16px;
-    /* 라벨 크기 증가 */
+    align-items: center; /* 옵션 중앙 정렬 */
+    gap: 15px; /* 옵션 간격 확대 */
+    font-size: 16px; /* 라벨 크기 증가 */
 }
 
 /* 라디오 버튼 스타일 */
 .status-options input[type="radio"] {
-    transform: scale(1.5);
-    /* 버튼 크기 확대 */
-    margin-right: 10px;
-    /* 버튼과 라벨 간 간격 */
+    transform: scale(1.5); /* 버튼 크기 확대 */
+    margin-right: 10px; /* 버튼과 라벨 간 간격 */
 }
 
 /* 라벨 스타일 */
 .status-options label {
     cursor: pointer;
-    font-size: 18px;
-    /* 라벨 폰트 크기 증가 */
+    font-size: 18px; /* 라벨 폰트 크기 증가 */
 }
 
 /* 주요 버튼 스타일 */
