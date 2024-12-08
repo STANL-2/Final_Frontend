@@ -12,12 +12,34 @@
             </div>
             <InputText type="text" v-model="title" />
         </div>
-        <CKEditor 
-            v-if="content"
-            v-model="content" 
-            :initial-html="content"
-            @update:model-value="handleEditorUpdate" 
-        />
+        <div class="flex-row content-between">
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate"
+                ref="editorRef" />
+            <div class="p-20">
+                <Card
+                    style="width: 25rem; height: 37rem; overflow: visible; margin-top: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
+                    <template #title>수주서 선택</template>
+                    <Divider />
+                    <template #content>
+                        <div class="order-list" @scroll="onScroll" style="max-height: 32rem; overflow-y: auto;">
+                            <div v-for="order in orders" :key="order.id" class="order-item"
+                                :class="{ 'selected': selectedOrderId === order.id }" @click="selectOrder(order)"
+                                style="padding: 15px 10px; cursor: pointer;">
+                                <Typography>제목: {{ order.title }}</Typography>
+                                <Typography type="caption">{{ order.createdAt }}</Typography>
+                            </div>
+                            <div v-if="isLoading" style="text-align: center; padding: 10px;">
+                                <Typography type="caption">로딩 중...</Typography>
+                            </div>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+        </div>
+        <div class="flex-row content-between ml-l mr-xl">
+            <button class="custom-button" @click="openSignatureModal()">작성인 서명</button>
+        </div>
+        <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
 
         <template #footer>
             <CommonButton 
@@ -72,13 +94,10 @@ watch(
 
 const getDetailRequest = async () => {
     try {
-        console.log("purchaseOrderId: " + props.purchaseOrderId);
         const response = await $api.purchaseOrder.get('', props.purchaseOrderId);
-        console.log('계약서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -87,7 +106,6 @@ const getDetailRequest = async () => {
 
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
-            console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -103,8 +121,34 @@ const onUpdate = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const postData = extractDataFromHTML(content.value);
-        console.log("추출된 데이터:", postData);
+        const extractedData = extractDataFromHTML(content.value, writerSignature.value);
+
+        // initialHtml을 업데이트
+        const updatedInitialHtml = generateInitialHtml(extractedData);
+
+        const data = {
+            ...extractedData,
+            writerSignature: writerSignature.value,
+        };
+
+        // content에 반영
+        content.value = updatedInitialHtml;
+
+        const postData = {
+            title: extractedData.title, // 계약서 제목
+            orderId: extractedData.orderId, // 고객 성명
+            memberName: extractedData.memberName, // 고객 주민등록번호
+            createdAt: extractedData.createdAt, // 고객 주소
+            productName: extractedData.productName, // 고객 전화번호
+            numberOfVehicles: extractedData.numberOfVehicles, // 고객 이메일
+            vehiclePrice: extractedData.vehiclePrice, // 상호
+            totalSales: extractedData.totalSales, // 고객 구분
+            vehiclePrice1: extractedData.vehiclePrice1, // 상호
+            totalSales1: extractedData.totalSales1, // 고객 구분
+            centerName: extractedData.centerName, // 구매 조건
+            no: extractedData.no, // 구매 조건
+            content: content.value, // HTML 내용
+        };
         
         const response = await $api.purchaseOrder.put(
             postData,
@@ -124,19 +168,275 @@ const onUpdate = async () => {
 // CKEditor 내용에서 데이터를 추출하는 함수
 const extractDataFromHTML = (html) => {
     const parser = new DOMParser();
-    
+
     const doc = parser.parseFromString(html, "text/html");
+
+
+    const orderId = doc.querySelector(".orderId")?.innerText.trim() || "";
+    const no = doc.querySelector(".no")?.innerText.trim() || "";
+    const memberName = doc.querySelector(".memberName")?.innerText.trim() || "";
+    const createdAt = doc.querySelector(".createdAt")?.innerText.trim() || "";
+    const productName = doc.querySelector(".productName")?.innerText.trim() || "";
+    const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
+    const vehiclePrice = doc.querySelector(".vehiclePrice")?.innerText.trim() || "";
+    const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const writerSignature = doc.querySelector(".writer-signature-area")?.innerText.trim() || "(서명)";
 
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
-        content: html, // HTML 전체를 전송
+        orderId,
+        memberName,
+        createdAt,
+        productName,
+        numberOfVehicles,
+        vehiclePrice,
+        vehiclePrice1,
+        totalSales,
+        centerName,
+        writerSignature,
+        no,
+        content: html // HTML 전체를 전송
     };
 };
 
+const generateInitialHtml = (data) => {
+    return `
+        <!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>발주서</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px;">
+
+    <div style="width: 600px; border: 1px solid #000; padding: 20px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="margin: 0; font-size: 24px;">발 주 서</h1>
+        </div>
+
+        <div style="display: flex; justify-content: end; font-size: 14px; margin-bottom: 10px;">
+            <div>
+                <table
+                    style=" width: 20%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; margin-left: auto;">
+                    <tr style="background-color: #f0f0f0;">
+                        <td style="border: 1px solid #000; text-align: center; font-weight: bold;">작성</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 20px 40px; text-align: center;" id="writer-signature-area">
+                            ${
+                            data.writerSignature
+                                ? `<img src="${data.writerSignature}" alt="작성인 서명 이미지" style="width: 8rem; height: auto;">`
+                                : "(서명)"
+                        }
+                            </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 10px; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주일자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="createdAt">${data.createdAt || "-"}</td>
+                <td style="padding: 5px; border: 1px solid #000;">수주서 번호</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="orderId">${data.orderId || "-"}</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; border: 1px solid #000;">발주자</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="memberName">${data.memberName || "-"}</td>
+                <td style="padding: 5px; border: 1px solid #000;">영업 매장</td>
+                <td style="padding: 5px; border: 1px solid #000; width: 30%;" class="centerName">${data.centerName || "-"}</td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; font-size: 14px; margin-bottom: 20px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 1px solid #000;">No</th>
+                    <th style="padding: 10px; border: 1px solid #000;">품목</th>
+                    <th style="padding: 10px; border: 1px solid #000;">수량</th>
+                    <th style="padding: 10px; border: 1px solid #000;">단가</th>
+                    <th style="padding: 10px; border: 1px solid #000;">금액</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #000;" class="no">${data.no || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="productName">${data.productName || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="numberOfVehicles format-number">${data.numberOfVehicles || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice format-number">${data.vehiclePrice || "-"}</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="vehiclePrice1 format-number">${data.vehiclePrice1 || "-"}</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding: 10px; border: 1px solid #000; text-align: right;">합계</td>
+                    <td style="padding: 10px; border: 1px solid #000;" class="totalSales format-number">${data.totalSales || "-"}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="font-size: 12px; margin-top: 20px;">
+            <p style="margin: 5px 0;">* 특이사항: 없음</p>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 12px;">
+            <p style="margin: 5px 0; text-align: right;">감사합니다.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
+    `;
+};
+
+const orders = ref([]);
+const page = ref(1);
+const hasMoreOrders = ref(true);
+const isSignatureModalVisible = ref(false);
+const sortField = ref('orderDate'); // 정렬 기준 필드
+const sortOrder = ref('desc'); // 정렬 순서 (asc/desc)
+
+// 모달 열릴 때 초기 데이터 로드
+watch(() => props.visible, (newVal) => {
+    if (newVal) {
+        orders.value = []; // 기존 데이터 초기화
+        page.value = 1;
+        hasMoreOrders.value = true;
+        fetchOrders(); // 데이터 로드
+    }
+});
+
+const isLoading = ref(false); // 요청 상태
+
+const fetchOrders = async () => {
+    if (!hasMoreOrders.value || isLoading.value) return; // 요청 중이거나 데이터가 없으면 실행하지 않음
+
+    isLoading.value = true; // 요청 시작
+    try {
+        const query = {
+            page: page.value - 1,
+            size: 10,
+        };
+        const queryString = `?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString);
+
+        const response = await $api.order.getParams('center', queryString);
+        console.log("API 응답 데이터:", response);
+
+        const result = response?.result;
+        const orderData = result.content;
+        const totalPages = result.totalPages;
+
+        if (orderData.length) {
+            orders.value.push(...orderData);
+            page.value += 1;
+        }
+
+        if (page.value > totalPages) {
+            hasMoreOrders.value = false;
+        }
+    } catch (error) {
+        console.error('수주서 조회 중 오류 발생');
+    } finally {
+        isLoading.value = false; // 요청 종료
+    }
+};
+
+const editorRef = ref(null);
+const ignoreUpdates = ref(false);
+const selectedOrderId = ref(null);
+
+// 계약서 선택 시 CKEditor 업데이트
+const selectOrder = async (order) => {
+    selectedOrderId.value = order.orderId;
+
+    console.log("orderId: " + selectedOrderId.value);
+    // 서버에 상세조회 요청
+    const response = await $api.order.get(
+        '',
+        selectedOrderId.value
+    );
+
+    const orderDetail = response.result.contractId;
+
+    const response1 = await $api.contract.get(
+        '',
+        orderDetail
+    );
+
+    const contractDetails = response1.result;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, 'text/html'); // 현재 CKEditor 내용을 HTML로 파싱
+
+    const orderCell = doc.querySelector('.orderId');
+    const productNameCell = doc.querySelector(".productName");
+    const numberOfVehiclesCell = doc.querySelector(".numberOfVehicles");
+    const vehiclePriceCell = doc.querySelector(".vehiclePrice");
+    const vehiclePrice1Cell = doc.querySelector(".vehiclePrice1");
+    const totalSalesCell = doc.querySelector(".totalSales");
+
+    if (!orderCell) {
+        console.error("HTML 구조에 .orderId 셀을 찾을 수 없습니다.");
+        return;
+    }
+
+    // contractId 값 삽입
+    orderCell.textContent = order.orderId;
+    productNameCell.textContent = contractDetails.carName;
+    vehiclePriceCell.textContent = contractDetails.vehiclePrice;
+    numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
+    vehiclePrice1Cell.textContent = contractDetails.vehiclePrice;
+    totalSalesCell.textContent = contractDetails.totalSales;
+
+    // HTML 업데이트
+    const updatedHtml = doc.documentElement.outerHTML;
+
+    // CKEditor와 동기화
+    ignoreUpdates.value = true; // 업데이트 플래그 설정
+    content.value = updatedHtml; // content.value 업데이트
+};
+
+// 무한 스크롤 이벤트 핸들러
+const onScroll = (event) => {
+    const target = event.target;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
+        fetchOrders();
+    }
+};
+
+const formatNumbersInTable = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const tdElements = doc.querySelectorAll('td.format-number');
+
+    tdElements.forEach((td) => {
+        const text = td.textContent.trim();
+        if (!isNaN(text) && text !== '') {
+            const number = parseFloat(text);
+            td.textContent = new Intl.NumberFormat('en-US').format(number);
+        }
+    });
+
+    return doc.body.innerHTML;
+};
+
+// 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
-    content.value = newContent;
-    console.log("Editor content updated:", newContent);
+    if (ignoreUpdates.value) {
+        ignoreUpdates.value = false; // 플래그 초기화
+        return; // CKEditor 업데이트 중 발생한 호출 무시
+    }
+    const formattedContent = formatNumbersInTable(newContent);
+    content.value = formattedContent;
+    console.log('Editor content updated:', formattedContent);
 };
 
 function closeModal() {
@@ -145,6 +445,35 @@ function closeModal() {
     emit('update:visible', false);
     emit('close');
 }
+
+const openSignatureModal = () => {
+    isSignatureModalVisible.value = true;
+};
+
+const writerSignature = ref(null);
+
+const handleSignature = async (signatureImage) => {
+
+    if (!signatureImage.startsWith("data:image/")) {
+        console.error("잘못된 서명 이미지 데이터:", signatureImage);
+        return;
+    }
+
+    writerSignature.value = signatureImage;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content.value, "text/html");
+
+    const writerSignatureArea = doc.querySelector('#writer-signature-area');
+    if (writerSignature) {
+        writerSignatureArea.innerHTML = `<img src="${signatureImage}" alt="작성 서명 이미지" style="width: 6rem; height: auto;">`;
+    }
+
+    content.value = doc.documentElement.outerHTML; // 업데이트된 HTML 반영
+
+    isSignatureModalVisible.value = false; // 모달 닫기
+};
+
 </script>
 
 <style scoped>

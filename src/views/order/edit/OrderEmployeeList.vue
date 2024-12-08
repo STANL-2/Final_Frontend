@@ -50,12 +50,12 @@
             </ViewTable>
 
 
-            <OrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <OrderEmployeeDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
 
-        <OrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
+        <OrderEmployeeRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
 
         <!-- 모달 -->
         <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
@@ -95,12 +95,12 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import OrderDetail from '@/views/order/OrderDetail.vue';
+import OrderEmployeeDetail from './OrderEmployeeDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderRegister from './OrderRegister.vue';
+import OrderEmployeeRegister from '@/views/order/edit/OrderEmployeeRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -286,7 +286,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.order.getParams('search', queryString);
+        const response = await $api.order.getParams('employee/search', queryString);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
