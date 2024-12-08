@@ -22,9 +22,6 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <div>
-                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
-                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
@@ -76,7 +73,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'searchMemberName' ? row.centerName : row.centerName }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.memberId : row.memberId }}</td>
                         <td>{{ modalType === 'searchMemberName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -95,12 +92,11 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import OrderDDetail from '@/views/order/editer/OrderDDetail.vue';
+import OrderDDetail from '@/views/order/edit/OrderDDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderRegister from './OrderRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -113,7 +109,7 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '제목',
+            label: '수주서명',
             type: 'input',
             model: 'title',
             showDivider: false
@@ -286,7 +282,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.order.getParams('center/search', queryString);
+        const response = await $api.order.getParams('search', queryString);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);
@@ -457,9 +453,9 @@ const modalTableData = ref([]);
 
 const dynamicHeaders = computed(() => {
     if (modalType.value === 'searchMemberName') {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });

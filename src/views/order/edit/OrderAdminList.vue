@@ -50,7 +50,7 @@
             </ViewTable>
 
 
-            <OrderDDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <OrderAdminDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
@@ -76,7 +76,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'searchMemberName' ? row.centerName : row.centerName }}</td>
+                        <td>{{ modalType === 'searchMemberName' ? row.memberId : row.memberId }}</td>
                         <td>{{ modalType === 'searchMemberName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -95,7 +95,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import OrderDDetail from '@/views/order/edit/OrderDDetail.vue';
+import OrderAdminDetail from '@/views/order/edit/OrderAdminDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
@@ -113,7 +113,7 @@ const formFields = [
             showDivider: false
         },
         {
-            label: '제목',
+            label: '수주서명',
             type: 'input',
             model: 'title',
             showDivider: false
@@ -457,9 +457,9 @@ const modalTableData = ref([]);
 
 const dynamicHeaders = computed(() => {
     if (modalType.value === 'searchMemberName') {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });

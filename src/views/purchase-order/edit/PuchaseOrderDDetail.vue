@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;" @click="onClose">
+    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -71,7 +71,6 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderModify from './PuchaseOrderModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';

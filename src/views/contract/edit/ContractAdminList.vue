@@ -77,7 +77,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'centerName' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerName' ? row.centerId : row.memberId }}</td>
                         <td>{{ modalType === 'centerName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -185,9 +185,8 @@ const tableHeaders = ref([
     { field: 'title', label: '계약서명', width: '25%' },
     { field: 'carName', label: '제품명', width: '13%' },
     { field: 'customerName', label: '고객명', width: '13%' },
-    { field: 'customerClassifcation', label: '고객 구분', width: '10%' },
-    { field: 'customerPurchaseCondition', label: '구분 조건', width: '10%' },
-    { field: 'createdAt', label: '계약일자', width: '10%' },
+    { field: 'customerPurchaseCondition', label: '구매 조건', width: '10%' },
+    { field: 'createdAt', label: '계약일자', width: '15%' },
     { field: 'status', label: '승인 상태', width: '3%' },
 ]);
 
@@ -484,7 +483,7 @@ const dynamicHeaders = computed(() => {
     if (modalType.value === 'centerName') {
         return ['매장코드', '매장명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });
