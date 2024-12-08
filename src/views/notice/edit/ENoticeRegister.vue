@@ -10,31 +10,33 @@
             />
         </div>
 
-        <div class="select-container">
-            <label for="tag-select">태그</label>
-            <select id="tag-select" v-model="tag">
-                <option value="ALL">ALL</option>
-                <option value="ADMIN">ADMIN</option>
-                <option value="DIRECTOR">DIRECTOR</option>
-            </select>
+        <div class="selectors-container">
+            <div class="select-container">
+                <label for="tag-select">태그</label>
+                <select id="tag-select" v-model="tag">
+                    <option value="ALL">ALL</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="DIRECTOR">DIRECTOR</option>
+                </select>
+            </div>
+            <div class="select-container">
+                <label for="classification-select">분류</label>
+                <select id="classification-select" v-model="classification">
+                    <option value="NORMAL">NORMAL</option>
+                    <option value="GOAL">GOAL</option>
+                    <option value="STRATEGY">STRATEGY</option>
+                </select>
+            </div>
         </div>
 
-        <div class="select-container">
-            <label for="classification-select">분류</label>
-            <select id="classification-select" v-model="classification">
-                <option value="NORMAL">NORMAL</option>
-                <option value="GOAL">GOAL</option>
-                <option value="STRATEGY">STRATEGY</option>
-            </select>
+        <div class="file-upload-container">
+            <FileUpload 
+                label="파일 업로드" 
+                class="file-upload-input"
+                @file-selected="onFileSelected" 
+                @file-error="onFileError"
+            />
         </div>
-
-        <!-- FileUpload template에 적용  => 필요하면 class로 css 추가-->
-        <FileUpload 
-            label="파일 업로드" 
-            class="file-upload-input"
-            @file-selected="onFileSelected" 
-            @file-error="onFileError"
-        />
 
         <!-- CKEditor 필요한거 가져다가 쓰기 -->
         <CKEditor 
@@ -149,7 +151,7 @@ const onRegister = async () => {
 
 .title-container {
     margin-left: 2.4rem;
-    width: 905px;
+    width: 90.5rem;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
@@ -161,12 +163,41 @@ const onRegister = async () => {
 }
 
 .title-container input {
-    padding: 10px;
-    padding-left: 1rem;
+    padding: 8px;
+    padding-left: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
-    width: 100%;
+    width: 45%;
+}
+
+
+.selectors-container {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 2.4rem;
+    margin-bottom: 20px;
+    width: 40rem;
+    gap: 20px;
+}
+
+.select-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.select-container label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.select-container select {
+    padding: 3px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 50%;
 }
 
 .footer-buttons {
@@ -176,9 +207,10 @@ const onRegister = async () => {
     gap: 10px;
     margin-top: 5px;
 }
+.file-upload-container {
+    margin-left: 1.1rem;
+    width: 86%;
+}
 
-/* 본인에 맞게 upload 상자 커스텀 */
-/* .file-upload-input{
-    
-} */
+
 </style>
