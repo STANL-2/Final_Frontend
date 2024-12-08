@@ -12,6 +12,25 @@
                 />
             </div>
 
+            <div class="tag-container">
+                <label for="tag-select">태그</label>
+                <select id="tag-select" >
+                    <option value="ALL">ALL</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="DIRECTOR">DIRECTOR</option>
+                </select>
+            </div>
+
+            <div class="classification-container">
+                <label for="classification-select">분류</label>
+                <select id="classification-select" v-model="classification">
+                    <option value="NORMAL">NORMAL</option>
+                    <option value="GOAL">GOAL</option>
+                    <option value="STARETAGY">STARETAGY</option>
+                </select>
+            </div>
+
+
             <!-- 기존 파일 확인 및 새 파일 업로드 -->
             <div class="file-container">
                 <label>첨부 파일</label>
@@ -25,7 +44,6 @@
                     label="새 파일 업로드" 
                     @file-selected="onFileSelected" 
                     @file-error="onFileError"
-                    
                 />
             </div>
 
@@ -76,6 +94,8 @@ export default {
         const initialHtml = ref('');
         const currentFileName = ref(null);
         const file = ref(null);
+        const tag = ref('ALL');
+        const classification = ref('NORMAL');
 
         // 파일 선택 핸들러
         const onFileSelected = (selectedFile) => {
@@ -106,6 +126,8 @@ export default {
                 content.value = response.content || '';
                 initialHtml.value = response.content || '';
                 currentFileName.value = response.fileUrl || null;
+                tag.value = response.tag || 'ALL';
+                classification.value = response.classification || 'NORMAL';
             } catch (error) {
                 console.error('공지사항 로드 오류:', error);
                 alert('공지사항 정보를 불러오지 못했습니다.');
@@ -122,6 +144,8 @@ export default {
             const updateData = {
                 title: title.value.trim(),
                 content: content.value.trim(),
+                tag: tag.value,
+                classification: classification.value,
                 removeFile: !currentFileName.value && !file.value,  
                 fileUrl: currentFileName.value, 
             };
@@ -145,6 +169,8 @@ export default {
             initialHtml,
             currentFileName,
             file,
+            tag,
+            classification,
             onFileSelected,
             removeCurrentFile,
             onFileError,
@@ -162,6 +188,12 @@ export default {
     text-decoration: underline;  /* 링크에 밑줄 추가 */
 }
 
+
+.file-link {
+    color: blue;
+    text-decoration: underline;
+}
+
 .file-link:hover {
     color: darkblue;  /* 마우스 오버 시 링크 색상 변경 */
 }
@@ -174,10 +206,19 @@ export default {
 }
 
 .title-container,
+.tag-container,
+.classification-container,
 .file-container {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+}
+.title-container{
+    width:20rem;
+}
+.tag-container,
+.classification-container{
+    width:8rem;
 }
 
 .title-container label,
@@ -198,5 +239,10 @@ export default {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 8px;
 }
 </style>

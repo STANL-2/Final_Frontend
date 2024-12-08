@@ -2,7 +2,7 @@
     <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
-            <h1>상세 페이지</h1>
+            <h3>상세 페이지</h3>
         </div>
         <div class="detail-container width-xxxs ml-xl">
             <h2 class="notice-title mb-m">{{ promotionTitle }}</h2>
@@ -92,21 +92,6 @@ const getPromotion = async () => {
     }
 }
 
-// const deletePromotion = async () => {
-//     try {
-//         const response = await $api.promotion.delete(
-//             promotionId
-//         );
-//         console.log(promotionId);
-//         console.log(response.status)
-//         alert('공지사항이 삭제되었습니다.');
-//         router.back();
-//     } catch (error) {
-//         console.log(promotionId);
-//         console.error('삭제 중 오류 발생:', error);
-//         alert('삭제에 실패했습니다.');
-//     }
-// };
 
 function deleteModal() {
     confirm.require({
@@ -158,12 +143,14 @@ onMounted(() => {
 
 <style scoped>
 .bottom-section {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    position: static; /* Fixed 제거 */
+    margin-top: 2rem; /* Content 아래에 여유 공간 추가 */
+    width: 100%; /* 부모 컨테이너에 맞춤 */
     background-color: #fff;
     padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 
@@ -180,10 +167,11 @@ onMounted(() => {
 }
 
 .file-section {
-    width: 70%;
+    width: 94%;
+    margin-right:12.5rem
 }
 
-.file-table {
+.file-table {    
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
@@ -203,14 +191,18 @@ onMounted(() => {
 
 .button-section {
     display: flex;
-    justify-content: space-between;
-    width: 70%;
+    justify-content: space-between; /* 양쪽 정렬 */
+    align-items: center;
+    width: 100%; /* 부모 컨테이너의 너비에 맞춤 */
+    margin-top: 1rem;
+    margin-right:13.8rem;
 }
 
 .right-buttons {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
+    margin-right: 1rem;
 }
 
 .button {
@@ -243,7 +235,6 @@ onMounted(() => {
 
 .content-container {
     max-width: 50rem;
-    max-height: 500px;
     overflow: auto;
     padding: 1rem;
     border: 1px solid #ddd;

@@ -1,18 +1,15 @@
 <template>
     <PageLayout>
-        <!-- SearchForm -->
         <div class="search-wrapper">
             <div class="flex-row content-end">
                 <div class="ml-l">
-                    <div class="ml-xs"><div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div></div>
+                    <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
                 </div>
                 <div class="search-button-wrapper ml-s">
                     <CommonButton label="조회" @click="handleSearch"/>
                 </div>
             </div>
-            <div class="search-fields">
-                <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-            </div>
+            <SearchForm class="mb-l":fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
         <div class="flex-row content-between mt-m">
             <div class="title-pos">
@@ -219,6 +216,7 @@ const handleSearch = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
+        console.log("response"+response);
         const params = new URLSearchParams();
         
         // 기본 파라미터 설정
@@ -239,6 +237,8 @@ const loadData = async () => {
         // 받은 데이터 처리
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
+        console.log("response"+response);
+    
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     } finally {

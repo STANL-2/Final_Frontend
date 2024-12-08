@@ -1,7 +1,6 @@
 <template>
     <PageLayout>
-        <!-- SearchForm -->
-        <div class="component-wrapper">
+        <div class="search-wrapper">
             <div class="flex-row content-end">
                 <div class="ml-l">
                     <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
@@ -12,7 +11,7 @@
             </div>
             <SearchForm class="mb-l":fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
-        <div class="flex-row content-between mt-xxxxl">
+        <div class="flex-row content-between mt-l">
             <div class="title-pos">
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
