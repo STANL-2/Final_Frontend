@@ -2,18 +2,20 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="flex-row head">
 
+            <div class="top">
                 <div class="path">
                     <PagePath />
                 </div>
+                <div class="flex-row head">
 
-                <div class="ml-l">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
-                </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="select" />
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
                 </div>
             </div>
             <div class="search-fields">
@@ -519,11 +521,17 @@ function handleOpenModal(fieldIndex) {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
 .path {
-    margin-right: 490px; /* 나머지 요소를 오른쪽으로 밀어냄 */
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
     margin-bottom: 10px;
     display: flex;
-    align-items: center; /* 수직 중앙 정렬 */
 }
 
 table {
