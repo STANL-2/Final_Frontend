@@ -12,6 +12,27 @@
                 />
             </div>
 
+            <div class="selectors-container">
+                <div class="tag-container">
+                    <label for="tag-select">태그</label>
+                    <select id="tag-select" >
+                        <option value="ALL">ALL</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="DIRECTOR">DIRECTOR</option>
+                    </select>
+                </div>
+
+                <div class="classification-container">
+                    <label for="classification-select">분류</label>
+                    <select id="classification-select" v-model="classification">
+                        <option value="NORMAL">NORMAL</option>
+                        <option value="GOAL">GOAL</option>
+                        <option value="STARETAGY">STARETAGY</option>
+                    </select>
+                </div>
+            </div>   
+
+
             <!-- 기존 파일 확인 및 새 파일 업로드 -->
             <div class="file-container">
                 <label>첨부 파일</label>
@@ -19,13 +40,14 @@
                     <p>현재 파일: 
                             <a :href="currentFileName" target="_blank" rel="noopener noreferrer" class="file-link">{{ currentFileName }}</a>
                     </p>
+                    <div class="file-delete">
                     <button @click="removeCurrentFile">파일 삭제</button>
+                    </div>
                 </div>
                 <FileUpload 
                     label="새 파일 업로드" 
                     @file-selected="onFileSelected" 
                     @file-error="onFileError"
-                    
                 />
             </div>
 
@@ -76,6 +98,8 @@ export default {
         const initialHtml = ref('');
         const currentFileName = ref(null);
         const file = ref(null);
+        const tag = ref('ALL');
+        const classification = ref('NORMAL');
 
         // 파일 선택 핸들러
         const onFileSelected = (selectedFile) => {
@@ -106,6 +130,8 @@ export default {
                 content.value = response.content || '';
                 initialHtml.value = response.content || '';
                 currentFileName.value = response.fileUrl || null;
+                tag.value = response.tag || 'ALL';
+                classification.value = response.classification || 'NORMAL';
             } catch (error) {
                 console.error('공지사항 로드 오류:', error);
                 alert('공지사항 정보를 불러오지 못했습니다.');
@@ -122,6 +148,8 @@ export default {
             const updateData = {
                 title: title.value.trim(),
                 content: content.value.trim(),
+                tag: tag.value,
+                classification: classification.value,
                 removeFile: !currentFileName.value && !file.value,  
                 fileUrl: currentFileName.value, 
             };
@@ -145,6 +173,8 @@ export default {
             initialHtml,
             currentFileName,
             file,
+            tag,
+            classification,
             onFileSelected,
             removeCurrentFile,
             onFileError,
@@ -162,6 +192,12 @@ export default {
     text-decoration: underline;  /* 링크에 밑줄 추가 */
 }
 
+
+.file-link {
+    color: blue;
+    text-decoration: underline;
+}
+
 .file-link:hover {
     color: darkblue;  /* 마우스 오버 시 링크 색상 변경 */
 }
@@ -172,12 +208,53 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+.file-delete{
+    white-space: nowrap;
+}
 
 .title-container,
+.tag-container,
+.classification-container,
 .file-container {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+    padding-left:35px;
+    
+}
+.title-container{
+    width:30rem;
+}
+.tag-container{
+    width:8rem;
+}
+
+.classification-container{
+    width:8rem;
+    margin-left:100px;
+}
+
+select {
+    padding: 2px; /* 선택 칸 내부 여백 추가 */
+    font-size: 14px; /* 글씨 크기 */
+    border-radius: 4px; /* 모서리 둥글게 */
+    box-sizing: border-box; /* 패딩이 전체 크기에 포함되도록 설정 */
+}
+
+.title-container input {
+    padding: 8px;
+    padding-left: 0.5rem;
+    border: 1px solid #b3b1b1;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 40rem;
+}
+
+.selectors-container {
+    display: flex;
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    gap: 10px; /* 태그와 분류 사이 간격 */
+    width: 60%;
 }
 
 .title-container label,
@@ -186,6 +263,12 @@ export default {
     margin-bottom: 8px;
 }
 
+.file-container{
+    width:96%;
+}
+.title-input{
+    padding: 4px;
+}
 .current-file {
     display: flex;
     align-items: center;
@@ -198,5 +281,27 @@ export default {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+.main-container{
+    padding:0px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+#tag-select{
+    padding: 3px;
+    width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+#classification-select{
+    padding: 3px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width:150px;
 }
 </style>

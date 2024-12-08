@@ -2,13 +2,19 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="flex-row">
-                <div class="ml-l">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
                 </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="select" />
+                <div class="flex-row">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
                 </div>
             </div>
             <div class="search-fields">
@@ -77,7 +83,7 @@
                 <tbody>
                     <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
                         :class="{ selected: selectedRow === index }">
-                        <td>{{ modalType === 'centerName' ? row.centerId : row.centerName }}</td>
+                        <td>{{ modalType === 'centerName' ? row.centerId : row.memberId }}</td>
                         <td>{{ modalType === 'centerName' ? row.name : row.name }}</td>
                     </tr>
                 </tbody>
@@ -102,6 +108,7 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import EContractRegister from './EContractRegister.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -476,7 +483,7 @@ const dynamicHeaders = computed(() => {
     if (modalType.value === 'centerName') {
         return ['매장코드', '매장명'];
     } else {
-        return ['영업매장', '사원명'];
+        return ['사원코드', '사원명'];
     }
     return [];
 });
@@ -592,6 +599,20 @@ async function searchStore() {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

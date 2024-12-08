@@ -18,6 +18,7 @@
                         <template v-else-if="field.type === 'select'">
                             <div class="select-container">
                                 <select v-model="formData[field.model]" class="form-select">
+                                    <option value="" disabled selected>선택</option>
                                     <option v-for="(option, idx) in field.options" :key="idx" :value="option">
                                         {{ option }}
                                     </option>

@@ -59,6 +59,7 @@ import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import Typography from '@/components/Typography.vue';
 import SignatureModal from '@/components/common/signatureCanvas/SignatureModal.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
+import { useToast } from 'primevue/usetoast';
 
 // 부모에서 전달받는 props
 const props = defineProps({
@@ -68,8 +69,25 @@ const props = defineProps({
     },
 });
 
+const validateForm = () => {
+    if (!title.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '수주서 제목을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    if (!writerSignature.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '작성인 서명을 추가해주세요.', life: 3000 });
+        return false;
+    }
+    if (!content.value || content.value.trim() === initialHtml.trim()) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '수주 내용을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    return true;
+};
+
 // 부모 컴포넌트로 상태를 전달하는 emit
 const emit = defineEmits(['update:visible', 'close']);
+const toast = useToast();
 
 // 내부 상태 변수
 const isVisible = ref(props.visible);
@@ -384,7 +402,7 @@ const selectContract = async (contract) => {
     serialNoCell.textContent = contractDetails.serialNum;
     carNameCell.textContent = contractDetails.carName;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
     stockCell.textContent = 14;
 
 
@@ -441,6 +459,11 @@ const onRegister = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
+        // 유효성 검사
+        if (!validateForm()) {
+            return; // 검사 실패 시 함수 종료
+        }
+
         // CKEditor의 현재 HTML 내용 추출
         const extractedData = extractDataFromHTML(content.value, writerSignature.value);
 
@@ -464,7 +487,7 @@ const onRegister = async () => {
 
         const response = await $api.order.post(postData, "");
 
-        alert("수주서가 성공적으로 등록되었습니다.");
+        toast.add({ severity: 'success', summary: '등록 완료', detail: '수주서가 성공적으로 등록되었습니다.', life: 3000 });
 
         // 필드 초기화
         title.value = "";
@@ -475,7 +498,7 @@ const onRegister = async () => {
         closeModal();
     } catch (error) {
         console.error("등록 중 오류:", error);
-        alert("등록 중 문제가 발생했습니다: " + error.message);
+        toast.add({ severity: 'error', summary: '등록 실패', detail: `등록 중 문제가 발생했습니다: ${error.message}`, life: 3000 });
     }
 };
 

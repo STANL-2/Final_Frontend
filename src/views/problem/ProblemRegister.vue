@@ -31,12 +31,14 @@
         </div>
 
         <!-- FileUpload template에 적용  => 필요하면 class로 css 추가-->
-        <FileUpload 
-            label="파일 업로드" 
-            class="file-upload-input"
-            @file-selected="onFileSelected" 
-            @file-error="onFileError"
-        />
+        <div class="fileup">
+            <FileUpload 
+                label="파일 업로드" 
+                class="file-upload-input"
+                @file-selected="onFileSelected" 
+                @file-error="onFileError"
+            />
+        </div>
 
         <!-- CKEditor 필요한거 가져다가 쓰기 -->
         <CKEditor 
@@ -179,8 +181,25 @@ const onRegister = async () => {
     margin-top: 5px;
 }
 
-/* 본인에 맞게 upload 상자 커스텀 */
-/* .file-upload-input{
-    
-} */
+.info-container {
+    margin-left: 2.4rem;
+    width: 200px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+}
+.info-container input{
+    padding:10px;
+    font-size:16px;
+    border: 1px solid #ddd;
+    padding-left: 1rem;
+    border-radius: 4px;
+}
+.fileup{
+    margin-left: 2.4rem;
+    width: 905px;
+    margin-bottom: 20px;
+
+}
 </style>    

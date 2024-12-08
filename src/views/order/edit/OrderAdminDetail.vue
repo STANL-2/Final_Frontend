@@ -16,6 +16,12 @@
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
                 </div>
+                <div class="ml-xs">
+                    <CommonButton label="수정" @click="openModifyModal" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
+                </div>
             </div>
         </div>
         <div id="printMe">
@@ -63,7 +69,7 @@
         </template>
     </Modal>
 
-    <OrderModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
+    <OrderAdminModify v-model:visible="showModifyModal" :order-id="getDetailId" @close="closeModifyModal" />
 </template>
 
 <script setup>
@@ -71,7 +77,7 @@ import { ref, watch, defineProps, defineEmits } from 'vue';
 import Modal from '@/components/common/Modal.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import OrderModify from '@/views/order/OrderModify.vue';
+import OrderAdminModify from '@/views/order/edit/OrderAdminModify.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from 'primevue/confirmdialog';

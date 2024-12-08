@@ -1,6 +1,24 @@
 <template>
-    <div>
-        <h2 class="title">개발자 도구</h2>
+    <PageLayout>
+
+        <div class="search-wrapper">
+            <div class="top">
+                <div class="path">
+                    <PagePath />
+                </div>
+                <div class="flex-row head">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <textarea v-model="inputData" @keydown.enter.prevent="handleEnter" placeholder="여러 줄 입력 후 엔터를 누르세요" rows="10"
             class="textarea"></textarea>
 
@@ -25,11 +43,14 @@
 
         <!-- 변환된 MyBatis XML 출력 -->
         <pre class="xml-output">{{ generatedXml }}</pre>
-    </div>
+    </PageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import PageLayout from '@/components/common/layouts/PageLayout.vue';
+import PagePath from '@/components/common/PagePath.vue';
+import CommonButton from '@/components/common/Button/CommonButton.vue';
 
 const headers = ref(['Table', 'Entity', 'Query']);
 const rows = ref([]);
@@ -87,6 +108,47 @@ const handleEnter = () => {
     inputData.value = '';
 };
 
+const select = () => {
+    const lines = inputData.value.trim().split('\n');
+    rows.value = []; // 이전 데이터를 초기화
+
+    let currentColumn = '';
+
+    lines.forEach(line => {
+        const input = line.trim();
+
+        if (input) {
+            let tableName, entity, query;
+
+            if (input.startsWith('@Column')) {
+                const columnNameMatch = input.match(/name = \"(\w+)"/);
+                if (columnNameMatch) {
+                    currentColumn = columnNameMatch[1];
+                }
+            } else if (input.startsWith('private')) {
+                const entityMatch = input.match(/private \w+ (\w+);/);
+                if (!entityMatch) {
+                    const entityWithDefaultMatch = input.match(/private \w+ (\w+) = .+;/);
+                    entity = entityWithDefaultMatch ? entityWithDefaultMatch[1] : null;
+                } else {
+                    entity = entityMatch[1];
+                }
+                if (entity) {
+                    tableName = currentColumn;
+                    query = `A.${tableName}`;
+                    rows.value.push([tableName, entity, query]);
+                }
+            }
+        }
+    });
+
+    // SELECT 쿼리 및 XML 생성
+    generateQueryOutput();
+    generateXmlOutput();
+
+    console.log("조회가 완료되었습니다.");
+};
+
 // Entity에서 Table 이름으로 변환하는 함수
 const convertToTableName = (entity) => {
     return entity
@@ -119,11 +181,39 @@ const generateXmlOutput = () => {
         generatedXml.value = '';
     }
 };
+
+const refresh = () => {
+    inputData.value = ''; // 텍스트 초기화
+    rows.value = []; // 테이블 데이터 초기화
+    generatedQuery.value = ''; // 생성된 SELECT 쿼리 초기화
+    generatedXml.value = ''; // 생성된 XML 초기화
+};
 </script>
 
 <style scoped>
-.title {
-    margin-bottom: 24px;
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
 }
 
 .textarea {

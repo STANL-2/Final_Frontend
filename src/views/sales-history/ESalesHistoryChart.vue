@@ -1,8 +1,15 @@
 <template>
     <PageLayout>
         <div class="component-wrapper">
-            <div class="button-row">
-                <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh" />
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
+                </div>
+                <div class="button-row">
+                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                        @click="refresh" />
+                </div>
             </div>
             <!-- 첫 번째 행: 검색 조건 -->
             <SSearchForm :fields="[firstRowFields]" ref="searchFormRef" />
@@ -36,6 +43,7 @@ import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const firstRowFields = ref([
@@ -553,6 +561,23 @@ const orderByValue = (saveButton) => {
 </script>
 
 <style scoped>
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

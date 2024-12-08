@@ -50,6 +50,7 @@ import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import Typography from '@/components/Typography.vue';
 import SignatureModal from '@/components/common/signatureCanvas/SignatureModal.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
+import { useToast } from 'primevue/usetoast';
 
 // 부모에서 전달받는 props
 const props = defineProps({
@@ -59,8 +60,25 @@ const props = defineProps({
     },
 });
 
+const validateForm = () => {
+    if (!title.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '발주서 제목을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    if (!writerSignature.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '작성인 서명을 추가해주세요.', life: 3000 });
+        return false;
+    }
+    if (!content.value || content.value.trim() === initialHtml.trim()) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '발주 내용을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    return true;
+};
+
 // 부모 컴포넌트로 상태를 전달하는 emit
 const emit = defineEmits(['update:visible', 'close']);
+const toast = useToast();
 
 // 내부 상태 변수
 const isVisible = ref(props.visible);
@@ -325,7 +343,7 @@ const fetchOrders = async () => {
         const queryString = `?${new URLSearchParams(query).toString()}`;
         console.log("API 호출 URL:", queryString);
 
-        const response = await $api.order.getParams('', queryString);
+        const response = await $api.order.getParams('center', queryString);
         console.log("API 응답 데이터:", response);
 
         const result = response?.result;
@@ -355,7 +373,6 @@ const selectedOrderId = ref(null);
 const selectOrder = async (order) => {
     selectedOrderId.value = order.orderId;
 
-    console.log("orderId: " + selectedOrderId.value);
     // 서버에 상세조회 요청
     const response = await $api.order.get(
         '',
@@ -365,7 +382,7 @@ const selectOrder = async (order) => {
     const orderDetail = response.result.contractId;
 
     const response1 = await $api.contract.get(
-        'center',
+        '',
         orderDetail
     );
 
@@ -392,7 +409,7 @@ const selectOrder = async (order) => {
     vehiclePriceCell.textContent = contractDetails.vehiclePrice;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
     vehiclePrice1Cell.textContent = contractDetails.vehiclePrice;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
 
     // HTML 업데이트
     const updatedHtml = doc.documentElement.outerHTML;
@@ -443,11 +460,11 @@ const onRegister = async () => {
     try {
         console.log("Current editor content:", content.value);
 
-        if (!content.value) {
-            throw new Error("에디터 내용이 비어 있습니다.");
+        // 유효성 검사
+        if (!validateForm()) {
+            return; // 검사 실패 시 함수 종료
         }
 
-        // CKEditor의 현재 HTML 내용 추출
         const extractedData = extractDataFromHTML(content.value, writerSignature.value);
 
         const data = {
@@ -455,43 +472,38 @@ const onRegister = async () => {
             writerSignature: writerSignature.value,
         };
 
-        // initialHtml을 업데이트
         const updatedInitialHtml = generateInitialHtml(data);
-
-        // content에 반영
         content.value = updatedInitialHtml;
 
         const postData = {
-            title: extractedData.title, // 계약서 제목
-            orderId: extractedData.orderId, // 고객 성명
-            memberName: extractedData.memberName, // 고객 주민등록번호
-            createdAt: extractedData.createdAt, // 고객 주소
-            productName: extractedData.productName, // 고객 전화번호
-            numberOfVehicles: extractedData.numberOfVehicles, // 고객 이메일
-            vehiclePrice: extractedData.vehiclePrice, // 상호
-            totalSales: extractedData.totalSales, // 고객 구분
-            vehiclePrice1: extractedData.vehiclePrice1, // 상호
-            totalSales1: extractedData.totalSales1, // 고객 구분
-            centerName: extractedData.centerName, // 구매 조건
-            no: extractedData.no, // 구매 조건
-            content: content.value, // HTML 내용
+            title: extractedData.title,
+            orderId: extractedData.orderId,
+            memberName: extractedData.memberName,
+            createdAt: extractedData.createdAt,
+            productName: extractedData.productName,
+            numberOfVehicles: extractedData.numberOfVehicles,
+            vehiclePrice: extractedData.vehiclePrice,
+            totalSales: extractedData.totalSales,
+            vehiclePrice1: extractedData.vehiclePrice1,
+            totalSales1: extractedData.totalSales1,
+            centerName: extractedData.centerName,
+            no: extractedData.no,
+            content: content.value,
         };
-
 
         const response = await $api.purchaseOrder.post(postData, "");
 
-        alert("발주서가 성공적으로 등록되었습니다.");
+        toast.add({ severity: 'success', summary: '등록 완료', detail: '발주서가 성공적으로 등록되었습니다.', life: 3000 });
 
-        // 필드 초기화
         title.value = "";
-        content.value = initialHtml; // 에디터 초기화
-        isVisible.value = false; // 모달 닫기
-        emit('update:visible', false); // 부모에 모달 상태 전달
-        emit('refresh'); // 부모에 데이터 갱신 요청
+        content.value = initialHtml;
+        isVisible.value = false;
+        emit('update:visible', false);
+        emit('refresh');
         closeModal();
     } catch (error) {
         console.error("등록 중 오류:", error);
-        alert("등록 중 문제가 발생했습니다: " + error.message);
+        toast.add({ severity: 'error', summary: '등록 실패', detail: `등록 중 문제가 발생했습니다: ${error.message}`, life: 3000 });
     }
 };
 
