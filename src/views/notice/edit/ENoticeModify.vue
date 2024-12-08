@@ -260,7 +260,7 @@ select {
 }
 
 .file-container{
-    width:90%;
+    width:96%;
 }
 .title-input{
     padding: 4px;
