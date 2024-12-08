@@ -163,12 +163,12 @@ const onRegister = async () => {
 }
 
 .title-container input {
-    padding: 6px;
+    padding: 8px;
     padding-left: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
-    width: 50%;
+    width: 45%;
 }
 
 

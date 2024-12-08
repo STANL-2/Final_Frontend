@@ -40,7 +40,9 @@
                     <p>현재 파일: 
                             <a :href="currentFileName" target="_blank" rel="noopener noreferrer" class="file-link">{{ currentFileName }}</a>
                     </p>
+                    <div class="file-delete">
                     <button @click="removeCurrentFile">파일 삭제</button>
+                    </div>
                 </div>
                 <FileUpload 
                     label="새 파일 업로드" 
@@ -206,6 +208,9 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+.file-delete{
+    white-space: nowrap;
+}
 
 .title-container,
 .tag-container,
@@ -215,20 +220,37 @@ export default {
     display: flex;
     flex-direction: column;
     padding-left:35px;
+    
 }
 .title-container{
-    width:20rem;
+    width:30rem;
 }
 .tag-container,
 .classification-container{
     width:8rem;
 }
 
+select {
+    padding: 2px; /* 선택 칸 내부 여백 추가 */
+    font-size: 14px; /* 글씨 크기 */
+    border-radius: 4px; /* 모서리 둥글게 */
+    box-sizing: border-box; /* 패딩이 전체 크기에 포함되도록 설정 */
+}
+
+.title-container input {
+    padding: 8px;
+    padding-left: 0.5rem;
+    border: 1px solid #b3b1b1;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 40rem;
+}
+
 .selectors-container {
     display: flex;
-    justify-content: space-between;
-    width: 50%;
-    gap: 20px;
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    gap: 10px; /* 태그와 분류 사이 간격 */
+    width: 60%;
 }
 
 .title-container label,
@@ -240,8 +262,9 @@ export default {
 .file-container{
     width:90%;
 }
-
-
+.title-input{
+    padding: 4px;
+}
 .current-file {
     display: flex;
     align-items: center;
@@ -254,6 +277,9 @@ export default {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+.main-container{
+    padding:0px;
 }
 
 label {
