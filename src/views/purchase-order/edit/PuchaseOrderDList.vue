@@ -22,9 +22,6 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <div>
-                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
-                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows"/>
                 </div>
@@ -51,12 +48,10 @@
             </ViewTable>
 
 
-            <PuchaseOrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <PuchaseOrderDDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)"/>
         </div>
-
-        <PuchaseOrderRegister v-model:visible="showRegisterModal" @close="closeRegisterModal" @refresh="loadData" />
         <!-- 모달 -->
         <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
             height="none" @confirm="confirmSelection" @cancel="resetModalState">
@@ -95,12 +90,11 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import PuchaseOrderDetail from '@/views/purchase-order/PuchaseOrderDetail.vue';
+import PuchaseOrderDDetail from './PuchaseOrderDDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PuchaseOrderRegister from '@/views/purchase-order/PuchaseOrderRegister.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -408,16 +402,6 @@ function onFilter(event) {
 
 // 등록 모달 상태 변수
 const showRegisterModal = ref(false);
-
-// 등록 버튼 클릭 시 모달 열기
-function openRegisterModal() {
-    showRegisterModal.value = true;
-}
-
-// 모달 닫기
-function closeRegisterModal() {
-    showRegisterModal.value = false;
-}
 
 watch(showRegisterModal, (newValue) => {
     console.log('showRegisterModal 상태 변경:', newValue);

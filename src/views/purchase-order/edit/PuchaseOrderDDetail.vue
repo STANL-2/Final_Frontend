@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
+    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;" @click="onClose">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -15,12 +15,6 @@
             <div class="flex-row content-end">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="수정" @click="openModifyModal" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="삭제" color="#F1F1FD" textColor="#6360AB" @click="deleteModal" />
                 </div>
             </div>
         </div>
@@ -208,45 +202,9 @@ function printIframeContent() {
     }
 }
 
-// 수정 버튼 클릭 시 모달 열기
-function openModifyModal() {
-    showModifyModal.value = true;
-}
-
 // 모달 닫기
 function closeModifyModal() {
     showModifyModal.value = false;
-}
-
-// 삭제 버튼 클릭 시 확인 다이얼로그 호출
-function deleteModal() {
-    confirm.require({
-        message: '이 계약서를 삭제하시겠습니까?',
-        header: '삭제 확인',
-        icon: 'pi pi-exclamation-circle',
-        rejectLabel: '취소',
-        acceptLabel: '삭제',
-        rejectClass: 'p-button-secondary p-button-outlined',
-        acceptClass: 'p-button-help',
-        accept: async () => {
-            try {
-                if (!getDetailId.value) {
-                    throw new Error("purchaseOrderId가 없습니다.");
-                }
-
-                await $api.purchaseOrder.delete(getDetailId.value);
-                toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
-                emit('refresh');
-                emit('update:modelValue', false); // 모달 닫기
-            } catch (error) {
-                console.error('삭제 요청 실패:', error);
-                toast.add({ severity: 'error', summary: '실패', detail: '삭제에 실패했습니다. 다시 시도해주세요.', life: 3000 });
-            }
-        },
-        reject: () => {
-            toast.add({ severity: 'info', summary: '취소됨', detail: '삭제 작업이 취소되었습니다.', life: 3000 });
-        }
-    });
 }
 
 </script>

@@ -280,6 +280,14 @@ const routes = [
                 path: 'emmodify',
                 component: () => import('@/views/order/edit/OrderEmployeeModify.vue')
             },
+            {
+                path: 'dmodify',
+                component: () => import('@/views/order/edit/OrderAdminModify.vue')
+            },
+            {
+                path: 'dregister',
+                component: () => import('@/views/order/edit/OrderAdminRegister.vue')
+            }
         ]
     },
     {

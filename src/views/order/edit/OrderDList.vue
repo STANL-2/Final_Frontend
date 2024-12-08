@@ -50,7 +50,7 @@
             </ViewTable>
 
 
-            <OrderDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <OrderDDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
@@ -95,7 +95,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import OrderDetail from '@/views/order/OrderDetail.vue';
+import OrderDDetail from '@/views/order/editer/OrderDDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
@@ -286,7 +286,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.order.getParams('search', queryString);
+        const response = await $api.order.getParams('center/search', queryString);
 
         // API 응답 데이터 확인
         console.log("API 응답 데이터:", response);

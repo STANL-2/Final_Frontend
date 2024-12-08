@@ -94,13 +94,10 @@ watch(
 
 const getDetailRequest = async () => {
     try {
-        console.log("purchaseOrderId: " + props.purchaseOrderId);
         const response = await $api.purchaseOrder.get('', props.purchaseOrderId);
-        console.log('계약서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -109,7 +106,6 @@ const getDetailRequest = async () => {
 
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
-            console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -326,13 +322,11 @@ const fetchOrders = async () => {
         const query = {
             page: page.value - 1,
             size: 10,
-            sortField: sortField.value,
-            sortOrder: sortOrder.value,
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
         console.log("API 호출 URL:", queryString);
 
-        const response = await $api.order.getParams('', queryString);
+        const response = await $api.order.getParams('center', queryString);
         console.log("API 응답 데이터:", response);
 
         const result = response?.result;
