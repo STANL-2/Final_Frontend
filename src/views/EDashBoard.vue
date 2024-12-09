@@ -1,14 +1,14 @@
 <template>
     <main class="dashboard">
         <div class="summary-cards">
-            <DashBoardCard class="summary-card custom-summary-card" @click="navigateToUrl('/contract/Elist')">
+            <DashBoardCard class="summary-card custom-summary-card" @click="navigateToUrl('/contract/emlist')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">📄</div>
                     <div class="summary-title">이번달 계약 건수</div>
                 </div>
                 <div class="summary-value">{{ contractCount }}건</div>
             </DashBoardCard>
-            <DashBoardCard class="summary-card" @click="navigateToUrl('/order/adList')">
+            <DashBoardCard class="summary-card" @click="navigateToUrl('/order/emList')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">📋</div>
                     <div class="summary-title">이번달 수주 건수</div>
@@ -22,11 +22,12 @@
                 </div>
                 <div class="summary-value">{{ formattedThisMonthSales }}원</div>
             </DashBoardCard>
-            <DashBoardCard class="summary-card" @click="navigateToUrl('/purchase-order/adlist')">
-                <div class="customer-info">
-                    <div class="content-title">이번달 고객 순위</div>
-                    <CustomerRank :customers="customers" class="customer-content" />
+            <DashBoardCard class="summary-card" @click="navigateToUrl('/schedule')">
+                <div class="summary-icon-and-title">
+                    <div class="summary-icon">📆</div>
+                    <div class="summary-title">오늘 일정 수</div>
                 </div>
+                <div class="summary-value">{{ todayScheduleCount }}건</div>
             </DashBoardCard>
         </div>
 
@@ -90,11 +91,12 @@ import { $api } from '@/services/api/api';
 // New reactive references for summary cards
 const contractCount = ref(0);
 const orderReceiptCount = ref(0);
-const purchaseOrderCount = ref(0);
 const thisMonthSales = ref(0);
 const announcements = ref([]);
 const newsArticles = ref([]);
 const customers = ref([]);
+const todaySchedule = ref(null);
+const todayScheduleCount = ref(0);
 
 const chartData = ref([]);
 const loading = ref(false);
@@ -122,7 +124,7 @@ const fetchDashBoardInfo = async () => {
 
     try {
         const response = await $api.dashBoard.get(
-            'admin',
+            'employee',
             ''
         );
 
@@ -132,7 +134,7 @@ const fetchDashBoardInfo = async () => {
             const {
                 unreadContract,
                 unreadOrder,
-                unreadPurchaseOrder,
+                scheduleTitle,
                 memberList,
                 totalPrice,
                 noticeList
@@ -140,8 +142,8 @@ const fetchDashBoardInfo = async () => {
 
             contractCount.value = unreadContract || 0;
             orderReceiptCount.value = unreadOrder || 0;
-            purchaseOrderCount.value = unreadPurchaseOrder || 0;
             thisMonthSales.value = totalPrice || 0;
+            todayScheduleCount.value = scheduleTitle.length;
             customers.value = Object.values(memberList || {}).map((name, index) => ({
                 id: index,
                 name: name
@@ -154,12 +156,11 @@ const fetchDashBoardInfo = async () => {
                 content: notice.content
             })) || [];
 
-            console.log("announcements", announcements.value);
+            console.log("schedule", todayScheduleCount.value);
         }
     } catch (error) {
         console.error("Error fetching dashboard data:", error);
     }
-
 }
 
 const bigCardChartData = ref({
@@ -287,11 +288,6 @@ const loadData = async () => {
                     },
                 ],
             };
-
-            console.log("bigCardChartData:", bigCardChartData.value);
-            console.log("secondChartData:", secondChartData.value);
-            console.log("thirdChartData:", thirdChartData.value);
-
 
         } else {
             console.warn("API 응답이 예상한 구조와 다릅니다:", response);
