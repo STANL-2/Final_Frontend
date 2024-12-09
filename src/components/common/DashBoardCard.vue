@@ -24,4 +24,8 @@ import Card from 'primevue/card';
     height: 100%;
     overflow-y: 250px; /* 내부 스크롤 설정 */
 }
+
+:deep(.p-card-content){ 
+    padding: 0;
+}
 </style>

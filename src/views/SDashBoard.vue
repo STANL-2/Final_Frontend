@@ -20,33 +20,6 @@
                         </button>
                     </div>
                 </div>
-            </DashBoardCard>
-        </div>
-
-        <div class="small-cards">
-            <div class="announcement-card card">
-                <DashBoardCard>
-                    <div class="card-content">
-                        <div class="content-title">공지사항</div>
-                        <ul class="announcement-list">
-                            <li v-for="announcement in announcements" :key="announcement.id">
-                                {{ announcement.title }}
-                            </li>
-                        </ul>
-                    </div>
-                </DashBoardCard>
-            </div>
-            <div class="news-card">
-                <DashBoardCard>
-                    <div class="card-content">
-                        <div class="content-title">뉴스기사</div>
-                        <ul class="news-list">
-                            <li v-for="news in newsArticles" :key="news.id">
-                                {{ news.title }}
-                            </li>
-                        </ul>
-                    </div>
-                </DashBoardCard>
             </div>
         </div>
     </div>
