@@ -329,7 +329,7 @@ const fetchAlarmsByType = async () => {
 
         if (response && response.result) {
             if (currentPage.value === 0 && response.result.content.length === 0) {
-                // Create a "no alarms" item
+                
                 alarms.value = [{
                     isNoAlarmsMessage: true,
                     message: '해당 카테고리에 알림이 없습니다.',
@@ -421,8 +421,6 @@ const showAlarmDetail = async (alarm) => {
         );
 
         await fetchAlarmTypes();
-        // Update the selected alarm
-        // selectedAlarm.value = { ...alarm, read: true };/
 
     } catch (error) {
         alarms.value = alarms.value.map(a =>

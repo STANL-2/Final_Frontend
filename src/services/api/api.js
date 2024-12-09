@@ -22,6 +22,7 @@ import SampleApiService from './SampleApiService';
 import ScheduleApiService from './ScheduleApiService';
 import FileApiService from './FileApiService';
 import NewsApiService from './NewsApiService';
+import DashBoardService from './DashBoardApiService';
 
 export const $api = {
     alarm: new AlarmApiService(),
@@ -47,5 +48,6 @@ export const $api = {
     salesHistory: new SalesHistoryApiService(),
     sample: new SampleApiService(),
     schedule: new ScheduleApiService(),
-    file: new FileApiService()
+    file: new FileApiService(),
+    dashBoard: new DashBoardService()
 };
