@@ -3,36 +3,35 @@
         <div class="component-wrapper">
             <!-- SearchForm -->
             <div>
-                <div class="button-row">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
+                <div class="top">
+                    <div class="path">
+                        <PagePath />
+                    </div>
+                    <div class="button-row">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
                 </div>
                 <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
             </div>
 
             <TabView class="horizontal-tabs" @tab-change="handleTabChange">
-                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label"
-                    :index="index">
+                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
                     <!-- <p class="m-0">{{ field.label }}</p> -->
                     <div class="flex-container">
                         <div v-for="(field, index) in thridRowFields" :key="index" class="form-row button-row">
                             <SCommonButton :key="field.model" :label="field.label" @click="handleButtonClick(field)" />
                         </div>
                     </div>
-                    <div class="bigcard-container">
-                        <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
-                        <BigCard ref="chartRef" class="bigcard" :chartDataList="chartDataList" :chartOptions="chartOptions" />
-                    </div>
+                    <!-- <div class="bigcard-container"> -->
+                    <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
+                    <BigCard ref="chartRef" v-bind="$attrs" class="bigcard" :chartDataList="chartDataList"
+                        :chartOptions="chartOptions" />
+                    <!-- </div> -->
 
                 </TabPanel>
             </TabView>
         </div>
-
-
-
-        <!-- <div>
-            <BigCard ref="chartRef" :chartDataList="chartDataList" :chartOptions="chartOptions" />
-        </div> -->
 
         <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
             modalType === 'memberList' ? '사원 검색' :
@@ -43,7 +42,7 @@
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">
                     {{ modalType === 'centerList' ? '매장명:' :
-                        modalType === 'memberList' ? '사원명:' :
+                        modalType === 'memberList' ? '담당자명:' :
                             modalType === 'productList' ? '제품명:' :
                                 modalType === 'customerList' ? '고객명:' : '' }}
                 </label>
@@ -92,6 +91,7 @@ import { $api } from '@/services/api/api';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -153,12 +153,12 @@ const secondRowFields = ref(
             model: 'totalSales',
             value: 'totalSales',
         },
-        // {
-        //     label: '기본',
-        //     type: 'button',
-        //     model: '',
-        //     value: '',
-        // },
+        {
+            label: '기본',
+            type: 'button',
+            model: '',
+            value: '',
+        },
     ],
 );
 
@@ -186,6 +186,8 @@ const chartOptions = ref([]);
 const chartRef = ref(null);
 let saveButton;
 let saveValue;
+let existingChartData;
+let existingPeriod;
 
 const refresh = () => {
     // 검색 조건 초기화
@@ -213,53 +215,10 @@ const refresh = () => {
     console.log('화면이 초기화되었습니다.');
 };
 
-const handleButtonComparisonClick = async (field2) => {
-    console.log(`${field2.model} 비교 버튼 클릭됨`);
-
-    const formData = searchFormRef.value?.formData;
-
-    if (!formData) {
-        console.error('FormData를 가져올 수 없습니다.');
-        return;
-    }
-
-    searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
-    );
-
-    const period = formData.period || '';
-    const searchTypeMap = {
-        '일별': null,
-        '월별': 'month',
-        '연도별': 'year',
-    };
-    const searchType = searchTypeMap[period];
-
-    const requestBody = {
-        groupBy: formData.groupBy === 'employee',
-        month: searchType === 'month' ? 'month' : null,
-        year: searchType === 'year' ? 'year' : null,
-        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
-        orderBy: orderByValue(saveButton),
-    };
-
-    console.log("Comparison Request Body:", requestBody);
-    if (field2.model === 'best') {
-        console.log("최고 데이터 요청:", requestBody);
-        await loadBestData(requestBody, field2.label, searchType); // 최고 데이터 로드
-    } else {
-        console.log("평균 데이터 요청:", requestBody);
-        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
-    }
-
-};
-
 const handleTabChange = (event) => {
     const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
     handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
 };
-
 
 const handleButtonClick = async (field) => {
 
@@ -271,9 +230,6 @@ const handleButtonClick = async (field) => {
     try {
         const formData = searchFormRef.value?.formData;
         const formDataIds = searchFormRef.value?.formDataIds;
-
-        console.log("formDataIds: ", formDataIds);
-        console.log("formData: ", formData);
 
         if (!formData || !formDataIds) {
             console.error('formData를 가져올 수 없습니다.');
@@ -327,11 +283,18 @@ const handleButtonClick = async (field) => {
 
         console.log("Updated searchCriteria: ", searchCriteria.value);
 
-        if (field.value != '') {
+        // 개별 필드
+        if (field.model != '' && field.value != '') {
             saveButton = field.model;
             saveValue = field.value;
+            // 기본 필드
+        } else if (field.model == '' && field.value == '') {
+            saveButton = '';
+            saveValue = '';
+            // 비교 필드
+        } else {
+            saveValue = field.value;
         }
-        // saveButton = field.model ?
 
         const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
         const periodMap = {
@@ -339,7 +302,6 @@ const handleButtonClick = async (field) => {
             '월별': 'month',
             '연도별': 'year',
         };
-
 
         const periodType = periodMap[period] || null; // 매핑되지 않은 값은 null
         const groupBy = formData.groupBy || '';
@@ -364,14 +326,12 @@ const handleButtonClick = async (field) => {
 
         console.log("API Path:", apiPath);
 
-
         // 데이터 로드 및 차트 업데이트
         await loadData(periodType, field.model, field.label, groupByType, apiPath);
     } finally {
         loading.value = false;
     }
 };
-
 
 const loadData = async (searchType = null,
     fieldModel = null,
@@ -410,6 +370,8 @@ const loadData = async (searchType = null,
         // 필터링된 조건에 배열 처리 추가
         const preparedCriteria = ensureArrayFields(filteredCriteria);
 
+        console.log("마지막 saveButton: ", saveButton);
+
         // 최종 요청 본문
         const searchParams = {
             ...preparedCriteria,
@@ -419,11 +381,6 @@ const loadData = async (searchType = null,
             groupBy,
             period: searchType
         };
-
-        console.log("searchParams: ", searchParams);
-        console.log("API 호출 URL:", apiPath); // 디버깅용
-        console.log("검색 인자: ", searchParams);
-
         // API 호출
         const response = await $api.salesHistory.post(searchParams, apiPath);
 
@@ -453,6 +410,7 @@ const loadData = async (searchType = null,
                             }),
                             data: result.map((item) => item.totalIncentive || 0),
                             key: '수당',
+                            period: result.map((item) => item.period || '')
                         },
                         {
                             labels: result.map((item) => {
@@ -466,6 +424,7 @@ const loadData = async (searchType = null,
                             }),
                             data: result.map((item) => item.totalPerformance || 0),
                             key: '실적',
+                            period: result.map((item) => item.period || '')
                         },
                         {
                             labels: result.map((item) => {
@@ -479,6 +438,7 @@ const loadData = async (searchType = null,
                             }),
                             data: result.map((item) => item.totalSales || 0),
                             key: '매출액',
+                            period: result.map((item) => item.period || '')
                         },
                     ];
 
@@ -490,7 +450,13 @@ const loadData = async (searchType = null,
                         console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
                     }
                 } else if (saveValue === 'average' || saveValue === 'best') {
-                    // 최고, 평균 버튼 클릭 시
+
+                    // 기존 chartDataList에서 첫 번째 차트 데이터를 가져옵니다.
+                    existingChartData = chartDataList.value[0];
+                    existingPeriod = [...existingChartData.datasets[0].period];
+
+                    console.log("existing", existingChartData);
+
                     const keyPrefix = saveValue === 'average' ? '평균' : '최고';
                     const fieldMapping = {
                         totalIncentive: `${keyPrefix} 수당`,
@@ -498,28 +464,29 @@ const loadData = async (searchType = null,
                         totalSales: `${keyPrefix} 매출액`,
                     };
 
-                    const mappedData = [
+                    // mappedDataList로부터 데이터 추출
+                    const mappedDataList = [
                         {
                             labels: result.map((item) => item.period || ''),
                             data: result.map((item) => item.averageTotalIncentive || item.totalIncentive || 0),
                             key: fieldMapping.totalIncentive,
+                            period: result.map((item) => item.period || '')
                         },
                         {
                             labels: result.map((item) => item.period || ''),
                             data: result.map((item) => item.averageTotalPerformance || item.totalPerformance || 0),
                             key: fieldMapping.totalPerformance,
+                            period: result.map((item) => item.period || '')
                         },
                         {
                             labels: result.map((item) => item.period || ''),
                             data: result.map((item) => item.averageTotalSales || item.totalSales || 0),
                             key: fieldMapping.totalSales,
+                            period: result.map((item) => item.period || '')
                         },
                     ];
 
-                    console.log(`${saveValue} 데이터 매핑 완료:`, mappedData);
-
-                    // 기존 차트에 새 데이터 추가 (true로 설정)
-                    updateChartData(mappedData, `${keyPrefix} 데이터`, true);
+                    updateChartData(mappedDataList, fieldLabel, true);
                 }
             }
             else {
@@ -541,6 +508,7 @@ const loadData = async (searchType = null,
                     return {
                         label,
                         value: item[fieldModel] || 0,
+                        period: item.period || 0,
                     };
                 });
 
@@ -563,14 +531,15 @@ const loadData = async (searchType = null,
 const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
     console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedDataList);
 
-    if (!Array.isArray(mappedDataList)) {
-        console.error("mappedDataList가 배열이 아닙니다:", mappedDataList);
+    if (!Array.isArray(mappedDataList) || mappedDataList.length === 0) {
+        console.error("mappedDataList가 비어 있거나 배열이 아닙니다:", mappedDataList);
         return;
     }
 
-    // 데이터셋의 라벨 추출
+    // x축 labels 추출
+    const newLabels = mappedDataList.map((item) => item.labels || "");
     const labels = mappedDataList[0]?.labels || [];
-    if (!labels.length) {
+    if ((newLabels.length === 0 || !isComparison) && fieldLabel != '기본 데이터') {
         // 데이터셋이 없다면 새로운 차트 데이터 생성
         const individualFieldData = {
             labels: mappedDataList.map((item) => item.label),
@@ -582,10 +551,11 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                     backgroundColor: 'rgba(82, 77, 249, 0.3)',
                     pointBackgroundColor: 'rgba(82, 77, 249, 1)',
                     pointBorderColor: '#FFFFFF',
-                    pointRadius: 5,
+                    // pointRadius: 5,
                     fill: true,
                     tension: 0.4,
-                    type: 'line',
+                    type: 'bar',
+                    period: mappedDataList.map((item) => item.period)
                 },
             ],
         };
@@ -603,13 +573,17 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
 
         console.log("Updated chartDataList:", chartDataList.value);
         return;
-    } else {
+    }
+    else if (fieldLabel == '기본 데이터') {
         // 기존 데이터셋이 있을 경우
         const datasets = mappedDataList.map((data, index) => {
             if (!data.data || !Array.isArray(data.data)) {
                 console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
                 return null;
             }
+
+            console.log("===============data.key: ", data.key, "==============");
+            console.log("===============newLabels: ", newLabels, "==============");
 
             return {
                 label: data.key,
@@ -622,7 +596,8 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                 pointRadius: 5,
                 fill: true,
                 tension: 0.4,
-                type: 'line',
+                type: data.key === '매출액' ? 'bar' : 'line',
+                period: mappedDataList.map((item) => item.period)
             };
         }).filter(Boolean);
 
@@ -634,6 +609,23 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         const startDate = mappedDataList.map(item => item.startDate);
         const endDate = mappedDataList.map(item => item.endDate);
 
+
+        // y축 스케일 설정: 데이터셋의 yAxisID와 색상 매칭
+        const scales = datasets.reduce((acc, dataset, index) => {
+            acc[`y${index}`] = {
+                type: 'linear',
+                position: index % 2 === 0 ? 'left' : 'right', // 왼쪽 또는 오른쪽 위치 번갈아 설정
+                ticks: {
+                    color: dataset.borderColor, // y축 틱 색상을 데이터셋 색상과 동일하게 설정
+                },
+                grid: {
+                    drawOnChartArea: index === 0, // 첫 번째 y축만 격자선을 표시
+                }
+            };
+            return acc;
+        }, {});
+
+        
         const newChartData = {
             labels,
             datasets,
@@ -641,219 +633,106 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             endDate,
         };
 
+        const updatedChartData = {
+            ...newChartData,
+            options: {
+                responsive: true,
+                scales, // y축 설정 적용
+            },
+        }
+
         // 차트 데이터에 새로 생성한 데이터 추가
+        // if (isComparison) {
+        //     chartDataList.value = [...chartDataList.value, newChartData];
+        // } else {
+        //     chartDataList.value = [newChartData];
+        // }
         if (isComparison) {
-            chartDataList.value = [...chartDataList.value, newChartData];
+            chartDataList.value = [...chartDataList.value, updatedChartData];
         } else {
-            chartDataList.value = [newChartData];
+            chartDataList.value = [updatedChartData];
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
-    }
-};
+    } else if (chartDataList.value.length > 0) { // average, best
+
+        // `saveButton`에 따라 `mappingIndex` 결정
+        const mappingIndex = {
+            totalIncentive: 0,
+            totalPerformance: 1
+        }[saveButton] || 2;
+
+        // `saveValue`에 따라 라벨 설정
+        const keyPrefix = saveValue === 'average' ? '평균' : '최고';
+        const fieldMapping = {
+            totalIncentive: `${keyPrefix} 수당`,
+            totalPerformance: `${keyPrefix} 실적`,
+            totalSales: `${keyPrefix} 매출액`,
+        };
+
+        // 기존 라벨 유지
+        // const unifiedLabels = [...existingPeriod];
 
 
+        // const unifiedLabels = [...existingChartData.labels];
+        const unifiedLabels = ref([]);
 
-
-
-const loadComparisonData = async (requestBody, fieldLabel) => {
-    loading.value = true;
-    try {
-        const response = await $api.salesHistory.post(requestBody, 'statistics/average/employee');
-
-        if (response && response.result) {
-            const result = response.result;
-
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'averageTotalIncentive',
-                performance: 'averageTotalPerformance',
-                totalSales: 'averageTotalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
+        if (existingChartData.labels[0].substr(0, 1) != '2')
+            unifiedLabels.value = [...existingChartData.labels.map((label, index) => `${label}(${existingPeriod[index] || ''})`)];
+        else {
+            unifiedLabels.value = [...existingChartData.labels];
         }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
-    }
-};
 
-const loadBestData = async (requestBody, fieldLabel, searchType) => {
-    loading.value = true;
-    try {
-        const response = await $api.salesHistory.post(requestBody, `statistics/all/${searchType}`);
+        // 디버그용 출력
+        console.log('Unified Labels:', unifiedLabels);
+        console.log('Mapped Data Period:', mappedDataList[mappingIndex].period);
 
-        if (response && response.result) {
-            const result = response.result;
+        // 기존 데이터셋 복사 및 라벨에 맞게 재매핑
+        // const updatedDatasets = existingChartData.datasets.map(dataset => ({
+        //     ...dataset,
+        //     data: unifiedLabels.map(label => {
+        //         const index = existingPeriod.indexOf(label);
+        //         return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
+        //     })
+        // }));
+        const updatedDatasets = existingChartData.datasets.map(dataset => ({
+            ...dataset,
+        }));
 
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'totalIncentive',
-                performance: 'totalPerformance',
-                totalSales: 'totalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
-        }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
-    }
-};
-
-const bigCardChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '수당',
-            data: [],
-            yAxisID: 'y',
-            borderColor: 'rgba(82, 77, 249, 0.8)',
-            backgroundColor: 'rgba(82, 77, 249, 0.3)',
-            pointBackgroundColor: 'rgba(82, 77, 249, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
+        // 새로운 데이터셋 생성
+        // 새로운 데이터셋 생성
+        const newDataset = {
+            label: fieldMapping[saveButton],
+            data: existingPeriod.map(label => {
+                const index = mappedDataList[mappingIndex].period.indexOf(label);
+                return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
+            }),
+            borderColor: saveValue === 'average' ? 'rgba(33, 150, 243, 1)' : 'rgba(39, 174, 96, 1)', // 파란색과 초록색
+            backgroundColor: saveValue === 'average' ? 'rgba(33, 150, 243, 0.2)' : 'rgba(39, 174, 96, 0.5)',
             fill: true,
             tension: 0.4,
-            type: 'line', // 라인 차트
-        },
-    ],
-    gradientColors: ['rgba(82, 77, 249, 0.7)', 'rgba(82, 77, 249, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
+            type: saveValue === 'average' ? 'line' : 'bar' // average는 선, best는 막대 그래프
+        };
 
-const secondChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '',
-            data: [],
-            yAxisID: 'y1',
-            borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루
-            backgroundColor: 'rgba(52, 115, 235, 0.2)', // 블루 배경색
+        // 새로운 데이터셋 추가
+        updatedDatasets.push(newDataset);
 
-            type: 'bar', // 바 차트
-            barThickness: 15, // 바의 두께
-        },
-    ],
-    gradientColors: [
-        'rgba(52, 115, 235, 0.8)', // 상단 진한 블루
-        'rgba(52, 115, 235, 0.3)', // 중간 블루
-        'rgba(52, 115, 235, 0)',   // 하단 투명
-    ],
-});
+        // 차트 데이터 업데이트 (불변성 유지)
+        const updatedChartData = {
+            labels: unifiedLabels, // 기존 라벨 유지
+            datasets: updatedDatasets
+        };
 
-const thirdChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '매출액',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
+        // chartDataList 업데이트
+        chartDataList.value = [updatedChartData];
 
-const fourthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '평균',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const fifthChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '최고',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const orderByValue = (saveButton) => {
-    switch (saveButton) {
-        case 'incentive':
-            return 'total_incentive';
-        case 'performance':
-            return 'total_performance';
-        case 'totalSales':
-            return 'total_sales';
-        default:
-            return ''; // 기본값 처리
+        // 디버그 로그
+        console.log('Updated Chart Data:', chartDataList.value);
     }
+
+
 };
+
 
 // 검색창 모달
 const showModal = ref(false);
@@ -1019,6 +898,23 @@ async function searchStore() {
 </script>
 
 <style scoped>
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1230,20 +1126,28 @@ tr:hover {
 
 .bigcard-container {
     display: flex;
-    justify-content: center;  /* 가로 중앙 정렬 */
-    align-items: center;      /* 세로 중앙 정렬 */
-    width: 100%;              /* 부모 요소의 100% 폭 */
-    height: 100%;             /* 부모 요소의 100% 높이 */
-    padding: 16px;            /* 내부 여백 */
+    justify-content: center;
+    /* 가로 중앙 정렬 */
+    align-items: center;
+    /* 세로 중앙 정렬 */
+    width: 60%;
+    /* 부모 요소의 100% 폭 */
+    height: 60%;
+    /* 부모 요소의 100% 높이 */
+    padding: 16px;
+    /* 내부 여백 */
 }
 
 .bigcard {
-    width: 100%;              /* 가로 100% */
-    height: 100%;             /* 세로 100% */
-    min-height: 300px;        /* 최소 높이 보장 */
+    width: 60%;
+    /* 가로 100% */
+    height: 60%;
+    /* 세로 100% */
+    min-height: 300px;
+    /* 최소 높이 보장 */
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 내용 중앙 정렬 */
+    justify-content: center;
+    /* 내용 중앙 정렬 */
 }
-
 </style>

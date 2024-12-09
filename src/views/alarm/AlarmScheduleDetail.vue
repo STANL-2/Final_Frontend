@@ -347,8 +347,9 @@ const tagMapping = (tag) => {
         'TRAINING': '교육',
         'VACATION': '휴가',
         'SESSION': '회의',
-        'IMPORTANT': '중요',
         'NORMAL': '일반',
+        'GOAL': '영업 목표',
+        'STRATEGY': '영업 전략',
         'APPROVED': '승인',
         "all": '전체',
         "admin": '영업 관리자',
@@ -370,6 +371,8 @@ const tagColors = [
     { name: '수주서', color: '#B9E4C9' },
     { name: '중요', color: '#FFB3B3' },
     { name: '일반', color: '#E0FFB3' },
+    { name: '영업 목표', color: '#D4A5A5' },
+    { name: '영업 전략', color: '#A5D4C5' },
     { name: '승인', color: '#B3FFB3' },
     { name: '전체', color: '#D3D3D3' }, 
     { name: '영업 관리자', color: '#FFA07A' }, 
@@ -465,7 +468,7 @@ const fetchScheduleInfo = async () => {
 
 const fetchNoticeInfo = async () => {
 
-    const noticeTypes = ['중요', '일반'];
+    const noticeTypes = ['일반', '영업 전략', '영업 목표'];
     if (noticeTypes.includes(props.alarm.tag)) {
         try {
             const response = await apiNoticeService.get(
@@ -478,8 +481,6 @@ const fetchNoticeInfo = async () => {
         } catch (error) {
             console.error("Failed to fetch notice info:", error);
         }
-
-        console.log("noticeResponse", detailInfo.value);
     } else {
         console.log('잘못된 태그 정보 입니다.');
     }
@@ -700,8 +701,9 @@ watch(() => props.alarm, async (newAlarm) => {
             case '교육':
                 await fetchScheduleInfo();
                 break;
-            case '중요':
             case '일반':
+            case '영업 전략':
+            case '영업 목표':
                 await fetchNoticeInfo();
                 break;
             case '계약서':
@@ -719,6 +721,7 @@ watch(() => props.alarm, async (newAlarm) => {
 
 // 알림 상세 페이지로 이동
 const goToRelatedPage = () => {
+
     if (props.alarm.redirectUrl) {
         router.push(props.alarm.redirectUrl);
         emit('closeModal');

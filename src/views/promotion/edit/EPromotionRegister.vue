@@ -83,7 +83,7 @@ const onFileError = (errorMessage) => {
 };
 
 const closePage = () => {
-    router.push('/promotion/list'); // 취소 시 이동 경로
+    router.push('/promotion/Elist'); // 취소 시 이동 경로
 };
 
 const onRegister = async () => {
@@ -108,7 +108,7 @@ const onRegister = async () => {
         console.log("성공",response);
 
         alert("등록되었습니다.");
-        router.push('/promotion/list');
+        router.push('/promotion/Elist');
         
     } catch (error) {
         console.log("실패",response);
@@ -157,8 +157,11 @@ const onRegister = async () => {
     margin-top: 5px;
 }
 
-/* 본인에 맞게 upload 상자 커스텀 */
-/* .file-upload-input{
-    
-} */
+.file-upload-input
+{
+    width: 92.5%;
+}
+.file-upload-container{
+    margin-left: 2.4rem;
+}
 </style>

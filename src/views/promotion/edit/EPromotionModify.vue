@@ -21,12 +21,13 @@
                     </p>
                     <button @click="removeCurrentFile">파일 삭제</button>
                 </div>
-                <FileUpload 
-                    label="새 파일 업로드" 
-                    @file-selected="onFileSelected" 
-                    @file-error="onFileError"
-                    
-                />
+                <div class="fileup">
+                    <FileUpload 
+                        label="새 파일 업로드" 
+                        @file-selected="onFileSelected" 
+                        @file-error="onFileError"
+                    />
+                </div>
             </div>
 
             <!-- 내용 입력 -->
@@ -95,7 +96,7 @@ export default {
 
         // 페이지 닫기
         const closePage = () => {
-            router.push('/promotion/list');
+            router.push('/promotion/Elist');
         };
 
         // 공지사항 정보 로드
@@ -133,7 +134,7 @@ export default {
                 );
                 console.log("title",updateData.title);
                 alert('게시글이 수정되었습니다.');
-                router.push('/promotion/list');
+                router.push('/promotion/Elist');
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
                 alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
@@ -173,18 +174,39 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+button{
+    margin-right: 3rem;
+}
 
-.title-container,
+.title-container{
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    margin-left:40px;
+    width:900px;
+}
+
 .file-container {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+    margin-left:40px;
+    width:900px;
 }
 
 .title-container label,
 .file-container label {
     font-weight: bold;
     margin-bottom: 8px;
+}
+
+input{
+    padding: 6px;
+    padding-left: 0.5rem;
+    border: 1px solid #b3b1b1;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 35rem;
 }
 
 .current-file {
@@ -200,4 +222,11 @@ export default {
     gap: 10px;
     margin-top: 20px;
 }
+.title-container{
+    margin-left:40px;
+}
+.fileup{
+    width:55rem;
+}
+
 </style>

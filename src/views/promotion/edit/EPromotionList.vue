@@ -1,31 +1,47 @@
 <template>
     <PageLayout>
-        <!-- SearchForm -->
-        <div class="component-wrapper width-s ml-l">
-            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-        </div>
-        <div class="flex-row content-end mr-m">
-            <CommonButton label="조회" @click="handleSearch"/>
+        <div class="search-wrapper">
+            <div class="top">
+                <div class="path">
+                    <PagePath />
+                </div>
+                <div class="flex-row content-end">
+                    <div class="ml-l">
+                        <div class="ml-xs">
+                            <CommonButton label="초기화" 
+                            icon="pi pi-refresh" 
+                            @click="resetSearchParams"
+                            color="#F1F1FD" 
+                            textColor="#6360AB" />
+                        </div>
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="handleSearch" />
+                    </div>
+                </div>
+            </div>
+            <SearchForm class="mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
         <div class="flex-row content-between mt-l">
-            <div class="list ml-l">전체목록</div>
-            <div class="flex-row items-center mb-s mr-m">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
+            <div class="flex-row items-center mb-s">
                 <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
-                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
                 <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
-                <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
 
         <!-- ViewTable -->
-        <div class="table-wrapper width-s ml-l">
+        <div class="table-wrapper">
             <ViewTable 
                 :headers="tableHeaders" 
                 :data="tableData" 
                 :loading="loading" 
                 :totalRecords="totalRecords" 
                 :rows="rows" 
-                :rowsPerPageOptions="[5, 10, 20, 50]"
+                :rowsPerPageOptions="[10, 15, 20, 50]"
                 :selectable="true" 
                 buttonLabel="조회" 
                 buttonHeader="상세조회"
@@ -47,6 +63,7 @@ import ViewTable from '@/components/common/ListTable.vue';
 import SearchForm from '@/components/common/PromotionSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
+import PagePath from '@/components/common/PagePath.vue';
 
 const router = useRouter(); 
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
@@ -64,6 +81,28 @@ const searchParams = ref({
     startDate: null,
     endDate: null
 });
+
+const resetSearchParams = () => {
+    // searchParams 초기화
+    searchParams.value = {
+        title: '',
+        memberId: '',
+        startDate: null,
+        endDate: null
+    };
+
+    // SearchForm 필드 초기화
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 데이터 로드
+    loadData();
+};
 
 const formFields = [
     [
@@ -99,7 +138,7 @@ const tableHeaders = [
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
-const rows = ref(5); // 페이지 당 행 수
+const rows = ref(15); // 페이지 당 행 수
 const first = ref(0); // 첫 번째 행 위치
 
 function handleOpenModal() {
@@ -135,7 +174,7 @@ const exportCSV = async () => {
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     router.push({
-        name: 'PromotionDetail',
+        name: 'EPromotionDetail',
         query: {
             promotionwriter: rowData.memberId, // 분류
             promotionTitle: rowData.title, 
@@ -243,9 +282,46 @@ onMounted(() => {
 
 <style scoped>
 .list{
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight:bold;
 }
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
 </style>
-
-

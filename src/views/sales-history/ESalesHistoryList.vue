@@ -1,125 +1,136 @@
 <template>
     <PageLayout>
-        <div class="component-wrapper">
-            <div class="button-row">
-                <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="refresh" />
+        <!-- SearchForm -->
+        <div class="search-wrapper">
+            <div class="top">
+                <div class="path">
+                    <PagePath />
+                </div>
+                <div class="flex-row">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
+                </div>
             </div>
-            <!-- 첫 번째 행: 검색 조건 -->
-            <SSearchForm :fields="[firstRowFields]" ref="searchFormRef" />
-
-            <TabView class="horizontal-tabs" @tab-change="handleTabChange">
-                <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
-                    <!-- 테이블: POST 요청 데이터 -->
-                    <div class="component-wrapper" v-if="method === 'POST'">
-                        <div class="flex-row content-between">
-                            <div>전체목록</div>
-                            <div class="flex-row items-center mb-s">
-                                <div class="ml-xs">
-                                    <SCommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
-                                </div>
-                                <div class="ml-xs">
-                                    <SCommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                                </div>
-                            </div>
-                        </div>
-                        <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading"
-                            :totalRecords="totalRecords" :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]"
-                            :selectable="true" :selection="selectedRows" @update:selection="updateSelectedRows"
-                            @page="onPage" @sort="onSort" @filter="onFilter"></ViewTable>
-                    </div>
-                    <div v-if="method === 'GET'">
-                        <!-- <p class="m-0">{{ field.label }}</p> -->
-                        <div class="flex-container">
-                            <div v-for="(field2, index) in thirdRowFields" :key="index" class="form-row button-row">
-                                <SCommonButton :key="field2.model" :label="field2.label"
-                                    @click="handleButtonComparisonClick(field2)" />
-                            </div>
-                        </div>
-                        <div>
-                            <BigCard :chart-data="[bigCardChartData, secondChartData]" />
-                        </div>
-                        <!-- 차트: GET 요청 데이터 -->
-                    </div>
-                </TabPanel>
-            </TabView>
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                    @keyup.enter="select" />
+            </div>
         </div>
+
+        <div class="flex-row content-between mt-l">
+            <div class="line"></div>
+            <div class="flex-row items-center mb-s">
+                <div>
+                    <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
+                </div>
+                <div class="ml-xs">
+                    <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ViewTable -->
+        <div class="component-wrapper">
+            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
+                :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true" :selection="selectedRows"
+                @update:selection="updateSelectedRows" @page="onPage" @sort="onSort" @filter="onFilter">
+            </ViewTable>
+        </div>
+
+        <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
+            modalType === 'memberList' ? '사원 검색' :
+                modalType === 'productList' ? '제품 검색' :
+                    modalType === 'customerList' ? '고객 검색' : '검색'" width="30rem" height="none"
+            @confirm="confirmSelection" @cancel="resetModalState">
+            <!-- 검색 입력 -->
+            <div class="flex-row content-center mb-m">
+                <label class="mr-m">
+                    {{ modalType === 'centerList' ? '매장명:' :
+                        modalType === 'memberList' ? '사원명:' :
+                            modalType === 'productList' ? '제품명:' :
+                                modalType === 'customerList' ? '고객명:' : '' }}
+                </label>
+                <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
+                <button class="search-button" @click="searchStore">
+                    <span class="search-icon pi pi-search"></span>
+                </button>
+            </div>
+
+            <!-- 검색 결과 테이블 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
+                        :class="{ selected: selectedRow === index }">
+                        <td v-if="modalType === 'centerList'">{{ row.centerId }}</td>
+                        <td v-if="modalType === 'memberList'">{{ row.memberId }}</td>
+                        <td v-if="modalType === 'productList'">{{ row.productId }}</td>
+                        <td v-if="modalType === 'customerList'">{{ row.customerId }}</td>
+                        <td>{{ row.name }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 모달 하단 버튼 -->
+            <template #footer>
+                <CommonButton label="확인" @click="confirmSelection" />
+                <CommonButton label="취소" color="#ffffff" textColor="#6360AB" borderColor="#6360AB"
+                    @click="resetModalState" />
+            </template>
+        </Modal>
 
     </PageLayout>
 </template>
 
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import SSearchForm from '@/components/common/SSearchForm.vue';
-import SCommonButton from '@/components/common/Button/SCommonButton.vue';
-import BigCard from '@/components/common/SGraphCard.vue';
-import { $api } from '@/services/api/api';
+import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
+import { $api } from '@/services/api/api';
+import Modal from '@/components/common/Modal.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
-// SearchForm.vue 검색조건 값
-const firstRowFields = ref([
-    {
-        label: '분류',
-        type: 'select',
-        model: 'period',
-        value: '',
-        // options: ['일별', '월별', '연도별'],
-        // options: ['','월별', '연도별'],
-        options: ['', '월별'],
-        showDivider: false,
-    },
-    {
-        label: '조회기간',
-        type: 'calendar',
-        model: 'salesHistorySearchDate',
-        showIcon: true,
-        manualInput: false,
-    },
-]);
-
-const secondRowFields = ref([
-    {
-        label: '판매내역',
-        type: 'button',
-        model: 'salesHistory',
-        value: '',
-    },
-    {
-        label: '수당',
-        type: 'button',
-        model: 'incentive',
-        value: '',
-    },
-    {
-        label: '실적',
-        type: 'button',
-        model: 'performance',
-        value: '',
-    },
-    {
-        label: '매출액',
-        type: 'button',
-        model: 'totalSales',
-        value: '',
-    },
-]);
-
-const thirdRowFields = ref([
-    {
-        label: '최고',
-        type: 'button',
-        model: 'best',
-        value: '',
-    },
-    {
-        label: '평균',
-        type: 'button',
-        model: 'average',
-        value: '',
-    },
-]);
+const formFields = [
+    [
+        {
+            label: '제품 번호',
+            type: 'inputWithButton',
+            model: 'productList',
+            showDivider: false,
+        },
+        {
+            label: '고객명',
+            type: 'inputWithButton',
+            model: 'customerList',
+            showDivider: true,
+        },
+        {
+            label: '계약서 번호',
+            type: 'input',
+            model: 'contractId',
+            showDivider: true,
+        },
+        {
+            label: '조회기간',
+            type: 'calendar',
+            model: 'salesHistoryDate',
+            showIcon: true,
+            manualInput: false,
+        }
+    ],
+]
 
 // table 헤더 값
 const tableHeaders = ref([
@@ -132,12 +143,11 @@ const tableHeaders = ref([
     { field: 'customerId', label: '고객명', width: '10%' },
     { field: 'productId', label: '제품 번호', width: '20%' },
     { field: 'centerId', label: '매장명', width: '20%' },
-    // { field: 'memberId', label: '담당자', width: '20%' },
+    { field: 'memberId', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
-const selectedItems = ref([]);
 const showDetailModal = ref(false); // 상세조회 모달 표시 여부
 const selectedDetail = ref(null); // 선택된 상세 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
@@ -147,299 +157,170 @@ const first = ref(0); // 첫 번째 행 위치
 const filters = ref({}); // 필터
 const sortField = ref(null); // 정렬 필드
 const sortOrder = ref(null); // 정렬 순서
-const method = ref(null);
-let saveButton;
-const searchParams = ref({
-    startDate: null,
-    endDate: null
-});
-
-function handleView(rowData) {
-    // 상세 데이터 설정 및 모달 열기
-    selectedDetail.value = rowData; // 클릭된 행 데이터 전달    
-    showDetailModal.value = true;
-}
+const selectedRows = ref([]);
 
 const searchCriteria = ref({});
 
 const refresh = () => {
-    searchCriteria.value = ref({});
+    searchCriteria.value = {};
+
+    // SearchForm 초기화
+    if (searchFormRef.value) {
+        searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
+    }
+
+    // 버튼 상태 초기화`
+    // formFields.value.forEach((field) => field.value = '');
+
+    showModal.value = false;
+    selectedRow.value = null;
+    searchQuery.value = '';
+    modalTableData.value = [];
+    selectedStoreCode.value = '';
     loadData();
 }
 
-const handleButtonComparisonClick = async (field2) => {
-    console.log(`${field2.model} 비교 버튼 클릭됨`);
 
+// 조회 버튼 클릭 시
+const select = () => {
     const formData = searchFormRef.value?.formData;
+    const formDataIds = searchFormRef.value?.formDataIds;
 
-    if (!formData) {
-        console.error('FormData를 가져올 수 없습니다.');
+    console.log("formDataIds: ", formDataIds);
+    console.log("formData: ", formData);
+
+    if (!formData || !formDataIds) {
+        console.error('formData를 가져올 수 없습니다.');
         return;
     }
 
-    searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
-    );
-
-    const period = formData.period || '';
-    const searchTypeMap = {
-        '': 'daily',
-        '월별': 'month',
-        '연도별': 'year',
-    };
-    const searchType = searchTypeMap[period];
-
-    const requestBody = {
-        groupBy: 'employee',
-        month: searchType === 'month' ? 'month' : null,
-        year: searchType === 'year' ? 'year' : null,
-        startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
-        orderBy: orderByValue(saveButton),
-        period: searchType,
-    };
-
-    console.log("Comparison Request Body:", requestBody);
-    if (field2.model === 'best') {
-        console.log("최고 데이터 요청:", requestBody);
-        await loadBestData(requestBody, field2.label); // 최고 데이터 로드
-    } else {
-        console.log("평균 데이터 요청:", requestBody);
-        await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
-    }
-};
-
-const handleTabChange = (event) => {
-    const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
-    const selectedTab = event.index; // 선택된 탭 인덱스
-
-    if (selectedTab === 0) {
-        method.value = 'POST';  // 판매내역 탭
-    } else if ([1, 2, 3].includes(selectedTab)) {
-        method.value = 'GET';  // 다른 탭들
-    }
-    handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
-};
-
-const handleButtonClick = async (field) => {
-    // FormData 가져오기
-    const formData = searchFormRef.value?.formData;
-
-    if (!formData) {
-        console.error('FormData를 가져올 수 없습니다.');
-        return;
-    }
-
-    // 검색 조건 생성 및 설정
-    searchCriteria.value = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== null && value !== undefined && value !== '')
-    );
-
-    saveButton = field.model;
-
-    const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
-    const searchTypeMap = {
-        '': '',
-        '월별': 'month',
-        '연도별': 'year',
-    };
-
-    const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
-
-    console.log('searchCriteria:', searchCriteria.value);
-
-    // 데이터 로드 및 차트 업데이트
-    await loadData(method.value, searchType, field.model, field.label);
-};
-
-
-const loadData = async (method = 'POST', searchType = null, fieldModel = null, fieldLabel = null) => {
-    loading.value = true; // 로딩 시작
-    try {
-        searchParams.value = {
-            startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-            endDate: searchCriteria.value.salesHistorySearchDate_end || null,
-        }
-
-        let response;
-
-        if (method === 'POST') {
-            // POST 요청
-            const queryString = `?page=${first.value / rows.value}&size=${rows.value}&sortField=${sortField.value || 'createdAt'}&sortOrder=${sortOrder.value || 'desc'}`;
-            response = await $api.salesHistory.post(searchParams.value, 'employee/search' + queryString);
-
-            if (response && response.result) {
-                tableData.value = response.result.content || [];
-                totalRecords.value = response.result.totalElements || 0;
-            }
-        } else if (method === 'GET') {
-            // GET 요청
-            const subUrl = ref(null);
-            if (searchType != null)
-                subUrl.value = `employee/statistics/search/${searchType}`;
-            else
-                subUrl.value = `employee/statistics/search`;
-            const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
-            response = await $api.salesHistory.getParams(subUrl.value, queryString);
-
-            console.log("queryString: " + queryString);
-            console.log("subUrl" + subUrl);
-
-            if (response && response.result) {
-                const result = response.result;
-
-                if (Array.isArray(result)) {
-                    // 데이터 매핑
-                    const mappedData = result.map((item) => ({
-                        label: item.month || item.year || item.createdAt || '',
-                        value: item[fieldModel] || 0,
-                    }));
-
-                    console.log("mappedData:", mappedData);
-
-                    // 차트 업데이트
-                    updateChartData(mappedData, fieldLabel);
+    // 검색 조건 생성
+    if (formDataIds && Object.keys(formDataIds).length > 0) {
+        // formDataIds가 존재하고 값이 있을 경우
+        Object.entries(formDataIds).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                // 배열 필드인 경우 배열 병합 처리
+                if (Array.isArray(searchCriteria.value[key])) {
+                    searchCriteria.value[key] = searchCriteria.value[key].concat(value);
                 } else {
-                    const mappedData = Object.entries(result).map(([key, value]) => ({
-                        label: result.month || result.year || result.createdAt || '',  // 키를 label로 사용
-                        value: result[fieldModel] || 0,  // 값이 없으면 0으로 처리
-                    }));
-                    updateChartData(mappedData, fieldLabel);
+                    searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
                 }
-            } else {
-                throw new Error('Unsupported method');
             }
+        });
+    }
+
+    if (formData && Object.keys(formData).length > 0) {
+        // formData에 값이 있을 경우
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                // 배열 필드인 경우 배열 병합 처리
+                if (Array.isArray(searchCriteria.value[key])) {
+                    if (!searchCriteria.value[key].includes(value)) {
+                        searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
+                    }
+                } else if (searchCriteria.value[key] !== undefined) {
+                    if (!Array.isArray(searchCriteria.value[key])) {
+                        // 기존 값이 배열이 아니면 배열로 변환
+                        searchCriteria.value[key] = [searchCriteria.value[key]];
+                    }
+                    if (!searchCriteria.value[key].includes(value)) {
+                        searchCriteria.value[key].push(value);
+                    }
+                } else {
+                    searchCriteria.value[key] = value; // 새로운 값 설정
+                }
+            }
+        });
+    }
+
+    // 최종 검색 조건 로그
+    console.log("최종 검색 조건:", searchCriteria.value);
+
+
+    console.log("검색 조건 (id):", searchCriteria.value);
+    loadData();
+};
+
+const loadData = async () => {
+    try {
+        // 검색 조건 필터링 및 유효한 값만 유지
+        const filteredCriteria = Object.fromEntries(
+            Object.entries(searchCriteria.value).filter(([key, value]) => {
+                // null, undefined, 빈 문자열, 빈 배열, 빈 객체는 필터링
+                if (value === null || value === undefined || value === '') return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+                if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+                return key !== 'salesHistorySearchDate_start' && key !== 'salesHistorySearchDate_end'; // 날짜 제외
+            })
+        );
+
+        // 쿼리 파라미터 설정
+        const query = {
+            page: first.value / rows.value, // 현재 페이지 번호
+            size: rows.value, // 한 페이지 데이터 수
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
+        };
+
+        // 별도로 날짜 처리
+        const startDate = searchCriteria.value.salesHistoryDate_start || null;
+        const endDate = searchCriteria.value.salesHistoryDate_end+1 || null;
+
+        if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
+            alert('조회 일자를 모두 선택해주세요.');
+            console.warn("달력 선택 오류");
+        }
+        // 배열 필드 강제 처리
+        const ensureArrayFields = (criteria) => {
+            const arrayFields = ['memberList', 'centerList', 'customerList', 'productList']; // 배열로 처리할 필드 정의
+            arrayFields.forEach((field) => {
+                if (!Array.isArray(criteria[field])) {
+                    criteria[field] = criteria[field] ? [criteria[field]] : []; // 값이 있으면 배열로, 없으면 빈 배열로 처리
+                }
+            });
+            return criteria;
+        };
+
+        // 필터링된 조건에 배열 처리 추가
+        const preparedCriteria = ensureArrayFields(filteredCriteria);
+
+        // 최종 요청 본문
+        const searchParams = {
+            ...preparedCriteria,
+            startDate,
+            endDate,
+        };
+        // 쿼리 문자열 생성
+        const queryString = `employee/search?${new URLSearchParams(query).toString()}`;
+        console.log("API 호출 URL:", queryString); // 디버깅용
+
+        console.log("검색 인자: ", searchParams);
+
+        // API 호출
+        const response = await $api.salesHistory.post(searchParams, queryString);
+
+        // API 응답 데이터 확인
+        console.log("API 응답 데이터:", response);
+
+        const result = response?.result; // 응답 데이터 접근
+        if (result && Array.isArray(result.content)) {
+            tableData.value = result.content; // 테이블 데이터 업데이트
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
+            throw new Error("API 응답 데이터 구조 오류");
         }
     } catch (error) {
-        console.error('데이터 로드 실패:', error.message);
+        console.error("데이터 로드 실패:", error.message);
+        tableData.value = null;
     } finally {
         loading.value = false; // 로딩 종료
-    }
-};
-
-const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
-    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
-
-    const labels = mappedData.map((item) => item.label);
-    const data = mappedData.map((item) => item.value);
-
-    const targetChartData = isComparison ? secondChartData : bigCardChartData;
-
-    targetChartData.value = {
-        labels,
-        datasets: [
-            {
-                label: fieldLabel,
-                data,
-                borderColor: isComparison ? 'rgba(46, 204, 113, 0.8)' : 'rgba(82, 77, 249, 0.8)',
-                backgroundColor: isComparison ? 'rgba(46, 204, 113, 0.3)' : 'rgba(82, 77, 249, 0.3)',
-                pointBackgroundColor: isComparison ? 'rgba(46, 204, 113, 1)' : 'rgba(82, 77, 249, 1)',
-                pointBorderColor: '#FFFFFF',
-                pointRadius: 5,
-                fill: true,
-                tension: 0.4,
-                type: 'bar',
-            },
-        ],
-    };
-
-    console.log("Updated Chart Data:", targetChartData.value);
-};
-
-const loadComparisonData = async (requestBody, fieldLabel) => {
-    loading.value = true;
-    try {
-        const response = await $api.salesHistory.post(requestBody, 'statistics/average');
-
-        if (response && response.result) {
-            const result = response.result;
-
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'averageTotalIncentive',
-                performance: 'averageTotalPerformance',
-                totalSales: 'averageTotalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
-        }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
-    }
-};
-
-const loadBestData = async (requestBody, fieldLabel, searchType) => {
-    loading.value = true;
-    try {
-
-        console.log
-
-        const response = await $api.salesHistory.post(requestBody, `statistics/best`);
-
-        if (response && response.result) {
-            const result = response.result;
-
-            console.log("Response Result:", result);
-
-            // `saveButton` 값을 기반으로 매핑할 필드 결정
-            const fieldMapping = {
-                incentive: 'totalIncentive',
-                performance: 'totalPerformance',
-                totalSales: 'totalSales',
-            };
-
-            const mappedKey = fieldMapping[saveButton];
-            if (!mappedKey) {
-                console.error(`saveButton ${saveButton}에 대한 매핑이 없습니다.`);
-                return;
-            }
-
-            // result 배열을 매핑
-            const mappedData = result.content.map((item) => ({
-                label: item.month || item.year || '',
-                value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
-            }));
-
-            console.log("Mapped Comparison Data:", mappedData);
-
-            // 비교 차트 데이터 업데이트
-            updateChartData(mappedData, fieldLabel, true);
-        } else {
-            console.warn("Response 결과가 비어 있습니다.");
-        }
-    } catch (error) {
-        console.error('Comparison 데이터 로드 실패:', error.message);
-    } finally {
-        loading.value = false;
     }
 };
 
 onMounted(() => {
     loadData('POST');
 });
-
 
 const exportCSV = async () => {
     loading.value = true;
@@ -466,6 +347,7 @@ const exportCSV = async () => {
     }
 };
 
+
 // 페이지네이션 이벤트 처리
 function onPage(event) {
     first.value = event.first; // 시작 인덱스
@@ -488,18 +370,164 @@ function onFilter(event) {
 
 // 검색창 모달
 const showModal = ref(false);
-const selectedRow = ref(null);
-const selectedCode = ref('');
-const searchFormRef = ref(null);
-const selectedFieldIndex = ref(null);
 const searchQuery = ref('');
+const modalTableData = ref([]);
+const selectedRow = ref(null);
+const selectedStoreCode = ref('');
+const modalType = ref(''); // 현재 열려 있는 모달의 유형
+const searchFormRef = ref(null);
 
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
+const dynamicHeaders = computed(() => {
+    if (modalType.value === 'centerList') {
+        return ['매장코드', '매장명'];
+    } else if (modalType.value === 'memberList') {
+        return ['사원코드', '사원명'];
+    } else if (modalType.value === 'productList') {
+        return ['제품코드', '제품명']; // 가정
+    } else if (modalType.value === 'customerList') {
+        return ['고객코드', '고객명']; // 가정
+    } else {
+        return [];
+    }
+});
+
+function handleOpenModal(fieldModel) {
+    if (fieldModel === 'centerList') {
+        modalType.value = 'centerList';
+    } else if (fieldModel === 'memberList') {
+        modalType.value = 'memberList';
+    } else if (fieldModel === 'productList') {
+        modalType.value = 'productList'; // 추가로 필요한 경우
+    } else if (fieldModel === 'customerList') {
+        modalType.value = 'customerList'; // 추가로 필요한 경우
+    } else {
+        console.warn(`알 수 없는 fieldModel: ${fieldModel}`);
+        return;
+    }
+    showModal.value = true; // 모달 열기
+    selectedRow.value = null; // 선택 초기화
 }
 
-const selectedRows = ref([]);
+// 테이블 행 선택
+function selectStore(row, index) {
+    selectedRow.value = index; // 선택된 행의 인덱스 저장
+
+    switch (modalType.value) {
+        case 'centerList':
+            selectedStoreCode.value = row.centerId; // 매장 코드 저장
+            console.log("선택된 매장 코드:", selectedStoreCode.value);
+            break;
+        case 'memberList':
+            selectedStoreCode.value = row.memberId; // 사원 코드 저장
+            console.log("선택된 사원 코드:", selectedStoreCode.value);
+            break;
+        case 'productList':
+            selectedStoreCode.value = row.productId; // 제품 코드 저장
+            console.log("선택된 제품 코드:", selectedStoreCode.value);
+            break;
+        case 'customerList':
+            selectedStoreCode.value = row.customerId; // 고객 코드 저장
+            console.log("선택된 고객 코드:", selectedStoreCode.value);
+            break;
+        default:
+            console.warn(`알 수 없는 modalType: ${modalType.value}`);
+    }
+}
+
+
+function confirmSelection() {
+    if (selectedRow.value === null) {
+        alert('항목을 선택하세요.');
+        return;
+    }
+
+    const selectedData = modalTableData.value[selectedRow.value];
+
+    switch (modalType.value) {
+        case 'centerList':
+            searchFormRef.value.updateFieldValue('centerList', selectedData.name, selectedData.centerId);
+            break;
+        case 'memberList':
+            searchFormRef.value.updateFieldValue('memberList', selectedData.name, selectedData.memberId);
+            break;
+        case 'productList':
+            searchFormRef.value.updateFieldValue('productList', selectedData.name, selectedData.productId);
+            break;
+        case 'customerList':
+            searchFormRef.value.updateFieldValue('customerList', selectedData.name, selectedData.customerId);
+            break;
+        default:
+            console.warn(`알 수 없는 modalType: ${modalType.value}`);
+    }
+
+    showModal.value = false; // 모달 닫기
+}
+
+
+
+
+// 모달 상태 초기화
+function resetModalState() {
+    showModal.value = false;
+    selectedRow.value = null;
+    searchQuery.value = ''; // 검색어 초기화
+    modalTableData.value = []; // 모달 테이블 데이터 초기화
+    selectedStoreCode.value = ''; // 선택된 매장 코드 초기화
+}
+
+async function searchStore() {
+    try {
+        console.log("검색어:", searchQuery.value);
+
+        const query = modalType.value === 'centerList'
+            ? { name: searchQuery.value }
+            : { employeeName: searchQuery.value };
+
+
+        const endpoint = modalType.value === 'centerList'
+            ? $api.center
+            : modalType.value === 'memberList'
+                ? $api.member
+                : modalType.value === 'productList'
+                    ? $api.product // 가정
+                    : modalType.value === 'customerList'
+                        ? $api.customer // 가정
+                        : null;
+
+        if (!endpoint) {
+            console.error('유효하지 않은 modalType:', modalType.value);
+            return;
+        }
+
+        const response = await endpoint.getParams('search', `?name=${searchQuery.value}`);
+        console.log("API 응답 데이터:", response);
+
+        let result = [];
+        if (modalType.value === 'centerList') {
+            result = response.result.content || [];
+        } else if (modalType.value === 'memberList') {
+            result = response.result || [];
+        } else if (modalType.value === 'productList') {
+            result = response.result.content || []; // 가정
+        } else if (modalType.value === 'customerList') {
+            result = response.result.content || []; // 가정
+        }
+
+        if (Array.isArray(result)) {
+            modalTableData.value = result;
+            console.log("Modal Table Data:", modalTableData.value);
+        } else {
+            console.warn("API 응답 데이터가 배열이 아닙니다.");
+            modalTableData.value = [];
+        }
+    } catch (error) {
+        console.error("데이터 로드 실패:", error.message);
+        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+    } finally {
+        loading.value = false;
+    }
+}
+
 
 const updateSelectedRows = (newSelection) => {
     selectedRows.value = newSelection;
@@ -570,82 +598,23 @@ const printSelectedRows = () => {
     document.body.removeChild(printFrame);
 };
 
-const bigCardChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '수당',
-            data: [],
-            yAxisID: 'y',
-            borderColor: 'rgba(82, 77, 249, 0.8)',
-            backgroundColor: 'rgba(82, 77, 249, 0.3)',
-            pointBackgroundColor: 'rgba(82, 77, 249, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            fill: true,
-            tension: 0.4,
-            type: 'line', // 라인 차트
-        },
-    ],
-    gradientColors: ['rgba(82, 77, 249, 0.7)', 'rgba(82, 77, 249, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const secondChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '실적',
-            data: [],
-            yAxisID: 'y1',
-            borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루
-            backgroundColor: 'rgba(52, 115, 235, 0.2)', // 블루 배경색
-
-            type: 'bar', // 바 차트
-            barThickness: 15, // 바의 두께
-        },
-    ],
-    gradientColors: [
-        'rgba(52, 115, 235, 0.8)', // 상단 진한 블루
-        'rgba(52, 115, 235, 0.3)', // 중간 블루
-        'rgba(52, 115, 235, 0)',   // 하단 투명
-    ],
-});
-
-const thirdChartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: '매출액',
-            data: [],
-            yAxisID: 'y2',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.6)',
-            pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-            pointBorderColor: '#FFFFFF',
-            pointRadius: 5,
-            type: 'line', // 라인 차트
-            tension: 0.4,
-        },
-    ],
-    gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
-});
-
-const orderByValue = (saveButton) => {
-    switch (saveButton) {
-        case 'incentive':
-            return 'total_incentive';
-        case 'performance':
-            return 'total_performance';
-        case 'totalSales':
-            return 'total_sales';
-        default:
-            return ''; // 기본값 처리
-    }
-};
-
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -846,22 +815,28 @@ tr:hover {
     /* 호버 시 배경색 */
 }
 
-.button-row {
+.search-wrapper {
     display: flex;
-    gap: 10px;
-    /* 버튼 간 간격 */
-    margin-bottom: 20px;
-    /* 버튼 행 위쪽 간격 */
-    justify-content: end;
-    /* 버튼을 왼쪽 정렬 */
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
 }
 
-.flex-container {
-    display: flex;
-    align-items: center;
-    /* 세로로 중앙 정렬 */
-    justify-content: end;
-    gap: 16px;
-    /* 요소 간의 간격 */
+.search-button-wrapper {
+    margin-bottom: 1rem;
+    /* 검색 조건과 버튼 사이 간격 */
+}
+
+.search-fields {
+    width: 100%;
+}
+
+
+.line {
+    width: 5px;
+    height: 24px;
+    background-color: #333333;
+    margin-right: 10px;
 }
 </style>
