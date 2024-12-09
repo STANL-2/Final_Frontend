@@ -102,7 +102,7 @@ import { $api } from '@/services/api/api';
 import Modal from '@/components/common/Modal.vue';
 import PagePath from '@/components/common/PagePath.vue';
 
-const formFields = [
+const initialFormFields = [
     [
         {
             label: '제품 번호',
@@ -131,6 +131,8 @@ const formFields = [
         }
     ],
 ]
+
+const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기값 복사
 
 // table 헤더 값
 const tableHeaders = ref([
@@ -163,12 +165,14 @@ const searchCriteria = ref({});
 
 const refresh = () => {
     searchCriteria.value = {};
-
+    formFields.value = JSON.parse(JSON.stringify(initialFormFields));
+    // formKey.value++; // 강제로 재렌더링
     // SearchForm 초기화
     if (searchFormRef.value) {
         searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
     }
 
+    searchFormRef.value.formDataIds = {};
     // 버튼 상태 초기화`
     // formFields.value.forEach((field) => field.value = '');
 
