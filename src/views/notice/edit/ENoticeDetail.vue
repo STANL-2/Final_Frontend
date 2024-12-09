@@ -2,21 +2,21 @@
     <ConfirmDialog></ConfirmDialog>
     <PageLayout>
         <div class="header width-s ml-l mb-m mt-xl">
-            <h1>상세 페이지</h1>
+            <h3>공지사항 상세 페이지</h3>
         </div>
         <div class="detail-container width-xxxs ml-xl">
-            <h2 class="notice-title mb-m">{{ noticeTitle }}</h2>
-            <h3 class="notice-content ml-xs">
+            <h2 class="notice-title mb-l ml-xs ">{{ noticeTitle }}</h2>
+            <h3 class="notice-content ml-xxxs">
                 <div class="notice-content ml-xs content-container">
                     <div v-html="noticeContent"></div>
                 </div>
             </h3>
 
             <!-- 첨부 파일 보여주기 -->
-            <div class="bottom-section flex-col items-center width-s ml-xxxl">
+            <div class="bottom-section flex-col items-center width-s ml-l">
                 <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
-                    <table class="file-table">
+                    <table class="file-table ml-s ">
                         <thead>
                             <tr>
                                 <th>첨부파일명</th>
@@ -38,7 +38,7 @@
                 <!-- 버튼 -->
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
-                    <div class="right-buttons">
+                    <div class="right-buttons ml-xl">
                         <button class="button delete-button" @click="deleteModal">삭제</button>
                         <button class="button edit-button" @click="navigateToEditPage">수정</button>
                     </div>
@@ -139,12 +139,14 @@ function deleteModal() {
 
 <style scoped>
 .bottom-section {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    position: static; /* Fixed 제거 */
+    margin-top: 2rem; /* Content 아래에 여유 공간 추가 */
+    width: 100%; /* 부모 컨테이너에 맞춤 */
     background-color: #fff;
     padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 
@@ -161,10 +163,11 @@ function deleteModal() {
 }
 
 .file-section {
-    width: 70%;
+    width: 94%;
+    margin-right:12.5rem
 }
 
-.file-table {
+.file-table {    
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
@@ -184,8 +187,11 @@ function deleteModal() {
 
 .button-section {
     display: flex;
-    justify-content: space-between;
-    width: 70%;
+    justify-content: space-between; /* 양쪽 정렬 */
+    align-items: center;
+    width: 100%; /* 부모 컨테이너의 너비에 맞춤 */
+    margin-top: 1rem;
+    margin-right:13.8rem;
 }
 
 .right-buttons {
@@ -224,7 +230,6 @@ function deleteModal() {
 
 .content-container {
     max-width: 50rem;
-    max-height: 500px;
     overflow: auto;
     padding: 1rem;
     border: 1px solid #ddd;

@@ -3,9 +3,14 @@
         <div class="component-wrapper">
             <!-- SearchForm -->
             <div>
-                <div class="button-row">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
+                <div class="top">
+                    <div class="path">
+                        <PagePath />
+                    </div>
+                    <div class="button-row">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
                 </div>
                 <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
             </div>
@@ -87,6 +92,7 @@ import { $api } from '@/services/api/api';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
@@ -516,7 +522,7 @@ const loadData = async (searchType = null,
                         value: selectedMappedData.data[index],
                         key: fieldMapping.totalSales
                     }));
-                    
+
                     // 기존 차트에 새 데이터 추가 (true로 설정)
                     updateChartData(transformedData, fieldMapping[saveButton], true);
                 }
@@ -977,6 +983,20 @@ async function searchStore() {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

@@ -43,6 +43,7 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Typography from '@/components/Typography.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import { $api } from "@/services/api/api";
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     visible: {
@@ -55,7 +56,16 @@ const props = defineProps({
     },
 });
 
+const validateForm = () => {
+    if (!title.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '계약서 제목을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    return true;
+};
+
 const emit = defineEmits(['update:visible', 'close']);
+const toast = useToast();
 const isVisible = ref(props.visible);
 const content = ref('');
 const title = ref('');
@@ -73,11 +83,9 @@ watch(
 const getDetailRequest = async () => {
     try {
         const response = await $api.contract.get('', props.contractId);
-        console.log('계약서 상세 조회 응답:', response);
 
         const createdUrl = response.result.createdUrl;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -87,7 +95,6 @@ const getDetailRequest = async () => {
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
             title.value = response.result.title;
-            console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -102,7 +109,11 @@ const onUpdate = async () => {
         if (!content.value) {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
-        console.log("props.contractId: " + props.contractId);
+        
+        // 유효성 검사
+        if (!validateForm()) {
+            return; // 검사 실패 시 함수 종료
+        }
 
         const extractedData = extractDataFromHTML(content.value);
 
@@ -152,14 +163,14 @@ const onUpdate = async () => {
             postData,
             props.contractId
         );
-        console.log("PUT 응답:", response);
 
-        alert("계약서가 성공적으로 수정되었습니다.");
+        toast.add({ severity: 'success', summary: '수정 완료', detail: '계약서가 성공적으로 수정되었습니다.', life: 3000 });
+
         closeModal();
         window.location.reload();
     } catch (error) {
         console.error("수정 중 오류:", error);
-        alert("수정 중 문제가 발생했습니다 ");
+        toast.add({ severity: 'error', summary: '수정 실패', detail: `수정 중 문제가 발생했습니다: ${error.message}`, life: 3000 });
     }
 };
 

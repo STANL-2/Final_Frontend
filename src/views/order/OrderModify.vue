@@ -7,25 +7,18 @@
             <InputText type="text" v-model="title" />
         </div>
         <div class="flex-row content-between">
-            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" ref="editorRef" />
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate"
+                ref="editorRef" />
             <div class="p-20">
-                <Card style="width: 25rem; height: 37rem; overflow: visible; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
+                <Card
+                    style="width: 25rem; height: 37rem; overflow: visible; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
                     <template #title>계약서 선택</template>
                     <Divider />
                     <template #content>
-                        <div
-                            class="contract-list"
-                            @scroll="onScroll"
-                            style="max-height: 32rem; overflow-y: auto;"
-                        >
-                            <div
-                                v-for="contract in contracts"
-                                :key="contract.id"
-                                class="contract-item"
+                        <div class="contract-list" @scroll="onScroll" style="max-height: 32rem; overflow-y: auto;">
+                            <div v-for="contract in contracts" :key="contract.id" class="contract-item"
                                 :class="{ 'selected': selectedContractId === contract.id }"
-                                @click="selectContract(contract)"
-                                style="padding: 15px 10px; cursor: pointer;"
-                            >
+                                @click="selectContract(contract)" style="padding: 15px 10px; cursor: pointer;">
                                 <Typography>제목: {{ contract.title }}</Typography>
                                 <Typography type="caption">{{ contract.createdAt }}</Typography>
                             </div>
@@ -52,6 +45,7 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Typography from '@/components/Typography.vue';
 import CKEditor from '@/components/common/CKEditor/CKEditor.vue';
 import { $api } from "@/services/api/api";
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     visible: {
@@ -64,7 +58,16 @@ const props = defineProps({
     },
 });
 
+const validateForm = () => {
+    if (!title.value) {
+        toast.add({ severity: 'warn', summary: '유효성 검사 실패', detail: '수주서 제목을 입력해주세요.', life: 3000 });
+        return false;
+    }
+    return true;
+};
+
 const emit = defineEmits(['update:visible', 'close']);
+const toast = useToast();
 const isVisible = ref(props.visible);
 const content = ref('');
 const title = ref('');
@@ -81,13 +84,10 @@ watch(
 
 const getDetailRequest = async () => {
     try {
-        console.log("orderId: " + props.orderId);
         const response = await $api.order.get('', props.orderId);
-        console.log('수주서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -96,7 +96,7 @@ const getDetailRequest = async () => {
 
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
-            console.log('Fetched HTML:', content.value);
+            title.value = response.result.title;
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -112,11 +112,21 @@ const onUpdate = async () => {
             throw new Error("에디터 내용이 비어 있습니다.");
         }
 
-        const data = extractDataFromHTML(content.value);
+        // 유효성 검사
+        if (!validateForm()) {
+            return; // 검사 실패 시 함수 종료
+        }
+
+        const extractedData = extractDataFromHTML(content.value);
 
         // initialHtml을 업데이트
-        const updatedInitialHtml = generateInitialHtml(data);
-
+        const updatedInitialHtml = generateInitialHtml({
+            ...extractedData,
+            numberOfVehicles: formatNumberWithCommas(extractedData.numberOfVehicles),
+            totalSales: formatNumberWithCommas(extractedData.totalSales),
+            stock: formatNumberWithCommas(extractedData.stock),
+            writerSignature: extractedData.writerSignature, // 서명 이미지 추가
+        });
         // content에 반영
         content.value = updatedInitialHtml;
 
@@ -131,14 +141,14 @@ const onUpdate = async () => {
             postData,
             props.orderId
         );
-        console.log("PUT 응답:", response);
 
-        alert("수주서가 성공적으로 수정되었습니다.");
+        toast.add({ severity: 'success', summary: '수정 완료', detail: '수주서가 성공적으로 수정되었습니다.', life: 3000 });
+
         closeModal();
         window.location.reload();
     } catch (error) {
         console.error("수정 중 오류:", error);
-        alert("수정 중 문제가 발생했습니다: " + error.message);
+        toast.add({ severity: 'error', summary: '수정 실패', detail: `수정 중 문제가 발생했습니다: ${error.message}`, life: 3000 });
     }
 };
 
@@ -159,6 +169,8 @@ const extractDataFromHTML = (html) => {
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
     const stock = doc.querySelector(".stock")?.innerText.trim() || "";
 
+    const writerSignature = doc.querySelector("#writer-signature-area img")?.getAttribute("src") || null;
+
     // 필요한 필드를 추가적으로 추출
     return {
         title: title.value,
@@ -171,6 +183,7 @@ const extractDataFromHTML = (html) => {
         totalSales,
         stock,
         carName,
+        writerSignature,
         no,
         content: html // HTML 전체를 전송
     };
@@ -357,7 +370,7 @@ const selectContract = async (contract) => {
     serialNoCell.textContent = contractDetails.serialNum;
     carNameCell.textContent = contractDetails.carName;
     numberOfVehiclesCell.textContent = contractDetails.numberOfVehicles;
-    totalSalesCell.textContent = contractDetails.totalSales;
+    totalSalesCell.textContent = contractDetails.vehiclePrice;
     stockCell.textContent = 14;
 
 
