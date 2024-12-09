@@ -216,7 +216,6 @@ const select = () => {
                     searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
                 }
             } else {
-                console.log("무슨 valueD인데", value, key);
                 searchCriteria.value[key] = value; // 배열이 아니면 값을 설정
             }
         }
@@ -229,10 +228,6 @@ const select = () => {
     if (formData.salesHistoryDate_end) {
         searchCriteria.value.salesHistoryDate_end = formData.salesHistoryDate_end;
     }
-
-    // 최종 검색 조건 로그
-    console.log("최종 검색 조건:", searchCriteria.value);
-
 
     console.log("검색 조건 (id):", searchCriteria.value);
     loadData();
