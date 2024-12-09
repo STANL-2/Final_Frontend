@@ -625,6 +625,7 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             return acc;
         }, {});
 
+        
         const newChartData = {
             labels,
             datasets,
@@ -674,8 +675,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
 
 
         // const unifiedLabels = [...existingChartData.labels];
-        console.log(existingChartData.labels[0]);
-
         const unifiedLabels = ref([]);
 
         if (existingChartData.labels[0].substr(0, 1) != '2')
@@ -715,8 +714,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             type: saveValue === 'average' ? 'line' : 'bar' // average는 선, best는 막대 그래프
         };
 
-
-        
         // 새로운 데이터셋 추가
         updatedDatasets.push(newDataset);
 
