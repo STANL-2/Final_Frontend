@@ -3,8 +3,15 @@
         <div class="search-wrapper">
             <div class="flex-row content-end">
                 <div class="ml-l">
-                    <div class="ml-xs"><CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" /></div>
+                    <div class="ml-xs">
+                        <CommonButton label="초기화"
+                        icon="pi pi-refresh" 
+                        color="#F1F1FD" 
+                        textColor="#6360AB"
+                        @click = "resetSearchParams"  
+                    />
                 </div>
+            </div>
                 <div class="search-button-wrapper ml-s">
                     <CommonButton label="조회" @click="handleSearch"/>
                 </div>
@@ -69,6 +76,28 @@ const searchParams = ref({
     startDate: null,
     endDate: null
 });
+
+const resetSearchParams = () => {
+    // searchParams 초기화
+    searchParams.value = {
+        title: '',
+        memberId: '',
+        startDate: null,
+        endDate: null
+    };
+
+    // SearchForm 필드 초기화
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 데이터 로드
+    loadData();
+};
 
 const formFields = [
     [

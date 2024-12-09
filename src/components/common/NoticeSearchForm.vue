@@ -77,6 +77,8 @@ function initializeFormData() {
     console.log('초기화된 formData:', formData.value);
 }
 
+
+
 // 부모 컴포넌트에서 호출할 데이터 반환 메서드
 function getFormData() {
     console.log('getFormData 호출됨:', formData.value);
