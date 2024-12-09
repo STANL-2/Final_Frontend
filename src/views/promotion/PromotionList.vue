@@ -1,7 +1,6 @@
 <template>
     <PageLayout>
         <div class="search-wrapper">
-
             <div class="top">
                 <div class="path">
                     <PagePath />
@@ -9,7 +8,11 @@
                 <div class="flex-row content-end">
                     <div class="ml-l">
                         <div class="ml-xs">
-                            <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                            <CommonButton label="초기화" 
+                            icon="pi pi-refresh" 
+                            @click="resetSearchParams"
+                            color="#F1F1FD" 
+                            textColor="#6360AB" />
                         </div>
                     </div>
                     <div class="search-button-wrapper ml-s">
@@ -212,22 +215,18 @@ const loadData = async () => {
         }
         if (params.startDate == null) {
             params.startDate = ''
-            console.log("1");
             console.log(params.startDate);
         }
         else if (params.startDate != '') {
             params.startDate = '&startDate=' + params.startDate + '%2000%3A00%3A00';
-            console.log("2");
             console.log(params.startDate);
         }
         if (params.endDate == null) {
             params.endDate = ''
-            console.log("3");
             console.log(params.endDate);
         }
         else if (params.endDate != '') {
             params.endDate = '&endDate=' + params.endDate + '%2000%3A00%3A00';
-            console.log("4");
             console.log(params.endDate);
         }
         const response = await $api.promotion.getParams('', `?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.startDate}${params.endDate}`);
@@ -239,6 +238,30 @@ const loadData = async () => {
     } finally {
         loading.value = false;
     }
+};
+const resetSearchParams = async () => {
+    console.log('초기화 버튼 클릭됨');
+    // 검색 파라미터 초기화
+    searchParams.value = {
+        title: '',
+        tag: '',
+        memberId: '',
+        classification: '',
+        startDate: null,
+        endDate: null
+    };
+
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    // 테이블 데이터 및 페이지 관련 변수 초기화
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 초기 상태 데이터 로드
+    await loadData();
 };
 
 onMounted(() => {
