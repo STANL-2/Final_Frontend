@@ -18,8 +18,10 @@ jobs:
             - run: docker push minseokkim6823/docker-frontend
             - run: docker push minseokkim6823/docker-nginx
 
-            - name: Generate deployment package
-              run: zip -r deploy.zip . -x '*.git*'
+            - name: Prepare deployment package
+              run: |
+                zip -r deploy.zip . -x '*.git*' '*node_modules*' '*.github*'
+    
 
             - name: Deploy to EB
               uses: einaregilsson/beanstalk-deploy@v18
