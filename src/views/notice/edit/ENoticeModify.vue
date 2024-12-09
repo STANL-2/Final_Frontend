@@ -13,15 +13,6 @@
             </div>
 
             <div class="selectors-container">
-                <div class="tag-container">
-                    <label for="tag-select">태그</label>
-                    <select id="tag-select" >
-                        <option value="ALL">ALL</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="DIRECTOR">DIRECTOR</option>
-                    </select>
-                </div>
-
                 <div class="classification-container">
                     <label for="classification-select">분류</label>
                     <select id="classification-select" v-model="classification">

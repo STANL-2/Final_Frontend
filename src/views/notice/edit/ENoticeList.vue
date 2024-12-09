@@ -98,26 +98,19 @@ const formFields = [
     [
         {
             type: 'select',
-            label: '태그',
-            model: 'tag',
-            options: ['ALL','ADMIN','DIRECTOR'],
-            showDivider: false
-        },
-        {
-            type: 'select',
             label: '분류',
             model: 'classification',
             options: ['NORMAL','GOAL','STRATEGY'],
             showDivider: false
         },
-    ],
-    [
         {
             label: '제목',
             type: 'input',
             model: 'noticeTitle',
             showDivider: true
-        },
+        }
+    ],
+    [
         {
             label: '작성자',
             type: 'input',
@@ -146,12 +139,11 @@ const fields = ref({
 
 
 const tableHeaders = [
-    { field: 'noticeId', label: '번호', width: '15%' },
-    { field: 'tag', label: '태그', width: '20%' },
-    { field: 'classification', label: '분류', width: '10%' },
+    { field: 'noticeId', label: '번호', width: '20%' },
+    { field: 'classification', label: '분류', width: '20%' },
     { field: 'title', label: '제목', width: '20%' },
-    { field: 'createdAt', label: '작성 일자', width: '15%' },
-    { field: 'memberId', label: '작성자', width: '15%' }
+    { field: 'createdAt', label: '작성 일자', width: '20%' },
+    { field: 'memberId', label: '작성자', width: '20%' }
 ];
 
 const resetSearchParams = async () => {
@@ -230,7 +222,7 @@ function handleView(rowData) {
     router.push({
         name: 'ENoticeDetail',
         query: {
-            tag: rowData.tag, // 태그
+            tag: rowData.tag, 
             classification: rowData.classification, // 분류
             noticeTitle: rowData.title, 
             noticeContent: rowData.content,
