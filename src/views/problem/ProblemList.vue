@@ -159,6 +159,30 @@ const exportCSV = async () => {
     }
 };
 
+const resetSearchParams = () => {
+    // searchParams 초기화
+    searchParams.value = {
+        title: '',
+        memberId: '',
+        productId: '',
+        customerId: '',
+        startDate: null,
+        endDate: null
+    };
+
+    // SearchForm 필드 초기화
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 데이터 로드
+    loadData();
+};
+
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     router.push({

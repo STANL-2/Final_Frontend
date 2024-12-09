@@ -1,7 +1,6 @@
 <template>
     <PageLayout>
         <div class="search-wrapper">
-
             <div class="top">
                 <div class="path">
                     <PagePath />
@@ -213,7 +212,30 @@ const handleSearch = async () => {
     // 데이터 로드 호출
     await loadData();
 };
+const resetSearchParams = async () => {
+    console.log('초기화 버튼 클릭됨');
+    // 검색 파라미터 초기화
+    searchParams.value = {
+        title: '',
+        tag: '',
+        memberId: '',
+        classification: '',
+        startDate: null,
+        endDate: null
+    };
 
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    // 테이블 데이터 및 페이지 관련 변수 초기화
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 초기 상태 데이터 로드
+    await loadData();
+};
 const loadData = async () => {
     loading.value = true;
     try {
