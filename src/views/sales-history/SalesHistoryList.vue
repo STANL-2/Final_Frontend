@@ -24,7 +24,12 @@
         </div>
 
         <div class="flex-row content-between mt-l">
-            <div class="line"></div>
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    판매내역
+                </div>
+            </div>
             <div class="flex-row items-center mb-s">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
@@ -862,5 +867,24 @@ tr:hover {
     height: 24px;
     background-color: #333333;
     margin-right: 10px;
+}
+
+.subtitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.line {
+    width: 5px;
+    height: 24px;
+    background-color: #333333;
+    margin-right: 10px;
+}
+
+.subtitle-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
 }
 </style>

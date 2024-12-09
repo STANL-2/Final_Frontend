@@ -23,7 +23,12 @@
         </div>
 
         <div class="flex-row content-between mt-l">
-            <div class="line"></div>
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    판매내역
+                </div>
+            </div>
             <div class="flex-row items-center mb-s">
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
@@ -198,43 +203,31 @@ const select = () => {
         return;
     }
 
-    // 검색 조건 생성
-    if (formDataIds && Object.keys(formDataIds).length > 0) {
-        // formDataIds가 존재하고 값이 있을 경우
-        Object.entries(formDataIds).forEach(([key, value]) => {
-            if (value !== null && value !== undefined && value !== '') {
+    // formDataIds와 formData를 비교하여 조건에 맞게 설정
+    Object.entries(formData).forEach(([key, value], index) => {
+        // formDataIds가 존재하고, 해당 인덱스에 값이 있을 경우 formDataIds 값을 우선 사용
+        if (formDataIds && formDataIds[key] !== undefined && formDataIds[key] !== null && formDataIds[key] !== '') {
+            searchCriteria.value[key] = formDataIds[key]; // formDataIds 값 우선
+        } else if (value !== null && value !== undefined && value !== '') {
+            // formDataIds가 없거나 해당 인덱스에 값이 없을 경우 formData 값을 사용
+            if (Array.isArray(searchCriteria.value[key])) {
                 // 배열 필드인 경우 배열 병합 처리
-                if (Array.isArray(searchCriteria.value[key])) {
-                    searchCriteria.value[key] = searchCriteria.value[key].concat(value);
-                } else {
-                    searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
+                if (!searchCriteria.value[key].includes(value)) {
+                    searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
                 }
+            } else {
+                console.log("무슨 valueD인데", value, key);
+                searchCriteria.value[key] = value; // 배열이 아니면 값을 설정
             }
-        });
-    }
+        }
+    });
 
-    if (formData && Object.keys(formData).length > 0) {
-        // formData에 값이 있을 경우
-        Object.entries(formData).forEach(([key, value]) => {
-            if (value !== null && value !== undefined && value !== '') {
-                // 배열 필드인 경우 배열 병합 처리
-                if (Array.isArray(searchCriteria.value[key])) {
-                    if (!searchCriteria.value[key].includes(value)) {
-                        searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
-                    }
-                } else if (searchCriteria.value[key] !== undefined) {
-                    if (!Array.isArray(searchCriteria.value[key])) {
-                        // 기존 값이 배열이 아니면 배열로 변환
-                        searchCriteria.value[key] = [searchCriteria.value[key]];
-                    }
-                    if (!searchCriteria.value[key].includes(value)) {
-                        searchCriteria.value[key].push(value);
-                    }
-                } else {
-                    searchCriteria.value[key] = value; // 새로운 값 설정
-                }
-            }
-        });
+    // 날짜 처리 부분에서 배열을 방지하고 하나의 문자열로만 처리
+    if (formData.salesHistoryDate_start) {
+        searchCriteria.value.salesHistoryDate_start = formData.salesHistoryDate_start;
+    }
+    if (formData.salesHistoryDate_end) {
+        searchCriteria.value.salesHistoryDate_end = formData.salesHistoryDate_end;
     }
 
     // 최종 검색 조건 로그
@@ -266,9 +259,22 @@ const loadData = async () => {
             sortOrder: sortOrder.value || null, // 정렬 순서
         };
 
+        console.log("searchCriteria.value.salesHistoryDate_end", searchCriteria.value.salesHistoryDate_end);
+
         // 별도로 날짜 처리
         const startDate = searchCriteria.value.salesHistoryDate_start || null;
-        const endDate = searchCriteria.value.salesHistoryDate_end+1 || null;
+
+        if (searchCriteria.value.salesHistoryDate_end) {
+            // salesHistoryDate_end 값을 Date 객체로 변환
+            let date = new Date(searchCriteria.value.salesHistoryDate_end);
+
+            // 1일을 더하기
+            date.setDate(date.getDate() + 1);
+
+            // 새로운 날짜를 YYYY-MM-DD 형식으로 변환
+            searchCriteria.value.salesHistoryDate_end = date.toISOString().split('T')[0]; // "2024-12-12"
+        }
+        const endDate = searchCriteria.value.salesHistoryDate_end || null;
 
         if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
             alert('조회 일자를 모두 선택해주세요.');
@@ -310,6 +316,7 @@ const loadData = async () => {
         if (result && Array.isArray(result.content)) {
             tableData.value = result.content; // 테이블 데이터 업데이트
             totalRecords.value = result.totalElements; // 전체 데이터 수
+            searchCriteria.value['contractId'] = "";
         } else {
             console.warn("API 응답이 예상한 구조와 다릅니다:", response);
             throw new Error("API 응답 데이터 구조 오류");
@@ -605,12 +612,15 @@ const printSelectedRows = () => {
 </script>
 
 <style scoped>
-.top{
+.top {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* 세로 가운데 정렬 */
-    width: 100%; /* 부모 요소 기준 크기 */
-    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
 }
 
 .path {
@@ -837,10 +847,22 @@ tr:hover {
 }
 
 
+.subtitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
 .line {
     width: 5px;
     height: 24px;
     background-color: #333333;
     margin-right: 10px;
+}
+
+.subtitle-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
 }
 </style>
