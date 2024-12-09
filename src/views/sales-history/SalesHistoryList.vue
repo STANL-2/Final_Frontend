@@ -184,11 +184,12 @@ const refresh = () => {
         searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
     }
 
+    
     // 버튼 상태 초기화`
-    // formFields.value.forEach((field) => field.value = '');
+    formFields.value = {};
 
     showModal.value = false;
-    selectedRow.value = null;
+    selectedRow.value = {};
     searchQuery.value = '';
     modalTableData.value = [];
     selectedStoreCode.value = '';

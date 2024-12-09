@@ -23,11 +23,11 @@
                             <SCommonButton :key="field.model" :label="field.label" @click="handleButtonClick(field)" />
                         </div>
                     </div>
-                    <div class="bigcard-container">
-                        <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
-                        <BigCard ref="chartRef" v-bind="$attrs" class="bigcard" :chartDataList="chartDataList"
-                            :chartOptions="chartOptions" />
-                    </div>
+                    <!-- <div class="bigcard-container"> -->
+                    <!-- BigCard 컴포넌트를 화면 중앙에 배치하고 크기 맞추기 -->
+                    <BigCard ref="chartRef" v-bind="$attrs" class="bigcard" :chartDataList="chartDataList"
+                        :chartOptions="chartOptions" />
+                    <!-- </div> -->
 
                 </TabPanel>
             </TabView>
@@ -551,7 +551,7 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                     backgroundColor: 'rgba(82, 77, 249, 0.3)',
                     pointBackgroundColor: 'rgba(82, 77, 249, 1)',
                     pointBorderColor: '#FFFFFF',
-                    pointRadius: 5,
+                    // pointRadius: 5,
                     fill: true,
                     tension: 0.4,
                     type: 'bar',
@@ -609,6 +609,22 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         const startDate = mappedDataList.map(item => item.startDate);
         const endDate = mappedDataList.map(item => item.endDate);
 
+
+        // y축 스케일 설정: 데이터셋의 yAxisID와 색상 매칭
+        const scales = datasets.reduce((acc, dataset, index) => {
+            acc[`y${index}`] = {
+                type: 'linear',
+                position: index % 2 === 0 ? 'left' : 'right', // 왼쪽 또는 오른쪽 위치 번갈아 설정
+                ticks: {
+                    color: dataset.borderColor, // y축 틱 색상을 데이터셋 색상과 동일하게 설정
+                },
+                grid: {
+                    drawOnChartArea: index === 0, // 첫 번째 y축만 격자선을 표시
+                }
+            };
+            return acc;
+        }, {});
+
         const newChartData = {
             labels,
             datasets,
@@ -616,86 +632,106 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             endDate,
         };
 
+        const updatedChartData = {
+            ...newChartData,
+            options: {
+                responsive: true,
+                scales, // y축 설정 적용
+            },
+        }
+
         // 차트 데이터에 새로 생성한 데이터 추가
+        // if (isComparison) {
+        //     chartDataList.value = [...chartDataList.value, newChartData];
+        // } else {
+        //     chartDataList.value = [newChartData];
+        // }
         if (isComparison) {
-            chartDataList.value = [...chartDataList.value, newChartData];
+            chartDataList.value = [...chartDataList.value, updatedChartData];
         } else {
-            chartDataList.value = [newChartData];
+            chartDataList.value = [updatedChartData];
         }
 
         console.log("Updated chartDataList:", chartDataList.value);
     } else if (chartDataList.value.length > 0) { // average, best
 
-    // `saveButton`에 따라 `mappingIndex` 결정
-    const mappingIndex = {
-        totalIncentive: 0,
-        totalPerformance: 1
-    }[saveButton] || 2;
+        // `saveButton`에 따라 `mappingIndex` 결정
+        const mappingIndex = {
+            totalIncentive: 0,
+            totalPerformance: 1
+        }[saveButton] || 2;
 
-    // `saveValue`에 따라 라벨 설정
-    const keyPrefix = saveValue === 'average' ? '평균' : '최고';
-    const fieldMapping = {
-        totalIncentive: `${keyPrefix} 수당`,
-        totalPerformance: `${keyPrefix} 실적`,
-        totalSales: `${keyPrefix} 매출액`,
-    };
+        // `saveValue`에 따라 라벨 설정
+        const keyPrefix = saveValue === 'average' ? '평균' : '최고';
+        const fieldMapping = {
+            totalIncentive: `${keyPrefix} 수당`,
+            totalPerformance: `${keyPrefix} 실적`,
+            totalSales: `${keyPrefix} 매출액`,
+        };
 
-    // 기존 라벨 유지
-    // const unifiedLabels = [...existingPeriod];
-    const unifiedLabels = [...existingChartData.labels];
+        // 기존 라벨 유지
+        // const unifiedLabels = [...existingPeriod];
 
-    // 디버그용 출력
-    console.log('Unified Labels:', unifiedLabels);
-    console.log('Mapped Data Period:', mappedDataList[mappingIndex].period);
 
-    // 기존 데이터셋 복사 및 라벨에 맞게 재매핑
-    // const updatedDatasets = existingChartData.datasets.map(dataset => ({
-    //     ...dataset,
-    //     data: unifiedLabels.map(label => {
-    //         const index = existingPeriod.indexOf(label);
-    //         return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
-    //     })
-    // }));
-    const updatedDatasets = existingChartData.datasets.map(dataset => ({
-        ...dataset,
-    }));
+        // const unifiedLabels = [...existingChartData.labels];
+        console.log(existingChartData.labels[0]);
 
-    // 새로운 데이터셋 생성
-    const newDataset = {
-        label: fieldMapping[saveButton],
-        data: existingPeriod.map(label => {
-            const index = mappedDataList[mappingIndex].period.indexOf(label);
-            return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
-        }),
-        // data: unifiedLabels.map(label => {
-        //     const index = mappedDataList[mappingIndex].period.indexOf(label);
-        //     return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
-        // }),
-        borderColor: saveValue === 'average' ? 'rgba(52, 115, 235, 0.8)' : 'rgba(46, 204, 113, 1)',
-        backgroundColor: saveValue === 'average' ? 'rgba(52, 115, 235, 0.2)' : 'rgba(46, 204, 113, 0.6)',
-        pointBackgroundColor: saveValue === 'average' ? 'rgba(152, 77, 249, 1)' : 'rgba(46, 204, 113, 1)',
-        pointBorderColor: '#FFFFFF',
-        pointRadius: 5,
-        fill: true,
-        tension: 0.4,
-        type: saveValue === 'average' ? 'line' : 'bar' // average는 선, best는 막대 그래프
-    };
+        const unifiedLabels = ref([]);
 
-    // 새로운 데이터셋 추가
-    updatedDatasets.push(newDataset);
+        if (existingChartData.labels[0].substr(0, 1) != '2')
+            unifiedLabels.value = [...existingChartData.labels.map((label, index) => `${label}(${existingPeriod[index] || ''})`)];
+        else {
+            unifiedLabels.value = [...existingChartData.labels];
+        }
 
-    // 차트 데이터 업데이트 (불변성 유지)
-    const updatedChartData = {
-        labels: unifiedLabels, // 기존 라벨 유지
-        datasets: updatedDatasets
-    };
+        // 디버그용 출력
+        console.log('Unified Labels:', unifiedLabels);
+        console.log('Mapped Data Period:', mappedDataList[mappingIndex].period);
 
-    // chartDataList 업데이트
-    chartDataList.value = [updatedChartData];
+        // 기존 데이터셋 복사 및 라벨에 맞게 재매핑
+        // const updatedDatasets = existingChartData.datasets.map(dataset => ({
+        //     ...dataset,
+        //     data: unifiedLabels.map(label => {
+        //         const index = existingPeriod.indexOf(label);
+        //         return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
+        //     })
+        // }));
+        const updatedDatasets = existingChartData.datasets.map(dataset => ({
+            ...dataset,
+        }));
 
-    // 디버그 로그
-    console.log('Updated Chart Data:', chartDataList.value);
-}
+        // 새로운 데이터셋 생성
+        // 새로운 데이터셋 생성
+        const newDataset = {
+            label: fieldMapping[saveButton],
+            data: existingPeriod.map(label => {
+                const index = mappedDataList[mappingIndex].period.indexOf(label);
+                return index !== -1 ? mappedDataList[mappingIndex].data[index] : 0; // 라벨 매핑
+            }),
+            borderColor: saveValue === 'average' ? 'rgba(33, 150, 243, 1)' : 'rgba(39, 174, 96, 1)', // 파란색과 초록색
+            backgroundColor: saveValue === 'average' ? 'rgba(33, 150, 243, 0.2)' : 'rgba(39, 174, 96, 0.5)',
+            fill: true,
+            tension: 0.4,
+            type: saveValue === 'average' ? 'line' : 'bar' // average는 선, best는 막대 그래프
+        };
+
+
+        
+        // 새로운 데이터셋 추가
+        updatedDatasets.push(newDataset);
+
+        // 차트 데이터 업데이트 (불변성 유지)
+        const updatedChartData = {
+            labels: unifiedLabels, // 기존 라벨 유지
+            datasets: updatedDatasets
+        };
+
+        // chartDataList 업데이트
+        chartDataList.value = [updatedChartData];
+
+        // 디버그 로그
+        console.log('Updated Chart Data:', chartDataList.value);
+    }
 
 
 };
@@ -865,12 +901,15 @@ async function searchStore() {
 </script>
 
 <style scoped>
-.top{
+.top {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* 세로 가운데 정렬 */
-    width: 100%; /* 부모 요소 기준 크기 */
-    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
 }
 
 .path {
