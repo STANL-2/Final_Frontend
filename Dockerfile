@@ -1,20 +1,11 @@
-# Node.js 이미지 사용
-FROM node:16
-
-# 작업 디렉토리 설정
+FROM node:16 as builder
 WORKDIR /app
-
-# 종속성 설치
 COPY package*.json ./
 RUN npm install
-
-# 소스 코드 복사
 COPY . .
-
-# 프로덕션 빌드
 RUN npm run build
 
-# Nginx 이미지로 변경
+# Stage 2: Serve the built app using Nginx
 FROM nginx:alpine
 COPY default.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
