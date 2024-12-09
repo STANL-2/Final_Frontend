@@ -73,6 +73,28 @@ const searchParams = ref({
     endDate: null
 });
 
+const resetSearchParams = () => {
+    // searchParams 초기화
+    searchParams.value = {
+        title: '',
+        memberId: '',
+        startDate: null,
+        endDate: null
+    };
+
+    // SearchForm 필드 초기화
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 데이터 로드
+    loadData();
+};
+
 const formFields = [
     [
         {

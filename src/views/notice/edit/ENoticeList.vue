@@ -81,6 +81,17 @@ const searchParams = ref({
     endDate: null
 });
 
+const resetForm = () => {
+    fields.value = {
+        tag: '',
+        classification: '',
+        noticeTitle: '',
+        noticeWriter: '',
+        NoticeSearchDate_start: null,
+        NoticeSearchDate_end: null
+    };
+};
+
 const formFields = [
     [
         {
@@ -88,14 +99,16 @@ const formFields = [
             label: '태그',
             model: 'tag',
             options: ['ALL','ADMIN','DIRECTOR'],
-            showDivider: false
+            showDivider: false,
+            showIcon: true, // 드롭다운 아이콘 추가
         },
         {
             type: 'select',
             label: '분류',
             model: 'classification',
             options: ['NORMAL','GOAL','STRATEGY'],
-            showDivider: false
+            showDivider: false,
+            showIcon: true
         },
     ],
     [
@@ -121,6 +134,17 @@ const formFields = [
     ]
 ];
 
+const fields = ref({
+    tag: '',
+    classification: '',
+    noticeTitle: '',
+    noticeWriter: '',
+    NoticeSearchDate_start: null,
+    NoticeSearchDate_end: null,
+});
+
+
+
 const tableHeaders = [
     { field: 'noticeId', label: '번호', width: '15%' },
     { field: 'tag', label: '태그', width: '20%' },
@@ -130,6 +154,41 @@ const tableHeaders = [
     { field: 'memberId', label: '작성자', width: '15%' }
 ];
 
+const resetSearchParams = async () => {
+    console.log('초기화 버튼 클릭됨');
+    // 검색 파라미터 초기화
+    searchParams.value = {
+        title: '',
+        tag: '',
+        memberId: '',
+        classification: '',
+        startDate: null,
+        endDate: null
+    };
+
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    // 테이블 데이터 및 페이지 관련 변수 초기화
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 초기 상태 데이터 로드
+    await loadData();
+};
+
+const initializeFormData = () => {
+    fields.value = {
+        tag: '',
+        classification: '',
+        noticeTitle: '',
+        noticeWriter: '',
+        NoticeSearchDate_start: null,
+        NoticeSearchDate_end: null,
+    };
+};
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수

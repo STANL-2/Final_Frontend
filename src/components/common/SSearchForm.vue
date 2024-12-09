@@ -91,7 +91,8 @@ function updateFieldValue(fieldModel, value) {
 // expose로 부모 컴포넌트에서 접근 가능하도록 설정
 defineExpose({
     formData,
-    updateFieldValue
+    updateFieldValue,
+    initializeFormData,
 });
 
 // 컴포넌트가 로드될 때 formData 초기화

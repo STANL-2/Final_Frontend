@@ -139,6 +139,12 @@ const searchCriteria = ref({});
 
 const refresh = () => {
     searchCriteria.value = ref({});
+    // SearchForm 초기화
+    if (searchFormRef.value) {
+        searchFormRef.value.initializeFormData();
+    }
+    bigCardChartData.value.labels = [];
+    secondChartData.value.labels = [];
     loadData();
 }
 
@@ -169,7 +175,7 @@ const handleButtonComparisonClick = async (field2) => {
         month: searchType === 'month' ? 'month' : null,
         year: searchType === 'year' ? 'year' : null,
         startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-        endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+        endDate: searchCriteria.value.salesHistorySearchDate_end + 1 || null,
         orderBy: orderByValue(saveButton),
         period: searchType,
     };
@@ -186,13 +192,6 @@ const handleButtonComparisonClick = async (field2) => {
 
 const handleTabChange = (event) => {
     const selectedField = secondRowFields.value[event.index]; // 선택된 탭에 해당하는 field를 가져옴
-    const selectedTab = event.index; // 선택된 탭 인덱스
-
-    if (selectedTab === 0) {
-        method.value = 'POST';  // 판매내역 탭
-    } else if ([1, 2, 3].includes(selectedTab)) {
-        method.value = 'GET';  // 다른 탭들
-    }
     handleButtonClick(selectedField); // 선택된 field를 전달하여 처리
 };
 
@@ -214,7 +213,7 @@ const handleButtonClick = async (field) => {
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const searchTypeMap = {
-        '': '',
+        '조회기간별': '',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -248,7 +247,7 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
         response = await $api.salesHistory.getParams(subUrl.value, queryString);
 
         console.log("queryString: " + queryString);
-        console.log("subUrl" + subUrl);
+        console.log("subUrl" + subUrl.value);
 
         if (response && response.result) {
             const result = response.result;
@@ -271,6 +270,8 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                 }));
                 updateChartData(mappedData, fieldLabel);
             }
+        } else if (searchType == null && searchParams.value.startDate == null && searchParams.value.endDate == null) {
+            console.warn('검색조건을 입력해주세요');
         } else {
             throw new Error('Unsupported method');
         }
@@ -307,6 +308,8 @@ const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
             },
         ],
     };
+
+    isComparison = false;
 
     console.log("Updated Chart Data:", targetChartData.value);
 };
@@ -405,91 +408,7 @@ onMounted(() => {
     loadData('POST');
 });
 
-
-// 검색창 모달
-const showModal = ref(false);
-const selectedRow = ref(null);
-const selectedCode = ref('');
 const searchFormRef = ref(null);
-const selectedFieldIndex = ref(null);
-const searchQuery = ref('');
-
-function handleOpenModal(fieldIndex) {
-    selectedFieldIndex.value = fieldIndex; // 필드 인덱스 저장
-    showModal.value = true;
-}
-
-const selectedRows = ref([]);
-
-const updateSelectedRows = (newSelection) => {
-    selectedRows.value = newSelection;
-    console.log('선택된 항목 업데이트:', selectedRows.value);
-};
-
-const printSelectedRows = () => {
-    if (selectedRows.value.length === 0) {
-        alert('인쇄할 행을 선택하세요.');
-        return;
-    }
-
-    const headersToPrint = tableHeaders.value.filter(
-        (header) => header.excludeFromPrint !== true
-    );
-
-    const printContent = document.createElement('div');
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
-
-    const headerRow = document.createElement('tr');
-    headersToPrint.forEach((header) => {
-        const th = document.createElement('th');
-        th.innerText = header.label;
-        th.style.border = '1px solid #ddd';
-        th.style.padding = '8px';
-        th.style.textAlign = 'left';
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    selectedRows.value.forEach((row) => {
-        const tr = document.createElement('tr');
-        headersToPrint.forEach((header) => {
-            const td = document.createElement('td');
-            td.innerText = row[header.field] || '';
-            td.style.border = '1px solid #ddd';
-            td.style.padding = '8px';
-            tr.appendChild(td);
-        });
-        table.appendChild(tr);
-    });
-
-    printContent.appendChild(table);
-
-    // iframe 생성
-    const printFrame = document.createElement('iframe');
-    printFrame.style.position = 'absolute';
-    printFrame.style.top = '-10000px';
-    printFrame.style.left = '-10000px';
-    document.body.appendChild(printFrame);
-
-    const frameDoc = printFrame.contentWindow?.document;
-    if (frameDoc) {
-        frameDoc.open();
-        frameDoc.write('<html><head><title>Print</title></head><body>');
-        frameDoc.write(printContent.innerHTML);
-        frameDoc.write('</body></html>');
-        frameDoc.close();
-
-        // 인쇄 호출
-        printFrame.contentWindow?.focus();
-        printFrame.contentWindow?.print();
-    }
-
-    // iframe 제거
-    document.body.removeChild(printFrame);
-};
-
 const bigCardChartData = ref({
     labels: [],
     datasets: [
@@ -514,7 +433,7 @@ const secondChartData = ref({
     labels: [],
     datasets: [
         {
-            label: '실적',
+            label: '',
             data: [],
             yAxisID: 'y1',
             borderColor: 'rgba(52, 115, 235, 0.8)', // 선명한 블루

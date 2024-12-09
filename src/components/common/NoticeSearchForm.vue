@@ -16,16 +16,25 @@
                         </template>
 
                         <template v-else-if="field.type === 'select'">
-                            <select
-                                v-model="formData[field.model]"
-                                class="form-select"
-                            >
+                            <div class="select-container" v-if="field.showIcon">
+                                <select
+                                    v-model="formData[field.model]"
+                                    class="form-select"
+                                >
+                                    <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                        {{ option }}
+                                    </option>
+                                </select>
+                                <i class="pi pi-chevron-down select-icon"></i> <!-- 드롭다운 아이콘 -->
+                            </div>
+                            <select v-else v-model="formData[field.model]" class="form-select">
                                 <option v-for="(option, idx) in field.options" :key="idx" :value="option">
                                     {{ option }}
                                 </option>
                             </select>
                         </template>
 
+                        <!-- 날짜 범위 -->
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
                                 <input
@@ -77,9 +86,10 @@ function initializeFormData() {
     console.log('초기화된 formData:', formData.value);
 }
 
+
+
 // 부모 컴포넌트에서 호출할 데이터 반환 메서드
 function getFormData() {
-    console.log('getFormData 호출됨:', formData.value);
     return formData.value;
 }
 
