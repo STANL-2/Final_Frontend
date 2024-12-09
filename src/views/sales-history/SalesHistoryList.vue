@@ -184,11 +184,12 @@ const refresh = () => {
         searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
     }
 
+    
     // 버튼 상태 초기화`
-    // formFields.value.forEach((field) => field.value = '');
+    formFields.value = {};
 
     showModal.value = false;
-    selectedRow.value = null;
+    selectedRow.value = {};
     searchQuery.value = '';
     modalTableData.value = [];
     selectedStoreCode.value = '';
@@ -287,7 +288,7 @@ const loadData = async () => {
 
         // 별도로 날짜 처리
         const startDate = searchCriteria.value.salesHistoryDate_start || null;
-        const endDate = searchCriteria.value.salesHistoryDate_end || null;
+        const endDate = searchCriteria.value.salesHistoryDate_end+1 || null;
 
         if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
             alert('조회 일자를 모두 선택해주세요.');
