@@ -18,10 +18,10 @@
             <div class="search-button-wrapper ml-s">
                 <CommonButton label="조회" @click="handleSearch"/>
             </div>
-            </div>
-            <div class="search-fields">
-                <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-            </div>
+        </div>
+        <div class="search-fields">
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+        </div>
         </div>
         <div class="flex-row content-between mt-m">
             <div class="title-pos">
@@ -101,14 +101,16 @@ const formFields = [
             label: '태그',
             model: 'tag',
             options: ['ALL','ADMIN','DIRECTOR'],
-            showDivider: false
+            showDivider: false,
+            showIcon: true, // 드롭다운 아이콘 추가
         },
         {
             type: 'select',
             label: '분류',
             model: 'classification',
             options: ['NORMAL','GOAL','STRATEGY'],
-            showDivider: false
+            showDivider: false,
+            showIcon: true
         },
     ],
     [
