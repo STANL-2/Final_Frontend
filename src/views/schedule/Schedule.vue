@@ -1185,7 +1185,7 @@ export default {
     margin-right: 0.5rem;
 }
 
-.submit-close-button{
+.submit-close-button {
     background-color: #F1F1FD !important;
     color: #6360AB !important;
     border: none !important;

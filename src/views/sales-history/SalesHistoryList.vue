@@ -2,17 +2,24 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="flex-row">
-                <div class="ml-l">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
                 </div>
-                <div class="search-button-wrapper ml-s">
-                    <CommonButton label="조회" @click="select" />
+                <div class="flex-row">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+                    <div class="search-button-wrapper ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
                 </div>
             </div>
             <div class="search-fields">
-                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" @keyup.enter="select" />
+                <CSearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef"
+                    @keyup.enter="select" />
             </div>
         </div>
 
@@ -25,10 +32,6 @@
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
-                </div>
             </div>
         </div>
 
@@ -40,70 +43,51 @@
             </ViewTable>
         </div>
 
-        <Modal
-    v-model="showModal"
-    :header="modalType === 'centerList' ? '매장 검색' : 
-             modalType === 'memberList' ? '사원 검색' : 
-             modalType === 'productList' ? '제품 검색' : 
-             modalType === 'customerList' ? '고객 검색' : '검색'"
-    width="30rem"
-    height="none"
-    @confirm="confirmSelection"
-    @cancel="resetModalState"
->
-    <!-- 검색 입력 -->
-    <div class="flex-row content-center mb-m">
-        <label class="mr-m">
-            {{ modalType === 'centerList' ? '매장명:' : 
-            modalType === 'memberList' ? '사원명:' : 
-            modalType === 'productList' ? '제품명:' : 
-            modalType === 'customerList' ? '고객명:' : '' }}
-        </label>
-        <InputText
-            type="text"
-            v-model="searchQuery"
-            @keyup.enter="searchStore"
-        />
-        <button class="search-button" @click="searchStore">
-            <span class="search-icon pi pi-search"></span>
-        </button>
-    </div>
+        <Modal v-model="showModal" :header="modalType === 'centerList' ? '매장 검색' :
+            modalType === 'memberList' ? '사원 검색' :
+                modalType === 'productList' ? '제품 검색' :
+                    modalType === 'customerList' ? '고객 검색' : '검색'" width="30rem" height="none" @confirm="confirmSelection"
+            @cancel="resetModalState">
+            <!-- 검색 입력 -->
+            <div class="flex-row content-center mb-m">
+                <label class="mr-m">
+                    {{ modalType === 'centerList' ? '매장명:' :
+                        modalType === 'memberList' ? '사원명:' :
+                            modalType === 'productList' ? '제품명:' :
+                                modalType === 'customerList' ? '고객명:' : '' }}
+                </label>
+                <InputText type="text" v-model="searchQuery" @keyup.enter="searchStore" />
+                <button class="search-button" @click="searchStore">
+                    <span class="search-icon pi pi-search"></span>
+                </button>
+            </div>
 
-    <!-- 검색 결과 테이블 -->
-    <table>
-        <thead>
-            <tr>
-                <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr
-                v-for="(row, index) in modalTableData"
-                :key="index"
-                @click="selectStore(row, index)"
-                :class="{ selected: selectedRow === index }"
-            >
-                <td v-if="modalType === 'centerList'">{{ row.centerId }}</td>
-                <td v-if="modalType === 'memberList'">{{ row.memberId }}</td>
-                <td v-if="modalType === 'productList'">{{ row.productId }}</td>
-                <td v-if="modalType === 'customerList'">{{ row.customerId }}</td>
-                <td>{{ row.name }}</td>
-            </tr>
-        </tbody>
-    </table>
+            <!-- 검색 결과 테이블 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="header in dynamicHeaders" :key="header">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in modalTableData" :key="index" @click="selectStore(row, index)"
+                        :class="{ selected: selectedRow === index }">
+                        <td v-if="modalType === 'centerList'">{{ row.centerId }}</td>
+                        <td v-if="modalType === 'memberList'">{{ row.memberId }}</td>
+                        <td v-if="modalType === 'productList'">{{ row.productId }}</td>
+                        <td v-if="modalType === 'customerList'">{{ row.customerId }}</td>
+                        <td>{{ row.name }}</td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <!-- 모달 하단 버튼 -->
-        <template #footer>
-            <CommonButton label="확인" @click="confirmSelection" />
-            <CommonButton
-                label="취소"
-                color="#ffffff"
-                textColor="#6360AB"
-                borderColor="#6360AB"
-                @click="resetModalState"
-            />
-        </template>
-    </Modal>
+            <!-- 모달 하단 버튼 -->
+            <template #footer>
+                <CommonButton label="확인" @click="confirmSelection" />
+                <CommonButton label="취소" color="#ffffff" textColor="#6360AB" borderColor="#6360AB"
+                    @click="resetModalState" />
+            </template>
+        </Modal>
 
     </PageLayout>
 </template>
@@ -117,6 +101,7 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import Modal from '@/components/common/Modal.vue';
+import PagePath from '@/components/common/PagePath.vue';
 
 const formFields = [
     [
@@ -153,7 +138,7 @@ const formFields = [
             showDivider: true,
         },
         {
-            label: '판매일자',
+            label: '조회기간',
             type: 'calendar',
             model: 'salesHistoryDate',
             showIcon: true,
@@ -225,50 +210,50 @@ const select = () => {
     }
 
     // 검색 조건 생성
-if (formDataIds && Object.keys(formDataIds).length > 0) {
-    // formDataIds가 존재하고 값이 있을 경우
-    Object.entries(formDataIds).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-            // 배열 필드인 경우 배열 병합 처리
-            if (Array.isArray(searchCriteria.value[key])) {
-                searchCriteria.value[key] = searchCriteria.value[key].concat(value);
-            } else {
-                searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
-            }
-        }
-    });
-}
-
-if (formData && Object.keys(formData).length > 0) {
-    // formData에 값이 있을 경우
-    Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-            // 배열 필드인 경우 배열 병합 처리
-            if (Array.isArray(searchCriteria.value[key])) {
-                if (!searchCriteria.value[key].includes(value)) {
-                    searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
+    if (formDataIds && Object.keys(formDataIds).length > 0) {
+        // formDataIds가 존재하고 값이 있을 경우
+        Object.entries(formDataIds).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                // 배열 필드인 경우 배열 병합 처리
+                if (Array.isArray(searchCriteria.value[key])) {
+                    searchCriteria.value[key] = searchCriteria.value[key].concat(value);
+                } else {
+                    searchCriteria.value[key] = value; // 배열이 아닌 경우 값 설정
                 }
-            } else if (searchCriteria.value[key] !== undefined) {
-                if (!Array.isArray(searchCriteria.value[key])) {
-                    // 기존 값이 배열이 아니면 배열로 변환
-                    searchCriteria.value[key] = [searchCriteria.value[key]];
-                }
-                if (!searchCriteria.value[key].includes(value)) {
-                    searchCriteria.value[key].push(value);
-                }
-            } else {
-                searchCriteria.value[key] = value; // 새로운 값 설정
-            }
             }
         });
-}
+    }
 
-        // 최종 검색 조건 로그
-        console.log("최종 검색 조건:", searchCriteria.value);
+    if (formData && Object.keys(formData).length > 0) {
+        // formData에 값이 있을 경우
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                // 배열 필드인 경우 배열 병합 처리
+                if (Array.isArray(searchCriteria.value[key])) {
+                    if (!searchCriteria.value[key].includes(value)) {
+                        searchCriteria.value[key].push(value); // 중복 방지 후 값 추가
+                    }
+                } else if (searchCriteria.value[key] !== undefined) {
+                    if (!Array.isArray(searchCriteria.value[key])) {
+                        // 기존 값이 배열이 아니면 배열로 변환
+                        searchCriteria.value[key] = [searchCriteria.value[key]];
+                    }
+                    if (!searchCriteria.value[key].includes(value)) {
+                        searchCriteria.value[key].push(value);
+                    }
+                } else {
+                    searchCriteria.value[key] = value; // 새로운 값 설정
+                }
+            }
+        });
+    }
+
+    // 최종 검색 조건 로그
+    console.log("최종 검색 조건:", searchCriteria.value);
 
 
-        console.log("검색 조건 (id):", searchCriteria.value);
-        loadData();
+    console.log("검색 조건 (id):", searchCriteria.value);
+    loadData();
 };
 
 
@@ -294,17 +279,17 @@ const loadData = async () => {
 
         // 쿼리 파라미터 설정
         const query = {
-                    page: first.value / rows.value, // 현재 페이지 번호
-                    size: rows.value, // 한 페이지 데이터 수
-                    sortField: sortField.value || null, // 정렬 필드
-                    sortOrder: sortOrder.value || null, // 정렬 순서
-                };
+            page: first.value / rows.value, // 현재 페이지 번호
+            size: rows.value, // 한 페이지 데이터 수
+            sortField: sortField.value || null, // 정렬 필드
+            sortOrder: sortOrder.value || null, // 정렬 순서
+        };
 
         // 별도로 날짜 처리
         const startDate = searchCriteria.value.salesHistoryDate_start || null;
         const endDate = searchCriteria.value.salesHistoryDate_end || null;
 
-        if((startDate != null && endDate == null) ||  (startDate == null && endDate != null)){
+        if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
             alert('조회 일자를 모두 선택해주세요.');
             console.warn("달력 선택 오류");
         }
@@ -423,7 +408,7 @@ const dynamicHeaders = computed(() => {
     } else if (modalType.value === 'productList') {
         return ['제품코드', '제품명']; // 가정
     } else if (modalType.value === 'customerList') {
-        return ['고객이름', '담당자']; // 가정
+        return ['고객코드', '고객명']; // 가정
     } else {
         return [];
     }
@@ -525,12 +510,12 @@ async function searchStore() {
         const endpoint = modalType.value === 'centerList'
             ? $api.center
             : modalType.value === 'memberList'
-            ? $api.member
-            : modalType.value === 'productList'
-            ? $api.product // 가정
-            : modalType.value === 'customerList'
-            ? $api.customer // 가정
-            : null;
+                ? $api.member
+                : modalType.value === 'productList'
+                    ? $api.product // 가정
+                    : modalType.value === 'customerList'
+                        ? $api.customer // 가정
+                        : null;
 
         if (!endpoint) {
             console.error('유효하지 않은 modalType:', modalType.value);
@@ -639,6 +624,20 @@ const printSelectedRows = () => {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -846,10 +845,12 @@ tr:hover {
     /* 버튼을 오른쪽 정렬 */
     margin-bottom: 1rem;
 }
+
 .search-button-wrapper {
     margin-bottom: 1rem;
     /* 검색 조건과 버튼 사이 간격 */
 }
+
 .search-fields {
     width: 100%;
 }

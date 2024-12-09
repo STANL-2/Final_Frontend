@@ -1,25 +1,39 @@
 <template>
     <PageLayout>
         <!-- SearchForm -->
-        <div class="component-wrapper">
-            <CSearchForm :fields="formFields" ref="searchFormRef" :key="formKey" />
-            <div class="select">
-                <CommonButton label="조회" @click="select" />
+        <div class="search-wrapper">
+
+            <div class="top">
+                <div class="path">
+                    <PagePath />
+                </div>
+                <div class="flex-row">
+                    <div class="ml-l">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
+                            @click="refresh" />
+                    </div>
+
+                    <div class="select ml-s">
+                        <CommonButton label="조회" @click="select" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-fields">
+                <CSearchForm :fields="formFields" ref="searchFormRef" :key="formKey" />
             </div>
         </div>
 
-        <div class="flex-row content-between">
-            <div>전체목록</div>
+        <div class="flex-row content-between mt-l">
+            <div class="title-pos">
+                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            </div>
             <div class="flex-row items-center mb-s">
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB"
-                        @click="refresh" />
                 </div>
             </div>
         </div>
@@ -49,6 +63,10 @@
                             <tr>
                                 <td><strong>로그 번호:</strong></td>
                                 <td>{{ selectedDetail.logId || 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>사원 번호:</strong></td>
+                                <td>{{ selectedDetail.loginId || 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td><strong>트랜잭션 번호:</strong></td>
@@ -110,6 +128,7 @@ import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import Modal from '@/components/common/Modal.vue';
 import { $api } from '@/services/api/api';
+import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const initialFormFields = [
@@ -121,18 +140,17 @@ const initialFormFields = [
             showDivider: false
         },
         {
+            label: '사원번호',
+            type: 'input',
+            model: 'loginId',
+            showDivider: false
+        },
+        {
             label: '요청 시간',
             type: 'calendar',
             model: 'requestTime',
             showIcon: true,
             manualInput: false,
-            showDivider: false
-        },
-        {
-            label: '요청 메소드',
-            type: 'select',
-            model: 'method',
-            options: ['GET', 'POST', 'PUT', 'DELETE'],
             showDivider: false
         }
     ],
@@ -150,6 +168,13 @@ const initialFormFields = [
             showDivider: false
         },
         {
+            label: '요청 메소드',
+            type: 'select',
+            model: 'method',
+            options: ['GET', 'POST', 'PUT', 'DELETE'],
+            showDivider: false
+        },
+        {
             label: '상태',
             type: 'select',
             model: 'status',
@@ -162,10 +187,11 @@ const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기
 
 // table 헤더 값
 const tableHeaders = ref([
-    { field: 'logId', label: '로그 번호', width: '12%' }, // 짧고 고유한 ID
-    { field: 'requestTime', label: '요청 시간', width: '18%' }, // 날짜 형식
-    { field: 'method', label: '요청메소드', width: '12%' }, // HTTP 메서드 (GET, POST 등)
-    { field: 'uri', label: 'URI', width: '30%' }, // 상대적으로 긴 문자열
+    { field: 'logId', label: '로그 번호', width: '10%' }, // 짧고 고유한 ID
+    { field: 'loginId', label: '사원번호', width: '10%' },
+    { field: 'requestTime', label: '요청 시간', width: '20%' }, // 날짜 형식
+    { field: 'method', label: '요청메소드', width: '10%' }, // HTTP 메서드 (GET, POST 등)
+    { field: 'uri', label: 'URI', width: '25%' }, // 상대적으로 긴 문자열
     { field: 'ipAddress', label: 'IP 주소', width: '15%' }, // 짧은 문자열
     { field: 'status', label: '상태', width: '10%' } // 숫자 값
 ]);
@@ -422,6 +448,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    width: 100%; /* 부모 요소 기준 크기 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -513,10 +553,7 @@ tr:hover {
 }
 
 .select {
-    display: flex;
-    justify-content: right;
-    margin-top: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 1rem;
 }
 
 .log-detail-container {
@@ -556,5 +593,22 @@ tr:hover {
     width: 30%;
     text-align: right;
     color: #555;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* 버튼을 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+.search-fields {
+    width: 100%;
+}
+
+.title-pos {
+    margin-top: 15px;
+    font-size: 16px
 }
 </style>

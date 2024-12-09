@@ -2,7 +2,6 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-
             <div class="top">
                 <div class="path">
                     <PagePath />
@@ -29,9 +28,6 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <div>
-                    <CommonButton label="등록" icon="pi pi-plus" @click="openRegisterModal" />
-                </div>
                 <div class="ml-xs">
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printSelectedRows" />
                 </div>
@@ -57,7 +53,7 @@
             </ViewTable>
 
 
-            <ContractAdminDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <ContractDDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
@@ -102,12 +98,12 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ContractAdminDetail from '@/views/contract/edit/ContractAdminDetail.vue';
+import ContractDDetail from './ContractDDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import EContractRegister from '@/views/contract/edit/EContractRegister.vue';
+import EContractRegister from './EContractRegister.vue';
 import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
@@ -319,7 +315,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('center/search', queryString);
+        const response = await $api.contract.getParams('search', queryString);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {

@@ -7,18 +7,25 @@
             <InputText type="text" v-model="title" />
         </div>
         <div class="flex-row content-between">
-            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate"
-                ref="editorRef" />
+            <CKEditor v-model="content" :initial-html="initialHtml" @update:model-value="handleEditorUpdate" ref="editorRef" />
             <div class="p-20">
-                <Card
-                    style="width: 25rem; height: 37rem; overflow: visible; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
+                <Card style="width: 25rem; height: 37rem; overflow: visible; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
                     <template #title>계약서 선택</template>
                     <Divider />
                     <template #content>
-                        <div class="contract-list" @scroll="onScroll" style="max-height: 32rem; overflow-y: auto;">
-                            <div v-for="contract in contracts" :key="contract.id" class="contract-item"
+                        <div
+                            class="contract-list"
+                            @scroll="onScroll"
+                            style="max-height: 32rem; overflow-y: auto;"
+                        >
+                            <div
+                                v-for="contract in contracts"
+                                :key="contract.id"
+                                class="contract-item"
                                 :class="{ 'selected': selectedContractId === contract.id }"
-                                @click="selectContract(contract)" style="padding: 15px 10px; cursor: pointer;">
+                                @click="selectContract(contract)"
+                                style="padding: 15px 10px; cursor: pointer;"
+                            >
                                 <Typography>제목: {{ contract.title }}</Typography>
                                 <Typography type="caption">{{ contract.createdAt }}</Typography>
                             </div>
@@ -84,10 +91,13 @@ watch(
 
 const getDetailRequest = async () => {
     try {
-        const response = await $api.order.get('', props.orderId);
+        console.log("orderId: " + props.orderId);
+        const response = await $api.order.get('employee', props.orderId);
+        console.log('수주서 상세 조회 응답:', response);
 
         const createdUrl = response.result.content;
         if (createdUrl) {
+            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -97,6 +107,7 @@ const getDetailRequest = async () => {
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
             title.value = response.result.title;
+            console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -127,13 +138,14 @@ const onUpdate = async () => {
             stock: formatNumberWithCommas(extractedData.stock),
             writerSignature: extractedData.writerSignature, // 서명 이미지 추가
         });
+
         // content에 반영
         content.value = updatedInitialHtml;
 
         const postData = {
-            title: data.title,
-            orderId: data.orderId,
-            contractId: data.contractId,
+            title: extractedData.title,
+            orderId: extractedData.orderId,
+            contractId: extractedData.contractId,
             content: content.value,
         };
 
@@ -141,6 +153,7 @@ const onUpdate = async () => {
             postData,
             props.orderId
         );
+        console.log("PUT 응답:", response);
 
         toast.add({ severity: 'success', summary: '수정 완료', detail: '수주서가 성공적으로 수정되었습니다.', life: 3000 });
 
@@ -306,7 +319,7 @@ const fetchContracts = async () => {
         };
         const queryString = `?${new URLSearchParams(query).toString()}`;
 
-        const response = await $api.contract.getParams('', queryString);
+        const response = await $api.contract.getParams('employee', queryString);
 
         const result = response?.result;
         const contractData = result.content;
@@ -338,7 +351,7 @@ const selectContract = async (contract) => {
 
     // 서버에 상세조회 요청
     const response = await $api.contract.get(
-        '',
+        'employee',
         selectedContractId.value
     );
 
@@ -391,6 +404,12 @@ const onScroll = (event) => {
     }
 };
 
+// 숫자 포맷 함수
+const formatNumberWithCommas = (num) => {
+    if (!num) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 const formatNumbersInTable = (html) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -398,10 +417,10 @@ const formatNumbersInTable = (html) => {
     const tdElements = doc.querySelectorAll('td.format-number');
 
     tdElements.forEach((td) => {
-        const text = td.textContent.trim();
+        const text = td.textContent.trim().replace(/,/g, '');
         if (!isNaN(text) && text !== '') {
             const number = parseFloat(text);
-            td.textContent = new Intl.NumberFormat('en-US').format(number);
+            td.textContent = formatNumberWithCommas(number);
         }
     });
 
@@ -410,13 +429,11 @@ const formatNumbersInTable = (html) => {
 
 // 에디터 내용 업데이트 핸들러
 const handleEditorUpdate = (newContent) => {
-    if (ignoreUpdates.value) {
-        ignoreUpdates.value = false; // 플래그 초기화
-        return; // CKEditor 업데이트 중 발생한 호출 무시
-    }
     const formattedContent = formatNumbersInTable(newContent);
-    content.value = formattedContent;
-    console.log('Editor content updated:', formattedContent);
+
+    if (formattedContent !== content.value) {
+        content.value = formattedContent; // CKEditor 내용 업데이트
+    }
 };
 
 function closeModal() {

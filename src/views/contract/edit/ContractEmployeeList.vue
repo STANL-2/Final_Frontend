@@ -57,7 +57,7 @@
             </ViewTable>
 
 
-            <ContractAdminDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
+            <ContractEmployeeDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
@@ -102,24 +102,17 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
 import ViewTable from '@/components/common/ListTable.vue';
-import ContractAdminDetail from '@/views/contract/edit/ContractAdminDetail.vue';
+import ContractEmployeeDetail from './ContractEmployeeDetail.vue';
 import Modal from '@/components/common/Modal.vue';
 import CSearchForm from '@/components/common/CSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import EContractRegister from '@/views/contract/edit/EContractRegister.vue';
+import EContractRegister from './EContractRegister.vue';
 import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
 const formFields = [
     [
-        {
-            label: '사원명',
-            type: 'inputWithButton',
-            model: 'searchMemberName',
-            relatedModel: 'searchMemberId',
-            showDivider: false
-        },
         {
             label: '매장명',
             type: 'inputWithButton',
@@ -319,7 +312,7 @@ const loadData = async () => {
         console.log("API 호출 URL:", queryString); // 디버깅용
 
         // API 호출
-        const response = await $api.contract.getParams('center/search', queryString);
+        const response = await $api.contract.getParams('employee/search', queryString);
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {
