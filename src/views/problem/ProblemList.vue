@@ -2,19 +2,14 @@
     <PageLayout>
         <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="top">
-                <div class="path">
-                    <PagePath />
+            <div class="flex-row content-end">
+                <div class="ml-l">
+                    <div class="ml-xs">
+                        <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" @click="resetSearchParams" />
+                    </div>
                 </div>
-                <div class="flex-row content-end">
-                    <div class="ml-l">
-                        <div class="ml-xs">
-                            <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
-                        </div>
-                    </div>
-                    <div class="search-button-wrapper ml-s">
-                        <CommonButton label="조회" @click="handleSearch" />
-                    </div>
+                <div class="search-button-wrapper ml-s">
+                    <CommonButton label="조회" @click="handleSearch" />
                 </div>
             </div>
             <div class="search-fields">
@@ -56,7 +51,6 @@ import ViewTable from '@/components/common/ListTable.vue';
 import SearchForm from '@/components/common/ProblemSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PagePath from '@/components/common/PagePath.vue';
 
 const router = useRouter();
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
@@ -309,23 +303,6 @@ onMounted(() => {
 
 
 <style scoped>
-.top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* 세로 가운데 정렬 */
-    width: 100%;
-    /* 부모 요소 기준 크기 */
-    box-sizing: border-box;
-    /* 테두리 포함 크기 계산 */
-}
-
-.path {
-    /* 나머지 요소를 오른쪽으로 밀어냄 */
-    margin-bottom: 10px;
-    display: flex;
-}
-
 .list {
     font-size: 1.2rem;
     font-weight: bold;
