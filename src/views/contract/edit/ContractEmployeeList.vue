@@ -53,9 +53,11 @@
                             {{ getStatusLabel(data.status) }}
                         </div>
                     </div>
+                    <div v-if="!data">
+                        <!-- 상태 열이 없을 경우 빈 상태 유지 -->
+                    </div>
                 </template>
             </ViewTable>
-
 
             <ContractEmployeeDetail v-model="showDetailModal" :showModal="showDetailModal" :details="selectedDetail"
                 @close="showDetailModal = false" @refresh="loadData" :status="getStatusLabel(selectedDetail?.status)"
@@ -316,15 +318,14 @@ const loadData = async () => {
 
         const result = response?.result; // 응답 데이터 접근
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content; // 테이블 데이터 업데이트
+            tableData.value = result.content; // 결과를 설정
             totalRecords.value = result.totalElements; // 전체 데이터 수
         } else {
-            console.warn("API 응답이 예상한 구조와 다릅니다:", response);
-            throw new Error("API 응답 데이터 구조 오류");
+            tableData.value = []; // 데이터가 없으면 빈 배열 유지
+            totalRecords.value = 0; // 전체 데이터 수도 0으로 설정
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
         loading.value = false; // 로딩 종료
     }
@@ -599,12 +600,15 @@ async function searchStore() {
 </script>
 
 <style scoped>
-.top{
+.top {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* 세로 가운데 정렬 */
-    width: 100%; /* 부모 요소 기준 크기 */
-    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
 }
 
 .path {
@@ -751,5 +755,12 @@ tr:hover {
 .title-pos {
     margin-top: 15px;
     font-size: 16px
+}
+
+.empty-table {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #777;
 }
 </style>
