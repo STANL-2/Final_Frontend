@@ -62,7 +62,7 @@
             <div class="news-card">
                 <DashBoardCard>
                     <div class="card-content">
-                        <div class="content-title">뉴스기사</div>
+                        <div class="content-title">뉴스 기사</div>
                         <ul class="news-list">
                             <li v-for="(news, index) in newsArticles.slice(0, 5)" :key="index">
                                 <a :href="news.originallink" target="_blank" rel="noopener noreferrer"
