@@ -5,32 +5,56 @@ on:
     branches:
       - main 
       - feat/production
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            
-            - run: docker build -t minseokkim6823/docker-frontend ./
-            - run: docker build -t minseokkim6823/docker-nginx ./nginx
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout repository
+      - uses: actions/checkout@v3
 
-            - run: docker push minseokkim6823/docker-frontend
-            - run: docker push minseokkim6823/docker-nginx
+      # 2. Install dependencies and build the Vue app
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
 
-            - name: Prepare deployment package
-              run: |
-                zip -r deploy.zip . -x '*.git*' '*node_modules*' '*.github*'
-    
+      # 3. Prepare the Nginx Docker context with the built dist folder
+      - name: Prepare Nginx Docker context
+        run: |
+          cp -r dist ./nginx/
 
-            - name: Deploy to EB
-              uses: einaregilsson/beanstalk-deploy@v18
-              with:
-                aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
-                aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-                application_name: motive-v
-                environment_name: Motive-v-env
-                existing_bucket_name: elasticbeanstalk-ap-northeast-2-010438469029
-                region: ap-northeast-2
-                version_label: ${{ github.sha }}
-                deployment_package: deploy.zip
+      # 4. Log in to Docker Hub
+      - name: Docker Login
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 5. Build Docker images
+      - name: Build Docker images
+        run: |
+          docker build -t minseokkim6823/docker-frontend ./
+          docker build -t minseokkim6823/docker-nginx ./nginx
+
+      # 6. Push Docker images to Docker Hub
+      - name: Push Docker images
+        run: |
+          docker push minseokkim6823/docker-frontend
+          docker push minseokkim6823/docker-nginx
+
+      # 7. Prepare deployment package for Elastic Beanstalk
+      - name: Prepare deployment package
+        run: |
+          zip -r deploy.zip . -x '*.git*' '*node_modules*' '*.github*'
+
+      # 8. Deploy to AWS Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: motive-v
+          environment_name: Motive-v-env
+          existing_bucket_name: elasticbeanstalk-ap-northeast-2-010438469029
+          region: ap-northeast-2
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip

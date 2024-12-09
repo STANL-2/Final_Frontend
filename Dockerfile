@@ -16,6 +16,7 @@ RUN npm run build
 
 # Nginx 이미지로 변경
 FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
