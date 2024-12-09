@@ -51,7 +51,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import ViewTable from '@/components/common/ListTable.vue';
+import ViewTable from '@/components/common/ListTable2.vue';
 import SearchForm from '@/components/common/PromotionSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';

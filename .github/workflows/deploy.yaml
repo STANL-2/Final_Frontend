@@ -52,8 +52,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-          application_name: motive-v
-          environment_name: Motive-v-env
+          application_name: Motive-frontend
+          environment_name: Motive-frontend-env-1 
           existing_bucket_name: elasticbeanstalk-ap-northeast-2-010438469029
           region: ap-northeast-2
           version_label: ${{ github.sha }}
