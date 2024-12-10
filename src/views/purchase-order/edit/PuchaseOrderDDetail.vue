@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;" @click="onClose">
+    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;" @cancel="resetModalState">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -30,7 +30,12 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
+        <template #footer>
+            <CommonButton label="닫기" @click="onClose" />
+        </template>
+    </Modal>
+
+    <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="발주 승인/취소 처리" width="20rem"
             height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
             <div class="status-content">
                 <p class="current-status">
@@ -57,11 +62,6 @@
                 <CommonButton label="취소" @click="closeStatusModal" />
             </template>
         </Modal>
-
-        <template #footer>
-            <CommonButton label="닫기" @click="onClose" />
-        </template>
-    </Modal>
 
     <PuchaseOrderModify v-model:visible="showModifyModal" :purchaseOrder-id="getDetailId" @close="closeModifyModal" />
 </template>
@@ -102,12 +102,6 @@ function openStatusModal() {
 function closeStatusModal() {
     showStatusChangeModal.value = false;
 }
-
-function resetModalState() {
-    isVisible.value = false;
-    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
-}
-
 
 // 상태 변경 확인
 const confirmStatusChange = async () => {

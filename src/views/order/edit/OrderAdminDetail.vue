@@ -36,36 +36,36 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="수주 승인/취소 처리" width="20rem"
-            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
-            <div class="status-content">
-                <p class="current-status">
-                    <strong>현재 상태:</strong>
-                    <span class="status-highlight ml-xs">{{ status }}</span>
-                </p>
-                <div class="status-options">
-                    <label>
-                        <input type="radio" value="WAIT" v-model="newStatus" />
-                        대기
-                    </label>
-                    <label>
-                        <input type="radio" value="APPROVED" v-model="newStatus" />
-                        승인
-                    </label>
-                    <label>
-                        <input type="radio" value="CANCEL" v-model="newStatus" />
-                        취소
-                    </label>
-                </div>
-            </div>
-            <template #footer>
-                <CommonButton label="확인" @click="confirmStatusChange" />
-                <CommonButton label="취소" @click="closeStatusModal" />
-            </template>
-        </Modal>
-
         <template #footer>
             <CommonButton label="닫기" @click="onClose" />
+        </template>
+    </Modal>
+
+    <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="수주 승인/취소 처리" width="20rem"
+        height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
+        <div class="status-content">
+            <p class="current-status">
+                <strong>현재 상태:</strong>
+                <span class="status-highlight ml-xs">{{ status }}</span>
+            </p>
+            <div class="status-options">
+                <label>
+                    <input type="radio" value="WAIT" v-model="newStatus" />
+                    대기
+                </label>
+                <label>
+                    <input type="radio" value="APPROVED" v-model="newStatus" />
+                    승인
+                </label>
+                <label>
+                    <input type="radio" value="CANCEL" v-model="newStatus" />
+                    취소
+                </label>
+            </div>
+        </div>
+        <template #footer>
+            <CommonButton label="확인" @click="confirmStatusChange" />
+            <CommonButton label="취소" @click="closeStatusModal" />
         </template>
     </Modal>
 
@@ -113,12 +113,12 @@ function closeStatusModal() {
 // 상태 변경 확인
 const confirmStatusChange = async () => {
     try {
-    
+
         // 업데이트된 HTML과 상태 저장
         const response = await $api.order.put(
             {
                 status: newStatus.value,
-            }, 
+            },
             `status/` + getDetailId.value
         );
 
@@ -316,16 +316,21 @@ iframe {
 .status-content {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 수평 중앙 정렬 */
-    justify-content: center; /* 수직 중앙 정렬 */
-    text-align: center; /* 텍스트 중앙 정렬 */
-    gap: 1.5rem; /* 요소 간격 */
+    align-items: center;
+    /* 수평 중앙 정렬 */
+    justify-content: center;
+    /* 수직 중앙 정렬 */
+    text-align: center;
+    /* 텍스트 중앙 정렬 */
+    gap: 1.5rem;
+    /* 요소 간격 */
     margin-bottom: 1rem;
 }
 
 /* 현재 상태 스타일 */
 .current-status {
-    font-size: 18px; /* 텍스트 크기 증가 */
+    font-size: 18px;
+    /* 텍스트 크기 증가 */
     margin-bottom: 1.5rem;
 }
 
@@ -333,28 +338,35 @@ iframe {
 .status-highlight {
     color: #6360ab;
     font-weight: bold;
-    font-size: 18px; /* 강조된 텍스트 크기 증가 */
+    font-size: 18px;
+    /* 강조된 텍스트 크기 증가 */
 }
 
 /* 라디오 버튼 옵션 정렬 */
 .status-options {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 옵션 중앙 정렬 */
-    gap: 15px; /* 옵션 간격 확대 */
-    font-size: 16px; /* 라벨 크기 증가 */
+    align-items: center;
+    /* 옵션 중앙 정렬 */
+    gap: 15px;
+    /* 옵션 간격 확대 */
+    font-size: 16px;
+    /* 라벨 크기 증가 */
 }
 
 /* 라디오 버튼 스타일 */
 .status-options input[type="radio"] {
-    transform: scale(1.5); /* 버튼 크기 확대 */
-    margin-right: 10px; /* 버튼과 라벨 간 간격 */
+    transform: scale(1.5);
+    /* 버튼 크기 확대 */
+    margin-right: 10px;
+    /* 버튼과 라벨 간 간격 */
 }
 
 /* 라벨 스타일 */
 .status-options label {
     cursor: pointer;
-    font-size: 18px; /* 라벨 폰트 크기 증가 */
+    font-size: 18px;
+    /* 라벨 폰트 크기 증가 */
 }
 
 /* 주요 버튼 스타일 */
