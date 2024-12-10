@@ -1,5 +1,5 @@
 <template>
-    <main class="dashboard">
+    <div class="dashboard">
         <div class="summary-cards">
             <DashBoardCard class="summary-card custom-summary-card" @click="navigateToUrl('/contract/emlist')">
                 <div class="summary-icon-and-title">
@@ -75,7 +75,7 @@
                 </DashBoardCard>
             </div>
         </div>
-    </main>
+    </div>
 </template>
 
 
@@ -337,7 +337,6 @@ onMounted(async () => {
     background-color: #F1F1FD;
     border-radius: 1rem;
     padding: 2.5rem;
-    width: 1480px;
 }
 
 .summary-cards {
