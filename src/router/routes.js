@@ -206,25 +206,25 @@ const routes = [
                 path: 'Elist',
                 name: 'ENoticeList',
                 component: () => import('@/views/notice/edit/ENoticeList.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN'] }
             },
             {
                 path: 'Edetail',
                 name: 'ENoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN'] }
             },
             {
                 path: 'modify',
                 name: 'ENoticeModify',
                 component: () => import('@/views/notice/edit/ENoticeModify.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN'] }
             },
             {
                 path: 'register',
                 name: 'ENoticeRegister',
                 component: () => import('@/views/notice/edit/ENoticeRegister.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN'] }
             }
         ]
     },

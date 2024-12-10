@@ -221,7 +221,7 @@ const exportCSV = async () => {
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     router.push({
-        name: 'ENoticeDetail',
+        name: 'NoticeDetail',
         query: {
             tag: rowData.tag, // 태그
             classification: rowData.classification, // 분류
