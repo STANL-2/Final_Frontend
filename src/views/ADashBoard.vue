@@ -60,7 +60,7 @@
                 </DashBoardCard>
             </div>
             <div class="news-card">
-                <DashBoardCard style="width:830px;">
+                <DashBoardCard style="width:815px;">
                     <div class="card-content">
                         <div class="content-title">뉴스 기사</div>
                         <ul class="news-list">
