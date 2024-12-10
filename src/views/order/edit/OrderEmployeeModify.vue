@@ -73,6 +73,12 @@ const validateForm = () => {
     return true;
 };
 
+function resetModalState() {
+    isVisible.value = false;
+    emit('update:visible', false); // 부모 컴포넌트에 상태 전달
+    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
+}
+
 const emit = defineEmits(['update:visible', 'close']);
 const toast = useToast();
 const isVisible = ref(props.visible);
@@ -84,7 +90,9 @@ watch(
     async (newVal) => {
         isVisible.value = newVal;
         if (newVal) {
+            resetModalState();
             await getDetailRequest();
+            isVisible.value = true;
         }
     }
 );
