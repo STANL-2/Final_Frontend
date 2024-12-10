@@ -595,29 +595,45 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
     }
     else if (fieldLabel == '기본 데이터') {
         // 기존 데이터셋이 있을 경우
+        // 기존 데이터셋이 있을 경우
         const datasets = mappedDataList.map((data, index) => {
             if (!data.data || !Array.isArray(data.data)) {
                 console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
                 return null;
             }
+            const mainColor = "6360AB"; // 메인 컬러
 
-            // 색상 조합 (밝고 선명한 색상으로 설정)
-            const colorBase = `${82 + index * 40}, ${77 + index * 40}, ${249 - index * 40}`; // 색상 조정
+            // 메인 컬러의 RGB 변환
+            const r = parseInt(mainColor.substring(0, 2), 16); // 63
+            const g = parseInt(mainColor.substring(2, 4), 16); // 60
+            const b = parseInt(mainColor.substring(4, 6), 16); // 171
 
+            // 밝기 조정 값
+            const brightnessAdjustment = 50;
+
+            // 색상 조합 (밝기와 선명도 조정)
+            const colors = [
+                `rgba(${Math.min(g + brightnessAdjustment, 255)}, ${Math.min(b + brightnessAdjustment, 255)}, ${Math.min(r + brightnessAdjustment, 255)}, 1)`, // 두 번째 파생 색상
+                `rgba(${Math.min(b + brightnessAdjustment, 255)}, ${Math.min(r + brightnessAdjustment, 255)}, ${Math.min(g + brightnessAdjustment, 255)}, 1)`, // 첫 번째 파생 색상
+                `rgba(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)}, 1)`, // 메인 컬러 (밝게 조정)
+            ];
+
+            // `index === 2`일 때만 `backgroundColor`를 설정
             return {
                 label: data.key,
                 data: data.data,
                 yAxisID: `y${index}`,
-                // borderColor: `rgba(${colorBase}, 0.8)`,
-                // backgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 0.3')})`, // 배경 색상
-                // pointBackgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 1')})`,
-                // pointBorderColor: '#FFFFFF',
-                fill: true,
+                borderColor: colors[index % colors.length], // index에 따라 색상 순환
+                backgroundColor: index === 2
+                    ? colors[2].replace(', 1)', ', 0.6)') // 투명도를 0.2로 설정
+                    : undefined, // index가 2가 아닌 경우 undefined로 설정
+                // fill: true,
                 tension: 0.4,
                 type: data.key === '매출액' ? 'bar' : 'line',
-                period: mappedDataList.map((item) => item.period)
+                period: mappedDataList.map((item) => item.period),
             };
         }).filter(Boolean);
+
 
         if (!datasets.length) {
             console.error("생성된 데이터셋이 비어 있습니다.");

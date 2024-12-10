@@ -150,7 +150,6 @@ const tableHeaders = ref([
     { field: 'customerId', label: '고객명', width: '10%' },
     { field: 'productId', label: '제품 번호', width: '20%' },
     { field: 'centerId', label: '매장명', width: '20%' },
-    { field: 'memberId', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
