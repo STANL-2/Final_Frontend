@@ -1,6 +1,5 @@
 <template>
     <PageLayout>
-        <!-- SearchForm -->
         <div class="search-wrapper">
             <div class="flex-row content-end">
                 <div class="ml-l">
@@ -29,7 +28,6 @@
             </div>
             <div class="flex-row items-center mb-s">
                 <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div>
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
@@ -140,12 +138,11 @@ const fields = ref({
 
 
 const tableHeaders = [
-    { field: 'noticeId', label: '번호', width: '15%' },
-    { field: 'tag', label: '태그', width: '20%' },
-    { field: 'classification', label: '분류', width: '10%' },
-    { field: 'title', label: '제목', width: '20%' },
-    { field: 'createdAt', label: '작성 일자', width: '15%' },
-    { field: 'memberId', label: '작성자', width: '15%' }
+    { field: 'noticeId', label: '번호', width: '25%' },
+    { field: 'classification', label: '분류', width: '15%' },
+    { field: 'title', label: '제목', width: '25%' },
+    { field: 'createdAt', label: '작성 일자', width: '20%' },
+    { field: 'memberId', label: '작성자', width: '20%' }
 ];
 
 const resetSearchParams = async () => {
@@ -224,7 +221,6 @@ function handleView(rowData) {
     router.push({
         name: 'ENoticeDetail',
         query: {
-            tag: rowData.tag, // 태그
             classification: rowData.classification, // 분류
             noticeTitle: rowData.title, 
             noticeContent: rowData.content,
@@ -304,22 +300,18 @@ const loadData = async () => {
         }
         if(params.startDate==null){
             params.startDate=''
-            console.log("1");
             console.log(params.startDate);
         }
         else if(params.startDate!=''){
             params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
-            console.log("2");
             console.log(params.startDate);
         }
         if(params.endDate==null){
             params.endDate=''
-            console.log("3");
             console.log(params.endDate);
         }
         else if(params.endDate!=''){
             params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
-            console.log("4");
             console.log(params.endDate);
         }
         console.log("test");

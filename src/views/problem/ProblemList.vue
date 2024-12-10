@@ -31,9 +31,6 @@
                     <CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" />
                 </div>
                 <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" />
-                </div>
-                <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
             </div>

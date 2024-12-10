@@ -28,7 +28,6 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
                 <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
@@ -139,12 +138,11 @@ const fields = ref({
 
 
 const tableHeaders = [
-    { field: 'noticeId', label: '번호', width: '15%' },
-    { field: 'tag', label: '태그', width: '20%' },
-    { field: 'classification', label: '분류', width: '10%' },
-    { field: 'title', label: '제목', width: '20%' },
-    { field: 'createdAt', label: '작성 일자', width: '15%' },
-    { field: 'memberId', label: '작성자', width: '15%' }
+    { field: 'noticeId', label: '번호', width: '25%' },
+    { field: 'classification', label: '분류', width: '15%' },
+    { field: 'title', label: '제목', width: '25%' },
+    { field: 'createdAt', label: '작성 일자', width: '20%' },
+    { field: 'memberId', label: '작성자', width: '20%' }
 ];
 
 const resetSearchParams = async () => {
