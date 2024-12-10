@@ -1,7 +1,7 @@
 <template>
     <div class="path" v-if="breadcrumbs.length">
         <div class="breadcrumb" v-for="(breadcrumb, index) in breadcrumbs" :key="breadcrumb.key">
-            <i v-if="index === 0" class="pi pi-home" style="margin-right: 0.5rem; color: #AAAAAA;"></i>
+            <i v-if="index === 0" class="pi pi-home" style="margin-right: 0.5rem; color: #6360AB;"></i>
             <span class="name">{{ breadcrumb.label }}</span>
             <span v-if="index < breadcrumbs.length - 1" class="fork"> > </span>
         </div>
