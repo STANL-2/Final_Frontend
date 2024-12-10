@@ -37,7 +37,7 @@
             </div>
 
             <!-- 내 고객 정보 -->
-            <DashBoardCard style="width:830px;">
+            <DashBoardCard>
                 <div class="customer-info">
                     <div class="content-title">이번달 판매사원 순위</div>
                     <CustomerRank :customers="customers" class="customer-content" />
@@ -47,7 +47,7 @@
 
         <div class="small-cards">
             <div class="announcement-card card">
-                <DashBoardCard style="width:830px;">
+                <DashBoardCard>
                     <div class="card-content">
                         <div class="content-title">공지사항</div>
                         <ul class="announcement-list">
@@ -60,7 +60,7 @@
                 </DashBoardCard>
             </div>
             <div class="news-card">
-                <DashBoardCard style="width:830px;">
+                <DashBoardCard>
                     <div class="card-content">
                         <div class="content-title">뉴스 기사</div>
                         <ul class="news-list">
@@ -337,12 +337,13 @@ onMounted(async () => {
     background-color: #F1F1FD;
     border-radius: 1rem;
     padding: 2rem;
+    width: 100%;
 }
 
 .summary-cards {
     display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
+    gap: 2rem;
+    margin-bottom: 1.8rem;
 }
 
 .summary-card {
@@ -384,12 +385,13 @@ onMounted(async () => {
     padding-left: 0.5rem;
     padding-top: 12px;
     padding-bottom: 1rem;
+    width: 300%;
 }
 
 .chart-and-customer {
     display: flex;
-    align-items: stretch;
-    gap: 30px;
+    gap: 2rem;
+    width: 100%
 }
 
 .summary-value {
@@ -404,32 +406,35 @@ onMounted(async () => {
 }
 
 .chart {
-    width: 78.3rem;
+    width: 74.5%;
 }
 
 .customer-info {
-    width: 328px;
+    width: 24.5rem;
 }
 
 
 .small-cards {
     display: flex;
     gap: 2rem;
-    margin-top: 25px;
+    margin-top: 1.8rem;
 }
 
 .card-content {
-    width: 40.7rem;
+    width: 100%;
     height: 18rem;
+}
+
+.announcement-card, .news-card {
+    width: 50%;
 }
 
 .announcement-list,
 .news-list {
     font-size: 18px;
-    /* 기사 제목 크기 키움 */
     font-weight: bold;
-    /* 더 강조된 텍스트 */
     color: #333333;
+    width: 50%;
 }
 
 .announcement-list li,
@@ -441,6 +446,7 @@ onMounted(async () => {
     padding: 6px;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    width: 200%;
 }
 
 .announcement-list li:hover,
