@@ -112,7 +112,7 @@ const getDetailRequest = async () => {
         console.error('GET DETAIL 요청 실패: ', error);
     }
 };
-const writerSignature = ref(null);
+
 // 수정 버튼 클릭 시 호출되는 함수
 const onUpdate = async () => {
     try {
@@ -337,6 +337,7 @@ const fetchContracts = async () => {
 };
 
 const editorRef = ref(null);
+const ignoreUpdates = ref(false);
 const selectedContractId = ref(null);
 
 // 계약서 선택 시 CKEditor 업데이트
@@ -346,7 +347,7 @@ const selectContract = async (contract) => {
 
     // 서버에 상세조회 요청
     const response = await $api.contract.get(
-        'employee',
+        '',
         selectedContractId.value
     );
 
@@ -387,7 +388,7 @@ const selectContract = async (contract) => {
     const updatedHtml = doc.documentElement.outerHTML;
 
     // CKEditor와 동기화
-    // ignoreUpdates.value = true; // 업데이트 플래그 설정
+    ignoreUpdates.value = true; // 업데이트 플래그 설정
     content.value = updatedHtml; // content.value 업데이트
 };
 
