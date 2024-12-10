@@ -23,8 +23,11 @@
                 @keyup.enter="handleSearch" />
         </div>
         <div class="flex-row content-between mt-xxxxl">
-            <div class="title-pos">
-                <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
+            <div class="subtitle">
+                <div class="line"></div>
+                <div class="subtitle-text">
+                    매장 목록
+                </div>
             </div>
             <div class="flex-row items-center mb-s">
                 <div>
@@ -58,6 +61,7 @@ import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import PagePath from '@/components/common/PagePath.vue';
+import DOMEventService from '@/services/DOMEventService';
 
 const formFields = [
     [
@@ -175,7 +179,7 @@ const loadData = async () => {
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
+        DOMEventService.dispatchApiError("검색 결과가 없습니다.");
     } finally {
         loading.value = false; // 로딩 종료
     }
@@ -369,5 +373,24 @@ const printSelectedRows = () => {
 .title-pos {
     margin-top: 15px;
     font-size: 16px
+}
+
+.subtitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.line {
+    width: 5px;
+    height: 24px;
+    background-color: #333333;
+    margin-right: 10px;
+}
+
+.subtitle-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
 }
 </style>

@@ -8,11 +8,17 @@
 
                         <!-- Select -->
                         <template v-if="field.type === 'select'">
-                            <select v-model="formData[field.model]" class="form-select">
-                                <option v-for="(option, idx) in field.options" :key="idx" :value="option">
-                                    {{ option }}
-                                </option>
-                            </select>
+                            <div class="select-container">
+                                <select v-model="formData[field.model]" class="form-select">
+                                    <option value="" disabled selected>선택</option>
+                                    <option v-for="(option, idx) in field.options" :key="idx" :value="option">
+                                        {{ option }}
+                                    </option>
+                                </select>
+                                <span class="select-icon">
+                                    <img src="@/assets/body/chevron-down.png" />
+                                </span>
+                            </div>
                         </template>
 
                         <!-- Calendar -->
@@ -27,11 +33,8 @@
                         <!-- Button -->
                         <template v-else-if="field.type === 'button'">
                             <div class="button-group">
-                                <SCommonButton
-                                    :label="field.label"
-                                    @click="onButtonClick(field)"
-                                    calss="common-button"
-                                />
+                                <SCommonButton :label="field.label" @click="onButtonClick(field)"
+                                    calss="common-button" />
                             </div>
                         </template>
 
@@ -48,7 +51,7 @@
 <script setup>
 import { ref, defineProps, defineEmits, defineExpose, onMounted } from 'vue';
 
-const emit = defineEmits(['open-modal','search', 'button-click']);
+const emit = defineEmits(['open-modal', 'search', 'button-click']);
 const props = defineProps({
     fields: {
         type: Array,
@@ -137,7 +140,8 @@ body {
 }
 
 .form-group.placeholder {
-    visibility: hidden; /* 빈 칸 숨김 */
+    visibility: hidden;
+    /* 빈 칸 숨김 */
 }
 
 .label {
@@ -300,25 +304,44 @@ body {
 
 .button-group {
     display: flex;
-    justify-content: flex-start; /* 버튼을 왼쪽 정렬 */
-    align-items: center; /* 버튼과 텍스트 정렬 */
-    margin: 10px 0; /* 버튼 그룹 위아래 여백 */
+    justify-content: flex-start;
+    /* 버튼을 왼쪽 정렬 */
+    align-items: center;
+    /* 버튼과 텍스트 정렬 */
+    margin: 10px 0;
+    /* 버튼 그룹 위아래 여백 */
 }
 
 .common-button {
-    background-color: #6360AB; /* 버튼 배경색 */
-    color: #fff; /* 버튼 텍스트 색상 */
-    border: none; /* 테두리 제거 */
-    padding: 8px 16px; /* 버튼 내부 여백 */
-    font-size: 14px; /* 버튼 텍스트 크기 */
-    cursor: pointer; /* 클릭 가능한 마우스 커서 */
-    border-radius: 4px; /* 모서리를 둥글게 */
+    background-color: #6360AB;
+    /* 버튼 배경색 */
+    color: #fff;
+    /* 버튼 텍스트 색상 */
+    border: none;
+    /* 테두리 제거 */
+    padding: 8px 16px;
+    /* 버튼 내부 여백 */
+    font-size: 14px;
+    /* 버튼 텍스트 크기 */
+    cursor: pointer;
+    /* 클릭 가능한 마우스 커서 */
+    border-radius: 4px;
+    /* 모서리를 둥글게 */
     text-align: center;
-    display: inline-block; /* 인라인 블록 레이아웃 */
-    box-sizing: border-box; /* 전체 크기 계산에 패딩과 테두리 포함 */
+    display: inline-block;
+    /* 인라인 블록 레이아웃 */
+    box-sizing: border-box;
+    /* 전체 크기 계산에 패딩과 테두리 포함 */
 }
 
 .common-button:hover {
-    background-color: #4e4c96; /* 호버 시 버튼 배경색 변경 */
+    background-color: #4e4c96;
+    /* 호버 시 버튼 배경색 변경 */
 }
+
+.select-container {
+    position: relative;
+    display: inline-block;
+}
+
 </style>
