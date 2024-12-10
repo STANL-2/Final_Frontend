@@ -94,8 +94,7 @@ function validateDateRange(model) {
     const endDate = formData.value[`${model}_end`];
 
     if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-        alert('종료일은 시작일 이후여야 합니다.');
-        // 비정상적인 입력 값을 초기화
+        alert('조회 날짜를 다시 입력해 주세요.');
         formData.value[`${model}_end`] = null;
     }
 }

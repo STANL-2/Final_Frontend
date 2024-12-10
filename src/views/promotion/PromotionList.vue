@@ -292,7 +292,6 @@ onMounted(() => {
 .search-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     /* 버튼을 오른쪽 정렬 */
     margin-bottom: 1rem;
 }
