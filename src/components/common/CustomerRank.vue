@@ -56,10 +56,6 @@ const sortedSalesReps = computed(() =>
     background-color: #ffffff;
 }
 
-.shadow-lg {
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 .rounded-xl {
     border-radius: 12px;
 }
@@ -98,8 +94,8 @@ const sortedSalesReps = computed(() =>
 }
 
 .space-y-4> :not([hidden])~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+    /* margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse))); */
+    margin-top: 1rem;
     margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
@@ -110,7 +106,6 @@ const sortedSalesReps = computed(() =>
 .items-center {
     display: flex;
     align-items: center;
-
 }
 
 .p-4 {
@@ -119,11 +114,6 @@ const sortedSalesReps = computed(() =>
 
 .rounded-lg {
     border-radius: 0.5rem;
-}
-
-.transition-all {
-    transition-property: all;
-    transition-duration: 0.3s;
 }
 
 .bg-gray-50 {
@@ -196,9 +186,17 @@ const sortedSalesReps = computed(() =>
 
 .text-blue-800 {
     color: #1e40af;
+    justify-content: center;
 }
 
 .font-semibold {
     font-weight: 600;
+}
+
+.transition-all[data-v-b237e0b9] {
+    transition-property: all;
+    transition-duration: 0.3s;
+    padding: 0.3rem;
+    width: 18rem;
 }
 </style>
