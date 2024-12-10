@@ -600,36 +600,22 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                 console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
                 return null;
             }
-            const mainColor = "6360AB"; // 메인 컬러
 
-            // 메인 컬러의 RGB 변환
-            const r = parseInt(mainColor.substring(0, 2), 16); // 63
-            const g = parseInt(mainColor.substring(2, 4), 16); // 60
-            const b = parseInt(mainColor.substring(4, 6), 16); // 171
+            // 색상 조합 (밝고 선명한 색상으로 설정)
+            const colorBase = `${82 + index * 40}, ${77 + index * 40}, ${249 - index * 40}`; // 색상 조정
 
-            // 밝기 조정 값
-            const brightnessAdjustment = 50;
-
-            // 색상 조합 (밝기와 선명도 조정)
-            const colors = [
-                `rgba(${Math.min(g + brightnessAdjustment, 255)}, ${Math.min(b + brightnessAdjustment, 255)}, ${Math.min(r + brightnessAdjustment, 255)}, 1)`, // 두 번째 파생 색상
-                `rgba(${Math.min(b + brightnessAdjustment, 255)}, ${Math.min(r + brightnessAdjustment, 255)}, ${Math.min(g + brightnessAdjustment, 255)}, 1)`, // 첫 번째 파생 색상
-                `rgba(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)}, 1)`, // 메인 컬러 (밝게 조정)
-            ];
-
-            // `index === 2`일 때만 `backgroundColor`를 설정
             return {
                 label: data.key,
                 data: data.data,
                 yAxisID: `y${index}`,
-                borderColor: colors[index % colors.length], // index에 따라 색상 순환
-                backgroundColor: index === 2
-                    ? colors[2].replace(', 1)', ', 0.6)') // 투명도를 0.2로 설정
-                    : undefined, // index가 2가 아닌 경우 undefined로 설정
-                // fill: true,
+                // borderColor: `rgba(${colorBase}, 0.8)`,
+                // backgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 0.3')})`, // 배경 색상
+                // pointBackgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 1')})`,
+                // pointBorderColor: '#FFFFFF',
+                fill: true,
                 tension: 0.4,
                 type: data.key === '매출액' ? 'bar' : 'line',
-                period: mappedDataList.map((item) => item.period),
+                period: mappedDataList.map((item) => item.period)
             };
         }).filter(Boolean);
 
@@ -642,20 +628,20 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         const endDate = mappedDataList.map(item => item.endDate);
 
         // y축 스케일 설정: 데이터셋의 yAxisID와 색상 매칭
-        // const scales = datasets.reduce((acc, dataset, index) => {
-        //     acc[`y${index}`] = {
-        //         type: 'linear',
-        //         position: index % 2 === 0 ? 'left' : 'right', // 왼쪽 또는 오른쪽 위치 번갈아 설정
-        //         ticks: {
-        //             color: dataset.borderColor, // y축 색상: borderColor와 동일하게 설정
-        //         },
-        //         grid: {
-        //             drawOnChartArea: index === 0, // 첫 번째 y축만 격자선을 표시
-        //             color: dataset.borderColor, // y축의 그리드 색상도 borderColor와 일치
-        //         }
-        //     };
-        //     return acc;
-        // }, {});
+        const scales = datasets.reduce((acc, dataset, index) => {
+            acc[`y${index}`] = {
+                type: 'linear',
+                position: index % 2 === 0 ? 'left' : 'right', // 왼쪽 또는 오른쪽 위치 번갈아 설정
+                ticks: {
+                    color: dataset.borderColor, // y축 색상: borderColor와 동일하게 설정
+                },
+                grid: {
+                    drawOnChartArea: index === 0, // 첫 번째 y축만 격자선을 표시
+                    color: dataset.borderColor, // y축의 그리드 색상도 borderColor와 일치
+                }
+            };
+            return acc;
+        }, {});
 
 
         const newChartData = {
@@ -669,7 +655,7 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             ...newChartData,
             options: {
                 responsive: true,
-                // scales, // y축 설정 적용
+                scales, // y축 설정 적용
             },
         }
 
