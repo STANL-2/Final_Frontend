@@ -160,12 +160,12 @@ const tableHeaders = ref([
     { field: 'salesHistoryIncentive', label: '수당', width: '15%' },
     { field: 'salesHistoryNumberOfVehicles', label: '판매 대수', width: '5%' },
     { field: 'salesHistoryTotalSales', label: '매출액', width: '15%' },
-    { field: 'createdAt', label: '작성 일시', width: '23%' },
+    { field: 'createdAt', label: '작성 일시', width: '20%' },
     { field: 'contractId', label: '계약서 번호', width: '25%' },
     { field: 'customerId', label: '고객명', width: '10%' },
     { field: 'productId', label: '제품 번호', width: '20%' },
     { field: 'centerId', label: '매장명', width: '20%' },
-    { field: 'memberId', label: '담당자', width: '15%' },
+    { field: 'memberId', label: '담당자', width: '20%' },
 ]);
 
 // 상태 변수
