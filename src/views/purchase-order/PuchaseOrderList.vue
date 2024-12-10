@@ -47,6 +47,9 @@
                             {{ getStatusLabel(data.status) }}
                         </div>
                     </div>
+                    <div v-if="!data">
+                        <!-- 상태 열이 없을 경우 빈 상태 유지 -->
+                    </div>
                 </template>
             </ViewTable>
 
@@ -275,8 +278,11 @@ const loadData = async () => {
         // 데이터 설정
         const result = response?.result;
         if (result && Array.isArray(result.content)) {
-            tableData.value = result.content;
-            totalRecords.value = result.totalElements;
+            tableData.value = result.content; // 결과를 설정
+            totalRecords.value = result.totalElements; // 전체 데이터 수
+        } else {
+            tableData.value = []; // 데이터가 없으면 빈 배열 유지
+            totalRecords.value = 0; // 전체 데이터 수도 0으로 설정
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
@@ -302,7 +308,7 @@ const exportCSV = async () => {
         
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'contractExcel.xlsx');
+        link.setAttribute('download', 'purchaseOrderExcel.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

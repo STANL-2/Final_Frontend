@@ -19,7 +19,8 @@
                 <TabPanel v-for="(field, index) in secondRowFields" :key="field.model" :header="field.label">
                     <!-- <p class="m-0">{{ field.label }}</p> -->
                     <div class="flex-container">
-                        <div v-for="(field, index) in thridRowFields" :key="index" class="form-row button-row">
+                        <div v-for="(field, index) in thridRowFields" :key="index" class="form-row button-row"
+                            v-show="shouldShowButtons">
                             <SCommonButton :key="field.model" :label="field.label" @click="handleButtonClick(field)" />
                         </div>
                     </div>
@@ -94,7 +95,7 @@ import Modal from '@/components/common/Modal.vue';
 import PagePath from '@/components/common/PagePath.vue';
 
 // SearchForm.vue 검색조건 값
-const formFields = [
+const initialFormFields = [
     [
         {
             label: '분류',
@@ -132,6 +133,8 @@ const formFields = [
         }
     ],
 ];
+
+const formFields = ref(JSON.parse(JSON.stringify(initialFormFields))); // 초기값 복사
 
 const secondRowFields = ref(
     [
@@ -188,31 +191,42 @@ let saveButton;
 let saveValue;
 let existingChartData;
 let existingPeriod;
+let shouldShowButtons;
 
 const refresh = () => {
     // 검색 조건 초기화
     searchCriteria.value = {};
+    formFields.value = JSON.parse(JSON.stringify(initialFormFields));
 
     // SearchForm 초기화
     if (searchFormRef.value) {
-        searchFormRef.value.initializeFormData(); // SearchForm에서 제공되는 초기화 메서드가 있다고 가정
+        searchFormRef.value.initializeFormData();
+        searchFormRef.value.formData.memberList = "";
+        searchFormRef.value.formData.centerList = "";
+        searchFormRef.value.formDataIds = {};
     }
 
     // 차트 데이터 초기화
     chartDataList.value = []; // 빈 배열로 초기화
-    chartRef.value.destroyCharts(); // 기존 차트 제거
+
+    if (Array.isArray(chartRef.value)) {
+        chartRef.value.forEach(chart => {
+            if (chart.destroyCharts) {
+                chart.destroyCharts(); // 각 차트의 destroyCharts 호출
+            }
+        });
+    }
 
     // 버튼 상태 초기화`
     secondRowFields.value.forEach((field) => field.value = '');
 
     // 모달 상태 초기화
     showModal.value = false;
-    selectedRow.value = null;
+    selectedRow.value = {};
     searchQuery.value = '';
     modalTableData.value = [];
     selectedStoreCode.value = '';
 
-    console.log('화면이 초기화되었습니다.');
 };
 
 const handleTabChange = (event) => {
@@ -287,14 +301,19 @@ const handleButtonClick = async (field) => {
         if (field.model != '' && field.value != '') {
             saveButton = field.model;
             saveValue = field.value;
+            shouldShowButtons = true;
             // 기본 필드
         } else if (field.model == '' && field.value == '') {
             saveButton = '';
             saveValue = '';
             // 비교 필드
+            shouldShowButtons = false;
         } else {
             saveValue = field.value;
+            shouldShowButtons = true;
         }
+
+        console.log("saveButton", saveButton);
 
         const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
         const periodMap = {
@@ -582,18 +601,17 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                 return null;
             }
 
-            console.log("===============data.key: ", data.key, "==============");
-            console.log("===============newLabels: ", newLabels, "==============");
+            // 색상 조합 (밝고 선명한 색상으로 설정)
+            const colorBase = `${82 + index * 40}, ${77 + index * 40}, ${249 - index * 40}`; // 색상 조정
 
             return {
                 label: data.key,
                 data: data.data,
                 yAxisID: `y${index}`,
-                borderColor: `rgba(${82 + index * 70}, ${77 + index * 70}, ${249 - index * 70}, 0.8)`,
-                backgroundColor: `rgba(${82 + index * 50}, ${77 + index * 50}, ${249 - index * 50}, 0.3)`,
-                pointBackgroundColor: `rgba(${82 + index * 50}, ${77 + index * 50}, ${249 - index * 50}, 1)`,
-                pointBorderColor: '#FFFFFF',
-                pointRadius: 5,
+                // borderColor: `rgba(${colorBase}, 0.8)`,
+                // backgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 0.3')})`, // 배경 색상
+                // pointBackgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 1')})`,
+                // pointBorderColor: '#FFFFFF',
                 fill: true,
                 tension: 0.4,
                 type: data.key === '매출액' ? 'bar' : 'line',
@@ -609,23 +627,23 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         const startDate = mappedDataList.map(item => item.startDate);
         const endDate = mappedDataList.map(item => item.endDate);
 
-
         // y축 스케일 설정: 데이터셋의 yAxisID와 색상 매칭
         const scales = datasets.reduce((acc, dataset, index) => {
             acc[`y${index}`] = {
                 type: 'linear',
                 position: index % 2 === 0 ? 'left' : 'right', // 왼쪽 또는 오른쪽 위치 번갈아 설정
                 ticks: {
-                    color: dataset.borderColor, // y축 틱 색상을 데이터셋 색상과 동일하게 설정
+                    color: dataset.borderColor, // y축 색상: borderColor와 동일하게 설정
                 },
                 grid: {
                     drawOnChartArea: index === 0, // 첫 번째 y축만 격자선을 표시
+                    color: dataset.borderColor, // y축의 그리드 색상도 borderColor와 일치
                 }
             };
             return acc;
         }, {});
 
-        
+
         const newChartData = {
             labels,
             datasets,
@@ -641,12 +659,6 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             },
         }
 
-        // 차트 데이터에 새로 생성한 데이터 추가
-        // if (isComparison) {
-        //     chartDataList.value = [...chartDataList.value, newChartData];
-        // } else {
-        //     chartDataList.value = [newChartData];
-        // }
         if (isComparison) {
             chartDataList.value = [...chartDataList.value, updatedChartData];
         } else {
@@ -655,12 +667,15 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
 
         console.log("Updated chartDataList:", chartDataList.value);
     } else if (chartDataList.value.length > 0) { // average, best
+        let mappingIndex;
 
-        // `saveButton`에 따라 `mappingIndex` 결정
-        const mappingIndex = {
-            totalIncentive: 0,
-            totalPerformance: 1
-        }[saveButton] || 2;
+        if (saveButton == 'totalIncentive') {
+            mappingIndex = 0;
+        } else if (saveButton == 'totalPerformance') {
+            mappingIndex = 1;
+        } else if (saveButton == 'totalSales') {
+            mappingIndex = 2;
+        }
 
         // `saveValue`에 따라 라벨 설정
         const keyPrefix = saveValue === 'average' ? '평균' : '최고';
@@ -670,14 +685,9 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             totalSales: `${keyPrefix} 매출액`,
         };
 
-        // 기존 라벨 유지
-        // const unifiedLabels = [...existingPeriod];
-
-
-        // const unifiedLabels = [...existingChartData.labels];
         const unifiedLabels = ref([]);
 
-        if (existingChartData.labels[0].substr(0, 1) != '2')
+        if (existingChartData.labels[0].substr(0, 1) != '2' && existingChartData.labels[0].substr(-1) != ')')
             unifiedLabels.value = [...existingChartData.labels.map((label, index) => `${label}(${existingPeriod[index] || ''})`)];
         else {
             unifiedLabels.value = [...existingChartData.labels];
@@ -687,19 +697,12 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
         console.log('Unified Labels:', unifiedLabels);
         console.log('Mapped Data Period:', mappedDataList[mappingIndex].period);
 
-        // 기존 데이터셋 복사 및 라벨에 맞게 재매핑
-        // const updatedDatasets = existingChartData.datasets.map(dataset => ({
-        //     ...dataset,
-        //     data: unifiedLabels.map(label => {
-        //         const index = existingPeriod.indexOf(label);
-        //         return index !== -1 ? dataset.data[index] : 0; // 기존 라벨에 없는 값은 0
-        //     })
-        // }));
         const updatedDatasets = existingChartData.datasets.map(dataset => ({
             ...dataset,
         }));
 
-        // 새로운 데이터셋 생성
+        console.log("fieldMappingp[saveButton]", fieldMapping[saveButton]);
+
         // 새로운 데이터셋 생성
         const newDataset = {
             label: fieldMapping[saveButton],
@@ -713,6 +716,8 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
             tension: 0.4,
             type: saveValue === 'average' ? 'line' : 'bar' // average는 선, best는 막대 그래프
         };
+
+        console.log("newDataSet", newDataset);
 
         // 새로운 데이터셋 추가
         updatedDatasets.push(newDataset);
