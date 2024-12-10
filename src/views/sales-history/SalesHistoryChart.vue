@@ -600,21 +600,31 @@ const updateChartData = (mappedDataList, fieldLabel, isComparison = false) => {
                 console.error(`mappedDataList[${index}]의 data가 유효하지 않습니다:`, data.data);
                 return null;
             }
+            const baseColor = "6360AB"; // 16진수 색상 값
+            const r = parseInt(baseColor.substring(0, 2), 16); // Red 값 (63)
+            const g = parseInt(baseColor.substring(2, 4), 16); // Green 값 (60)
+            const b = parseInt(baseColor.substring(4, 6), 16); // Blue 값 (171)
+
+            // 색상 조정
+            const colorBase = `${r + index * 30}, ${g + index * 70}, ${b - index * 70}`;
+            // console.log(colorBase);
 
             // 색상 조합 (밝고 선명한 색상으로 설정)
-            const colorBase = `${82 + index * 40}, ${77 + index * 40}, ${249 - index * 40}`; // 색상 조정
+            // const colorBase = `${63 + index * 40}, ${60 + index * 40}, ${249 - index * 40}`; // 색상 조정
+            // const colorBase = `rgba(${63 + index * 40}, ${60 + index * 40}, ${249 - index * 40}, 0.67)`; // 알파값 0.67
 
             return {
                 label: data.key,
                 data: data.data,
                 yAxisID: `y${index}`,
-                // borderColor: `rgba(${colorBase}, 0.8)`,
+                // borderColor: `rgba(${colorBase}, 1)`,
                 // backgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 0.3')})`, // 배경 색상
                 // pointBackgroundColor: `rgba(${colorBase.replace(/(\d+,\s\d+,\s\d+)/, '$1, 1')})`,
                 // pointBorderColor: '#FFFFFF',
-                fill: true,
+                // fill: true,
                 tension: 0.4,
                 type: data.key === '매출액' ? 'bar' : 'line',
+                // type: data.key === '매출액' ? 'line' : 'line',
                 period: mappedDataList.map((item) => item.period)
             };
         }).filter(Boolean);
