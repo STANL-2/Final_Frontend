@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="계약 상세 조회" width="70rem" height="none" style="z-index: 1000;">
+    <Modal :visible="modelValue" header="계약 상세 조회" width="70rem" height="none" style="z-index: 1000;" @click="onClose">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">

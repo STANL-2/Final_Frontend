@@ -48,6 +48,7 @@ onMounted(() => {
 .body {
     flex: 1;
     padding: 1rem;
+    width: calc(100% - 260px);
 }
 
 .path {

@@ -1,7 +1,7 @@
 <template>
     <Toast />
     <ConfirmDialog></ConfirmDialog>
-    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;">
+    <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;" @click="onClose">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -102,6 +102,12 @@ function openStatusModal() {
 function closeStatusModal() {
     showStatusChangeModal.value = false;
 }
+
+function resetModalState() {
+    isVisible.value = false;
+    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
+}
+
 
 // 상태 변경 확인
 const confirmStatusChange = async () => {
