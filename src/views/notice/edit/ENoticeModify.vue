@@ -18,7 +18,7 @@
                     <select id="classification-select" v-model="classification">
                         <option value="NORMAL">NORMAL</option>
                         <option value="GOAL">GOAL</option>
-                        <option value="STARETAGY">STARETAGY</option>
+                        <option value="STRETAGY">STRETAGY</option>
                     </select>
                 </div>
             </div>   

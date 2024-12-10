@@ -174,9 +174,6 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-button{
-    margin-right: 3rem;
-}
 
 .title-container{
     margin-bottom: 20px;
@@ -221,12 +218,17 @@ input{
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+    margin-right: 40px;
 }
 .title-container{
     margin-left:40px;
 }
 .fileup{
     width:55rem;
+}
+
+.file-container button{
+    white-space: nowrap;
 }
 
 </style>
