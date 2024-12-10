@@ -31,10 +31,12 @@
 
                         <template v-else-if="field.type === 'calendar'">
                             <div class="date-range">
-                                <input type="date" v-model="formData[`${field.model}_start`]" class="form-date"
+                                <input type="date" v-model="formData[`${field.model}_start`]" @change="validateDateRange(field.model)"
+                                class="form-date"
                                     placeholder="시작 날짜" />
                                 <span class="date-separator">~</span>
-                                <input type="date" v-model="formData[`${field.model}_end`]" class="form-date" />
+                                <input type="date" v-model="formData[`${field.model}_end`]"  @change="validateDateRange(field.model)"
+                                class="form-date" />
                             </div>
                         </template>
 
@@ -163,6 +165,17 @@ defineExpose({
     initializeFormData,
     resetFields
 });
+
+function validateDateRange(model) {
+    const startDate = formData.value[`${model}_start`];
+    const endDate = formData.value[`${model}_end`];
+
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        alert('종료일은 시작일 이후여야 합니다.');
+        // 비정상적인 입력 값을 초기화
+        formData.value[`${model}_end`] = null;
+    }
+}
 
 // 컴포넌트가 로드될 때 formData 초기화
 onMounted(() => {
@@ -377,7 +390,7 @@ body {
 
 .details-button {
     position: absolute;
-    margin-left: 53rem;
+    margin-left: 40rem;
     background-color: #6360AB;
     color: white;
     border: none;

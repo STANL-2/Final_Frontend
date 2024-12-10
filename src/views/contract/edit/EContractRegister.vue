@@ -1,5 +1,5 @@
 <template>
-    <Modal v-model="isVisible" header="계약서 등록" width="80rem" height="100rem">
+    <Modal v-model="isVisible" header="계약서 등록" width="80rem" height="100rem" @cancel="resetModalState">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">계약서 제목:</Typography>
@@ -30,6 +30,16 @@ import Typography from '@/components/Typography.vue';
 import SignatureModal from '@/components/common/signatureCanvas/SignatureModal.vue';
 import { $api } from "@/services/api/api"; // $api는 API 호출 핸들러로 가정
 import { useToast } from 'primevue/usetoast';
+
+function resetModalState() {
+    isVisible.value = false;
+    title.value = null;
+    content.value = initialHtml;
+    sellerSignature.value = null;
+    buyerSignature.value = null;
+    emit('update:visible', false); // 부모 컴포넌트에 상태 전달
+    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
+}
 
 // 부모에서 전달받는 props
 const props = defineProps({
@@ -238,9 +248,11 @@ const initialHtml = `
 watch(
     () => props.visible,
     (newVal) => {
-        isVisible.value = newVal;
-        if (newVal && !content.value) {
+        // isVisible.value = newVal;
+        if (newVal) {
+            resetModalState();
             content.value = initialHtml;
+            isVisible.value = true;
         }
     }
 );

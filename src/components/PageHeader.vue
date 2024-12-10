@@ -19,7 +19,7 @@
                     <button class="extend-button" @click="extendTime">연장</button>
                 </div>
                 <!-- 로그인 유저 -->
-                <div class="name">반갑습니다. {{ userStore.name }} {{ userStore.role }}님</div>
+                <div class="name">반갑습니다. {{ userStore.name }} {{ translatedRole }}님</div>
                 <div class="right-logo">
                     <img v-if="userStore.imageUrl" :src="userStore.imageUrl" alt="User Profile" class="profile-image"
                         @click="goMypage" />
@@ -470,6 +470,21 @@ const closeAlarmModal = () => {
     showAlarmChart.value = false; // 모달 닫기
 };
 
+// 역할 변환 함수
+const roleMapping = {
+    INTERN: '인턴',
+    STAFF: '사원',
+    ASSISTANT: '대리',
+    MANAGER: '과장',
+    SENIOR: '차장',
+    EXECUTIVE: '부장',
+    DIRECTOR: '임원',
+    CEO: '대표이사',
+};
+
+const translatedRole = computed(() => roleMapping[userStore.role] || userStore.role);
+
+
 // 헤더 컴포넌트가 마운트되었을 때 Pinia 상태를 계속 감시
 watchEffect(() => {
     if (userStore.remainingTime <= 0) {
@@ -483,6 +498,9 @@ onMounted(() => {
 
     // Initial fetch of alarm types
     fetchAlarmTypes();
+
+    // 1초마다 알람 타입 자동 업데이트
+    const alarmTypesInterval = setInterval(fetchAlarmTypes, 30 * 1000);
 
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
