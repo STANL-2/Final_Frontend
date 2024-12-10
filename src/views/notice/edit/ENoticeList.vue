@@ -1,26 +1,27 @@
 <template>
     <PageLayout>
+        <!-- SearchForm -->
         <div class="search-wrapper">
-            <div class="top">
-                <div class="path">
-                    <PagePath />
-                </div>
-                <div class="flex-row content-end">
-                    <div class="ml-l">
+            <div class="flex-row content-end">
+                <div class="ml-l">
+                    <div class="ml-xs">
                         <div class="ml-xs">
                             <CommonButton label="초기화" 
                             icon="pi pi-refresh" 
-                            @click="resetSearchParams"
                             color="#F1F1FD" 
-                            textColor="#6360AB" />
-                        </div>
-                    </div>
-                    <div class="search-button-wrapper ml-s">
-                        <CommonButton label="조회" @click="handleSearch" />
+                            textColor="#6360AB"
+                            @click = "resetSearchParams" 
+                        />
                     </div>
                 </div>
             </div>
-            <SearchForm class="mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+            <div class="search-button-wrapper ml-s">
+                <CommonButton label="조회" @click="handleSearch"/>
+            </div>
+        </div>
+        <div class="search-fields">
+            <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
+        </div>
         </div>
         <div class="flex-row content-between mt-m">
             <div class="title-pos">
@@ -58,11 +59,10 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import ViewTable from '@/components/common/ListTable2.vue';
+import ViewTable from '@/components/common/ListTable.vue';
 import SearchForm from '@/components/common/NoticeSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
-import PagePath from '@/components/common/PagePath.vue';
 
 const router = useRouter(); 
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
@@ -101,7 +101,8 @@ const formFields = [
             label: '분류',
             model: 'classification',
             options: ['NORMAL','GOAL','STRATEGY'],
-            showDivider: false
+            showDivider: false,
+            showIcon: true
         },
         {
             label: '제목',
@@ -139,11 +140,12 @@ const fields = ref({
 
 
 const tableHeaders = [
-    { field: 'noticeId', label: '번호', width: '20%' },
-    { field: 'classification', label: '분류', width: '20%' },
+    { field: 'noticeId', label: '번호', width: '15%' },
+    { field: 'tag', label: '태그', width: '20%' },
+    { field: 'classification', label: '분류', width: '10%' },
     { field: 'title', label: '제목', width: '20%' },
-    { field: 'createdAt', label: '작성 일자', width: '20%' },
-    { field: 'memberId', label: '작성자', width: '20%' }
+    { field: 'createdAt', label: '작성 일자', width: '15%' },
+    { field: 'memberId', label: '작성자', width: '15%' }
 ];
 
 const resetSearchParams = async () => {
@@ -222,7 +224,7 @@ function handleView(rowData) {
     router.push({
         name: 'ENoticeDetail',
         query: {
-            tag: rowData.tag, 
+            tag: rowData.tag, // 태그
             classification: rowData.classification, // 분류
             noticeTitle: rowData.title, 
             noticeContent: rowData.content,
@@ -363,21 +365,5 @@ onMounted(() => {
 .title-pos {
     margin-top: 15px;
     font-size: 16px
-}
-.top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* 세로 가운데 정렬 */
-    width: 100%;
-    /* 부모 요소 기준 크기 */
-    box-sizing: border-box;
-    /* 테두리 포함 크기 계산 */
-}
-
-.path {
-    /* 나머지 요소를 오른쪽으로 밀어냄 */
-    margin-bottom: 10px;
-    display: flex;
 }
 </style>
