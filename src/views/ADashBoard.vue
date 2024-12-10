@@ -350,8 +350,7 @@ onMounted(async () => {
 .dashboard {
     background-color: #F1F1FD;
     border-radius: 1rem;
-    padding: 2.5rem;
-    width: 100%;
+    padding: 2rem;
 }
 
 .summary-cards {
@@ -404,7 +403,7 @@ onMounted(async () => {
 .chart-and-customer {
     display: flex;
     align-items: stretch;
-    gap: 30px;
+    gap: 2rem;
 }
 
 .summary-value {
@@ -419,7 +418,7 @@ onMounted(async () => {
 }
 
 .chart {
-    width: 71rem;
+    width: 73rem;
 }
 
 .customer-info {
