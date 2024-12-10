@@ -18,7 +18,7 @@
                     <select id="classification-select" v-model="classification">
                         <option value="NORMAL">NORMAL</option>
                         <option value="GOAL">GOAL</option>
-                        <option value="STRETAGY">STRETAGY</option>
+                        <option value="STRATEGY">STRATEGY</option>
                     </select>
                 </div>
             </div>   
@@ -154,6 +154,7 @@ export default {
                 router.push('/notice/Elist');
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
+                // if(error.message ==response is not defined)
                 alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
             }
         };
