@@ -390,7 +390,7 @@ body {
 
 .details-button {
     position: absolute;
-    margin-left: 53rem;
+    margin-left: 40rem;
     background-color: #6360AB;
     color: white;
     border: none;
