@@ -24,7 +24,7 @@
                         </div>
                     </div>
                     <div>
-                        <BigCard :chart-data="[bigCardChartData, secondChartData]" />
+                        <BigCard ref="chartRef" :chart-data="[bigCardChartData, secondChartData]" />
                     </div>
                 </TabPanel>
             </TabView>
@@ -37,13 +37,13 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import ViewTable from '@/components/common/ListTable.vue';
 import SSearchForm from '@/components/common/SSearchForm.vue';
 import SCommonButton from '@/components/common/Button/SCommonButton.vue';
 import BigCard from '@/components/common/SGraphCard.vue';
 import { $api } from '@/services/api/api';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import PagePath from '@/components/common/PagePath.vue';
+import DOMEventService from '@/services/DOMEventService';
 
 // SearchForm.vue 검색조건 값
 const firstRowFields = ref([
@@ -102,34 +102,13 @@ const thirdRowFields = ref([
     },
 ]);
 
-// table 헤더 값
-const tableHeaders = ref([
-    { field: 'salesHistoryId', label: '판매내역 번호', width: '20%' },
-    { field: 'salesHistoryIncentive', label: '수당', width: '15%' },
-    { field: 'salesHistoryNumberOfVehicles', label: '판매 대수', width: '5%' },
-    { field: 'salesHistoryTotalSales', label: '매출액', width: '15%' },
-    { field: 'createdAt', label: '작성 일시', width: '20%' },
-    { field: 'contractId', label: '계약서 번호', width: '25%' },
-    { field: 'customerId', label: '고객명', width: '10%' },
-    { field: 'productId', label: '제품 번호', width: '20%' },
-    { field: 'centerId', label: '매장명', width: '20%' },
-    // { field: 'memberId', label: '담당자', width: '20%' },
-]);
-
-// 상태 변수
-const tableData = ref([]); // 테이블 데이터
-const selectedItems = ref([]);
-const showDetailModal = ref(false); // 상세조회 모달 표시 여부
-const selectedDetail = ref(null); // 선택된 상세 데이터
-const totalRecords = ref(0); // 전체 데이터 개수
 const loading = ref(false); // 로딩 상태
-const rows = ref(10); // 페이지 당 행 수
-const first = ref(0); // 첫 번째 행 위치
-const filters = ref({}); // 필터
-const sortField = ref(null); // 정렬 필드
-const sortOrder = ref(null); // 정렬 순서
 const method = ref(null);
 let saveButton;
+let saveDaily;
+const chartRef = ref(null);
+let count = 0;
+
 const searchParams = ref({
     startDate: null,
     endDate: null
@@ -143,9 +122,15 @@ const refresh = () => {
     if (searchFormRef.value) {
         searchFormRef.value.initializeFormData();
     }
-    bigCardChartData.value.labels = [];
-    secondChartData.value.labels = [];
-    loadData();
+    // chartRef.value가 배열이므로 각 차트의 destroyCharts 메서드를 호출하여 차트를 제거
+    if (Array.isArray(chartRef.value)) {
+        chartRef.value.forEach(chart => {
+            if (chart.destroyCharts) {
+                chart.destroyCharts(); // 각 차트의 destroyCharts 호출
+            }
+        });
+    }
+    // loadData();
 }
 
 const handleButtonComparisonClick = async (field2) => {
@@ -164,7 +149,7 @@ const handleButtonComparisonClick = async (field2) => {
 
     const period = formData.period || '';
     const searchTypeMap = {
-        '': 'daily',
+        '조회기간별': 'daily',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -213,10 +198,18 @@ const handleButtonClick = async (field) => {
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const searchTypeMap = {
-        '조회기간별': '',
+        '조회기간별': 'daily',
         '월별': 'month',
         '연도별': 'year',
     };
+
+
+    if (searchTypeMap[period] == 'daily') {
+        saveDaily = 'daily';
+    }
+    else {
+        saveDaily = null;
+    }
 
     const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
 
@@ -230,10 +223,30 @@ const handleButtonClick = async (field) => {
 const loadData = async (method = 'POST', searchType = null, fieldModel = null, fieldLabel = null) => {
     loading.value = true; // 로딩 시작
     try {
-        searchParams.value = {
-            startDate: searchCriteria.value.salesHistorySearchDate_start || null,
-            endDate: searchCriteria.value.salesHistorySearchDate_end || null,
+
+        // 별도로 날짜 처리
+        const startDate = searchCriteria.value.salesHistorySearchDate_start || null;
+
+        console.log("startDate", searchCriteria.value.salesHistorySearchDate_start);
+        if (searchCriteria.value.salesHistorySearchDate_end) {
+            // salesHistoryDate_end 값을 Date 객체로 변환
+            let date = new Date(searchCriteria.value.salesHistorySearchDate_end);
+
+            // 1일을 더하기
+            date.setDate(date.getDate() + 1);
+
+            // 새로운 날짜를 YYYY-MM-DD 형식으로 변환
+            searchCriteria.value.salesHistorySearchDate_end = date.toISOString().split('T')[0]; // "2024-12-12"
         }
+        const endDate = searchCriteria.value.salesHistorySearchDate_end || null;
+
+        searchParams.value = {
+            startDate,
+            endDate,
+            period: saveDaily
+        }
+
+        console.log("searchParams.value", searchParams.value);
 
         let response;
 
@@ -243,7 +256,7 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
             subUrl.value = `employee/statistics/search/${searchType}`;
         else
             subUrl.value = `employee/statistics/search`;
-        const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}`;
+        const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}&period=${encodeURIComponent(searchParams.value.period)}`;
         response = await $api.salesHistory.getParams(subUrl.value, queryString);
 
         console.log("queryString: " + queryString);
@@ -270,13 +283,21 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                 }));
                 updateChartData(mappedData, fieldLabel);
             }
+            count = 0;
         } else if (searchType == null && searchParams.value.startDate == null && searchParams.value.endDate == null) {
             console.warn('검색조건을 입력해주세요');
+            if(count > 0){
+                DOMEventService.dispatchApiError("검색 조건을 입력해주세요.");
+                throw new Error('Non formData');
+            }
+            count++;
         } else {
             throw new Error('Unsupported method');
         }
 
     } catch (error) {
+        DOMEventService.dispatchApiError("검색 결과가 없습니다.");
+
         console.error('데이터 로드 실패:', error.message);
     } finally {
         loading.value = false; // 로딩 종료
@@ -405,7 +426,7 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
 };
 
 onMounted(() => {
-    loadData('POST');
+    // loadData('POST');
 });
 
 const searchFormRef = ref(null);
