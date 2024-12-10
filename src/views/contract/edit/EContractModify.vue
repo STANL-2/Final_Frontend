@@ -199,7 +199,7 @@ const extractDataFromHTML = (html) => {
     const customerPhone = doc.querySelector(".customer-phone-value")?.innerText.trim() || "";
     const customerEmail = doc.querySelector(".customer-email-value")?.innerText.trim() || "";
     const companyName = doc.querySelector(".customer-company-value")?.innerText.trim() || "";
-    const customerClassifcation = doc.querySelector(".customer-customerClassifcation-value")?.innerText.trim() || "";
+    const customerClassifcation = doc.querySelector(".customer-classification-value")?.innerText.trim() || "";
     const customerPurchaseCondition = doc.querySelector(".customer-purchaseCondition-value")?.innerText.trim() || "";
     const customerAge = doc.querySelector(".customer-age-value")?.innerText.trim() || "";
     const customerSex = doc.querySelector(".customer-sex-value")?.innerText.trim() || "";

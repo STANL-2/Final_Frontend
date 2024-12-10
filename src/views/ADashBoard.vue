@@ -1,45 +1,33 @@
 <template>
     <main class="dashboard">
         <div class="summary-cards">
-            <DashBoardCard 
-                class="summary-card custom-summary-card" 
-                @click="navigateToUrl('/contract/Elist')"
-            >
+            <DashBoardCard class="summary-card custom-summary-card" @click="navigateToUrl('/contract/Elist')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">📄</div>
                     <div class="summary-title">이번달 계약 건수</div>
                 </div>
                 <div class="summary-value">{{ contractCount }}건</div>
             </DashBoardCard>
-            <DashBoardCard 
-                class="summary-card"
-                @click="navigateToUrl('/order/adList')"
-            >
+            <DashBoardCard class="summary-card" @click="navigateToUrl('/order/adList')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">📋</div>
                     <div class="summary-title">이번달 수주 건수</div>
                 </div>
                 <div class="summary-value">{{ orderReceiptCount }}건</div>
             </DashBoardCard>
-            <DashBoardCard 
-                class="summary-card"
-                @click="navigateToUrl('/purchase-order/adlist')"
-            >
+            <DashBoardCard class="summary-card" @click="navigateToUrl('/purchase-order/adlist')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">📦</div>
                     <div class="summary-title">이번달 발주 건수</div>
                 </div>
                 <div class="summary-value">{{ purchaseOrderCount }}건</div>
             </DashBoardCard>
-            <DashBoardCard 
-                class="summary-card"
-                @click="navigateToUrl('/sales-history/Elist')"
-            >
+            <DashBoardCard class="summary-card" @click="navigateToUrl('/sales-history/Elist')">
                 <div class="summary-icon-and-title">
                     <div class="summary-icon">💰</div>
                     <div class="summary-title">이번달 판매내역</div>
                 </div>
-                <div class="summary-value">{{ thisMonthSales }}원</div>
+                <div class="summary-value">{{ formattedThisMonthSales }}원</div>
             </DashBoardCard>
         </div>
 
@@ -51,8 +39,8 @@
             <!-- 내 고객 정보 -->
             <DashBoardCard>
                 <div class="customer-info">
-                    <div class="content-title">이번달 판매시원 순위</div>
-                    <CustomerRank :customers="customers" class="customer-content"/>
+                    <div class="content-title">이번달 판매사원 순위</div>
+                    <CustomerRank :customers="customers" class="customer-content" />
                 </div>
             </DashBoardCard>
         </div>
@@ -74,10 +62,13 @@
             <div class="news-card">
                 <DashBoardCard>
                     <div class="card-content">
-                        <div class="content-title">뉴스기사</div>
+                        <div class="content-title">뉴스 기사</div>
                         <ul class="news-list">
-                            <li v-for="news in newsArticles" :key="news.id">
-                                {{ removeHTMLTags(news.title) }}
+                            <li v-for="(news, index) in newsArticles.slice(0, 5)" :key="index">
+                                <a :href="news.originallink" target="_blank" rel="noopener noreferrer"
+                                    class="news-link">
+                                    {{ removeHTMLTags(news.title) }}
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -92,8 +83,9 @@
 import BigCard from '@/components/common/GraghCard.vue';
 import DashBoardCard from '@/components/common/DashBoardCard.vue';
 import CustomerRank from '@/components/common/CustomerRank.vue';
+import GaugeChart from '@/components/common/Chart/GaugeChart.vue';
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { $api } from '@/services/api/api';
 
 // New reactive references for summary cards
@@ -108,10 +100,24 @@ const customers = ref([]);
 const chartData = ref([]);
 const loading = ref(false);
 const router = useRouter();
+const formattedThisMonthSales = computed(() => formatNumber(thisMonthSales.value));
 
 function removeHTMLTags(text) {
-    return text.replace(/<\/?b>/g, '');
+    // HTML 태그 제거 및 HTML 엔티티 디코딩
+    return text
+        .replace(/<\/?[^>]+(>|$)/g, '') // 모든 HTML 태그 제거
+        .replace(/&quot;/g, '"') // &quot; → "
+        .replace(/&amp;/g, '&') // &amp; → &
+        .replace(/&lt;/g, '<') // &lt; → <
+        .replace(/&gt;/g, '>') // &gt; → >
+        .replace(/&#39;/g, "'"); // &#39; → '
 }
+
+function formatNumber(value) {
+    if (!value && value !== 0) return ''; // 값이 null 또는 undefined인 경우 처리
+    return value.toLocaleString(); // 숫자를 천 단위 쉼표로 포맷팅
+}
+
 
 const fetchDashBoardInfo = async () => {
 
@@ -217,6 +223,9 @@ const thirdChartData = ref({
     gradientColors: ['rgba(46, 204, 113, 0.7)', 'rgba(46, 204, 113, 0.1)', 'rgba(255, 255, 255, 0)'],
 });
 
+// 1번 차트 그림 value
+const gaugeChartValue = 40; // Gauge Chart에 전달할 값
+
 const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
@@ -224,8 +233,6 @@ const loadData = async () => {
         let currentTime = new Date();
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
-
-        console.log("startTime: " + startTime + '\ncurrentTime: ' + currentTime);
 
         const searchParams = ref({
             startDate: startTime.toISOString(),
@@ -306,10 +313,12 @@ const loadNewsArticles = async () => {
             ''
         );
         newsArticles.value = response?.result || [];
-        
+
     } catch (error) {
         console.error("News articles load failed:", error);
     }
+
+    console.log("news", newsArticles.value);
 };
 
 const navigateToUrl = (url) => {
@@ -323,6 +332,7 @@ const navigateToUrl = (url) => {
 onMounted(async () => {
     fetchDashBoardInfo();
     loadNewsArticles();
+    loadData();
 });
 
 </script>
@@ -378,8 +388,8 @@ onMounted(async () => {
     font-weight: bold;
     color: #380979;
     padding-left: 0.5rem;
-    padding-top: 16px;
-    padding-bottom: 2rem;
+    padding-top: 12px;
+    padding-bottom: 1rem;
 }
 
 .chart-and-customer {
@@ -421,17 +431,20 @@ onMounted(async () => {
 
 .announcement-list,
 .news-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    font-size: 18px;
+    /* 기사 제목 크기 키움 */
+    font-weight: bold;
+    /* 더 강조된 텍스트 */
+    color: #333333;
 }
 
 .announcement-list li,
 .news-list li {
-    font-size: 14px;
+    font-size: 18px;
+    /* 기본 크기 조정 */
     color: #555555;
-    margin-bottom: 5px;
-    padding: 5px 10px;
+    margin-bottom: 10px;
+    padding: 6px;
     border-radius: 5px;
     transition: background-color 0.2s ease;
 }

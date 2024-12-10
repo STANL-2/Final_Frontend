@@ -97,7 +97,6 @@ const getDetailRequest = async () => {
 
         const createdUrl = response.result.content;
         if (createdUrl) {
-            console.log('Fetching HTML from:', createdUrl);
 
             const htmlResponse = await fetch(createdUrl);
             if (!htmlResponse.ok) {
@@ -107,7 +106,6 @@ const getDetailRequest = async () => {
             const htmlText = await htmlResponse.text();
             content.value = htmlText; // content를 직접 설정
             title.value = response.result.title;
-            console.log('Fetched HTML:', content.value);
         } else {
             console.error('createdUrl이 비어 있습니다.');
         }
@@ -153,7 +151,6 @@ const onUpdate = async () => {
             postData,
             props.orderId
         );
-        console.log("PUT 응답:", response);
 
         toast.add({ severity: 'success', summary: '수정 완료', detail: '수주서가 성공적으로 수정되었습니다.', life: 3000 });
 
