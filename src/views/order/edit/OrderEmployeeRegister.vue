@@ -1,5 +1,5 @@
 <template>
-    <Modal v-model="isVisible" header="수주서 등록" width="100rem" height="none">
+    <Modal v-model="isVisible" header="수주서 등록" width="100rem" height="none" @cancel="resetModalState">
         <div class="flex-row content-center">
             <div class="flex-row items-center">
                 <Typography type="title3" color="black" fontSize="16px" class="mr-s">수주서 제목:</Typography>
@@ -84,6 +84,15 @@ const validateForm = () => {
     }
     return true;
 };
+
+function resetModalState() {
+    isVisible.value = false;
+    title.value = null;
+    content.value = initialHtml;
+    writerSignature.value = null;
+    emit('update:visible', false); // 부모 컴포넌트에 상태 전달
+    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
+}
 
 // 부모 컴포넌트로 상태를 전달하는 emit
 const emit = defineEmits(['update:visible', 'close']);
@@ -305,10 +314,11 @@ const sortOrder = ref('desc'); // 정렬 순서 (asc/desc)
 watch(
     () => props.visible,
     (newVal) => {
-        isVisible.value = newVal;
-        if (newVal && !content.value) {
+        if (newVal) {
+            resetModalState();
             content.value = initialHtml;
             fetchContracts();
+            isVisible.value = true;
         }
     }
 );

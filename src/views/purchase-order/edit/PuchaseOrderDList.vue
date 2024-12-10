@@ -61,7 +61,7 @@
                 :statusClass="getCustomTagClass(selectedDetail?.status)" />
         </div>
         <!-- 모달 -->
-        <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '수주자 검색' : '담당자 검색'" width="30rem"
+        <Modal v-model="showModal" :header="modalType === 'searchMemberName' ? '발주자 검색' : '담당자 검색'" width="30rem"
             height="none" @confirm="confirmSelection" @cancel="resetModalState">
             <div class="flex-row content-center mb-m">
                 <label class="mr-m">{{ modalType === 'searchMemberName' ? '사원명:' : '사원명:' }}</label>
