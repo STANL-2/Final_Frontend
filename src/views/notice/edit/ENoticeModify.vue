@@ -23,7 +23,6 @@
                 </div>
             </div>   
 
-            
             <!-- 기존 파일 확인 및 새 파일 업로드 -->
             <div class="file-container">
                 <label>첨부 파일</label>
