@@ -197,6 +197,6 @@ const sortedSalesReps = computed(() =>
     transition-property: all;
     transition-duration: 0.3s;
     padding: 0.3rem;
-    width: 18rem;
+    width: 23rem;
 }
 </style>
