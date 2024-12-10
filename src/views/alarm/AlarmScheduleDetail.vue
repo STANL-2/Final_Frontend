@@ -296,11 +296,11 @@
                 </div>
             </div>
 
-            <div v-if="alarm.redirectUrl" class="action-buttons">
+            <!-- <div v-if="alarm.redirectUrl" class="action-buttons">
                 <button @click="goToRelatedPage" class="view-details-btn">
                     관련 페이지 보기
                 </button>
-            </div>
+            </div> -->
         </div>
     </div>
     <div v-else class="no-alarm-selected">
@@ -312,6 +312,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import ApiService from '@/services/api/config/ApiService';
+import { useUserStore } from '@/stores/user';
 
 const apiMemberService = new ApiService('api/v1/member');
 const apiScheduleService = new ApiService('api/v1/schedule');
@@ -321,6 +322,8 @@ const apiPurchaseOrderService = new ApiService('api/v1/purchase-order');
 const apiOrderService = new ApiService('api/v1/order');
 
 const router = useRouter();
+const userStore = useUserStore();
+const userRole = userStore.auth;
 
 const props = defineProps({
     alarm: {
@@ -489,7 +492,7 @@ const fetchNoticeInfo = async () => {
 const fetchContractInfo = async () => {
 
     if (props.alarm.tag === '계약서') {
-        if (member.value.position === "영업 사원") {
+        if (userRole === "EMPLOYEE") {
             // "영업 사원"일 경우 실행할 코드
             try {
                 const response = await apiContractService.get(
@@ -501,7 +504,7 @@ const fetchContractInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 사원:", error);
             }
-        } else if (member.value.position === "영업 관리자") {
+        } else if (userRole === "ADMIN") {
             // "영업 담당자"일 경우 실행할 코드
             try {
                 const response = await apiContractService.get(
@@ -513,7 +516,7 @@ const fetchContractInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 관리자:", error);
             }
-        } else if (member.value.position === "영업 담당자") {
+        } else if (userRole === "DIRECTOR") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiContractService.get(
@@ -525,7 +528,7 @@ const fetchContractInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 담당자:", error);
             }
-        } else if (member.value.position === "시스템 관리자") {
+        } else if (userRole === "GOD") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiContractService.get(
@@ -551,7 +554,7 @@ const fetchContractInfo = async () => {
 const fetchPurchaseOrderInfo = async () => {
 
     if (props.alarm.tag === '발주서') {
-        if (member.value.position === "영업 관리자") {
+        if (userRole === "ADMIN") {
             // "영업 담당자"일 경우 실행할 코드
             try {
                 const response = await apiPurchaseOrderService.get(
@@ -563,7 +566,7 @@ const fetchPurchaseOrderInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 관리자:", error);
             }
-        } else if (member.value.position === "영업 담당자") {
+        } else if (userRole === "DIRECTOR") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiPurchaseOrderService.get(
@@ -575,7 +578,7 @@ const fetchPurchaseOrderInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 담당자:", error);
             }
-        } else if (member.value.position === "시스템 관리자") {
+        } else if (userRole === "GOD") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiPurchaseOrderService.get(
@@ -620,7 +623,7 @@ const fetchPurchaseOrderInfo = async () => {
 const fetchOrderInfo = async () => {
 
     if (props.alarm.tag === '수주서') {
-        if (member.value.position === "영업 사원") {
+        if (userRole === "EMPLOYEE") {
             // "영업 사원"일 경우 실행할 코드
             try {
                 const response = await apiOrderService.get(
@@ -632,7 +635,7 @@ const fetchOrderInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 사원:", error);
             }
-        } else if (member.value.position === "영업 관리자") {
+        } else if (userRole === "ADMIN") {
             // "영업 담당자"일 경우 실행할 코드
             try {
                 const response = await apiOrderService.get(
@@ -644,7 +647,7 @@ const fetchOrderInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 관리자:", error);
             }
-        } else if (member.value.position === "영업 담당자") {
+        } else if (userRole === "DIRECTOR") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiOrderService.get(
@@ -656,7 +659,7 @@ const fetchOrderInfo = async () => {
             } catch (error) {
                 console.error("Failed to fetch contract info for 영업 담당자:", error);
             }
-        } else if (member.value.position === "시스템 관리자") {
+        } else if (userRole === "GOD") {
             // "시스템 관리자"일 경우 실행할 코드
             try {
                 const response = await apiOrderService.get(

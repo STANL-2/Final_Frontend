@@ -484,6 +484,9 @@ onMounted(() => {
     // Initial fetch of alarm types
     fetchAlarmTypes();
 
+    // 1초마다 알람 타입 자동 업데이트
+    const alarmTypesInterval = setInterval(fetchAlarmTypes, 30 * 1000);
+
     // 남은 시간이 0보다 크면 타이머 재시작
     if (userStore.remainingTime > 0) {
         userStore.startTimer();
