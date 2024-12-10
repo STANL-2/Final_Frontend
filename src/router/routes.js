@@ -194,37 +194,37 @@ const routes = [
                 path: 'list',
                 name: 'NoticeList',
                 component: () => import('@/views/notice/NoticeList.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN', 'DIRECTOR'] }
             },
             {
                 path: 'detail',
                 name: 'NoticeDetail',
                 component: () => import('@/views/notice/NoticeDetail.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN', 'DIRECTOR'] }
             },
             {
                 path: 'Elist',
                 name: 'ENoticeList',
                 component: () => import('@/views/notice/edit/ENoticeList.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
             },
             {
                 path: 'Edetail',
                 name: 'ENoticeDetail',
                 component: () => import('@/views/notice/edit/ENoticeDetail.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
             },
             {
                 path: 'modify',
                 name: 'ENoticeModify',
                 component: () => import('@/views/notice/edit/ENoticeModify.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
             },
             {
                 path: 'register',
                 name: 'ENoticeRegister',
                 component: () => import('@/views/notice/edit/ENoticeRegister.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'ADMIN', 'EMPLOYEE'] }
             }
         ]
     },
@@ -355,37 +355,37 @@ const routes = [
                 path: 'list',
                 name: 'PromotionList',
                 component: () => import('@/views/promotion/PromotionList.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN', 'DIRECTOR'] }
             },
             {
                 path: 'detail',
                 name: 'PromotionDetail',
                 component: () => import('@/views/promotion/PromotionDetail.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'EMPLOYEE', 'ADMIN', 'DIRECTOR'] }
             },
             {
                 path: 'Elist',
                 name: 'EPromotionList',
                 component: () => import('@/views/promotion/edit/EPromotionList.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'EMPLOYEE', 'ADMIN'] }
             },
             {
                 path: 'Edetail',
                 name: 'EPromotionDetail',
                 component: () => import('@/views/promotion/edit/EPromotionDetail.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'EMPLOYEE', 'ADMIN'] }
             },
             {
                 path: 'modify',
                 name: 'EPromotionModify',
                 component: () => import('@/views/promotion/edit/EPromotionModify.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'EMPLOYEE', 'ADMIN'] }
             },
             {
                 path: 'register',
                 name: 'EPromotionRegister',
                 component: () => import('@/views/promotion/edit/EPromotionRegister.vue'),
-                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR'] }
+                meta: { requiresAuth: true, auth: ['GOD', 'DIRECTOR', 'EMPLOYEE', 'ADMIN'] }
             }
         ]
     },

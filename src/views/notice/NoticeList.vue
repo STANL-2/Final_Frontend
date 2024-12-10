@@ -1,7 +1,6 @@
 <template>
     <PageLayout>
         <div class="search-wrapper">
-
             <div class="top">
                 <div class="path">
                     <PagePath />
@@ -9,7 +8,11 @@
                 <div class="flex-row content-end">
                     <div class="ml-l">
                         <div class="ml-xs">
-                            <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                            <CommonButton label="초기화" 
+                            icon="pi pi-refresh" 
+                            @click="resetSearchParams"
+                            color="#F1F1FD" 
+                            textColor="#6360AB" />
                         </div>
                     </div>
                     <div class="search-button-wrapper ml-s">
@@ -25,21 +28,28 @@
             </div>
             <div class="flex-row items-center mb-s">
                 <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
-                <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" />
-                </div>
-                <div class="ml-xs">
-                    <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
-                </div>
+                <div class="ml-xs"><CommonButton label="인쇄" icon="pi pi-print" /></div>
+                <div class="ml-xs"><CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" /></div>
             </div>
         </div>
 
-        <!-- ViewTable -->
         <div class="table-wrapper">
-            <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
-                :rows="rows" :rowsPerPageOptions="[10, 15, 20, 50]" :selectable="true" buttonLabel="조회"
-                buttonHeader="상세조회" :buttonAction="handleView" buttonField="code" @page="onPage" @sort="onSort"
-                @filter="onFilter" />
+            <ViewTable 
+                :headers="tableHeaders" 
+                :data="tableData" 
+                :loading="loading" 
+                :totalRecords="totalRecords" 
+                :rows="rows" 
+                :rowsPerPageOptions="[10, 15, 20, 50]"
+                :selectable="true" 
+                buttonLabel="조회" 
+                buttonHeader="상세조회"
+                :buttonAction="handleView" 
+                buttonField="code"
+                @page="onPage" 
+                @sort="onSort" 
+                @filter="onFilter" 
+            />
         </div>
     </PageLayout>
 </template>
@@ -54,13 +64,15 @@ import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
 import PagePath from '@/components/common/PagePath.vue';
 
-const router = useRouter();
+const router = useRouter(); 
 const searchFormRef = ref(null); // ref로 searchFormRef 정의
 const loading = ref(false); // 로딩 상태 변수
 
 const selectedDetail = ref(null);
 
-
+const navigateToRegisterPage = () => {
+    router.push({ name: 'ENoticeRegister' }); // 라우터 이름을 이용해 이동
+};
 
 const searchParams = ref({
     title: '',
@@ -71,30 +83,34 @@ const searchParams = ref({
     endDate: null
 });
 
+const resetForm = () => {
+    fields.value = {
+        tag: '',
+        classification: '',
+        noticeTitle: '',
+        noticeWriter: '',
+        NoticeSearchDate_start: null,
+        NoticeSearchDate_end: null
+    };
+};
+
 const formFields = [
     [
         {
             type: 'select',
-            label: '태그',
-            model: 'tag',
-            options: ['ALL', 'ADMIN', 'DIRECTOR'],
-            showDivider: false
-        },
-        {
-            type: 'select',
             label: '분류',
             model: 'classification',
-            options: ['NORMAL', 'GOAL', 'STRATEGY'],
+            options: ['NORMAL','GOAL','STRATEGY'],
             showDivider: false
         },
-    ],
-    [
         {
             label: '제목',
             type: 'input',
             model: 'noticeTitle',
             showDivider: true
-        },
+        }
+    ],
+    [
         {
             label: '작성자',
             type: 'input',
@@ -111,15 +127,60 @@ const formFields = [
     ]
 ];
 
+const fields = ref({
+    tag: '',
+    classification: '',
+    noticeTitle: '',
+    noticeWriter: '',
+    NoticeSearchDate_start: null,
+    NoticeSearchDate_end: null,
+});
+
+
+
 const tableHeaders = [
-    { field: 'noticeId', label: '번호', width: '15%' },
-    { field: 'tag', label: '태그', width: '20%' },
-    { field: 'classification', label: '분류', width: '10%' },
+    { field: 'noticeId', label: '번호', width: '20%' },
+    { field: 'classification', label: '분류', width: '20%' },
     { field: 'title', label: '제목', width: '20%' },
-    { field: 'createdAt', label: '작성 일자', width: '15%' },
-    { field: 'memberId', label: '작성자', width: '15%' }
+    { field: 'createdAt', label: '작성 일자', width: '20%' },
+    { field: 'memberId', label: '작성자', width: '20%' }
 ];
 
+const resetSearchParams = async () => {
+    console.log('초기화 버튼 클릭됨');
+    // 검색 파라미터 초기화
+    searchParams.value = {
+        title: '',
+        tag: '',
+        memberId: '',
+        classification: '',
+        startDate: null,
+        endDate: null
+    };
+
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    // 테이블 데이터 및 페이지 관련 변수 초기화
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 초기 상태 데이터 로드
+    await loadData();
+};
+
+const initializeFormData = () => {
+    fields.value = {
+        tag: '',
+        classification: '',
+        noticeTitle: '',
+        noticeWriter: '',
+        NoticeSearchDate_start: null,
+        NoticeSearchDate_end: null,
+    };
+};
 // 상태 변수
 const tableData = ref([]); // 테이블 데이터
 const totalRecords = ref(0); // 전체 데이터 개수
@@ -138,7 +199,7 @@ const exportCSV = async () => {
 
         // 이미 blob이 반환되었으므로 바로 URL 생성
         const url = window.URL.createObjectURL(blob);
-
+        
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'noticeExcel.xlsx');
@@ -159,11 +220,11 @@ const exportCSV = async () => {
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     router.push({
-        name: 'NoticeDetail',
+        name: 'ENoticeDetail',
         query: {
-            tag: rowData.tag, // 태그
+            tag: rowData.tag, 
             classification: rowData.classification, // 분류
-            noticeTitle: rowData.title,
+            noticeTitle: rowData.title, 
             noticeContent: rowData.content,
             noticeId: rowData.noticeId,
         },
@@ -217,37 +278,55 @@ const handleSearch = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        console.log("response" + response);
-        const params = new URLSearchParams();
-
-        // 기본 파라미터 설정
-        params.append('page', Math.floor(first.value / rows.value)); // 페이지 계산
-        params.append('size', rows.value); // 페이지당 행 수 설정
-
-        // 조건별 파라미터 추가
-        if (searchParams.value.title) params.append('title', searchParams.value.title);
-        if (searchParams.value.tag) params.append('tag', searchParams.value.tag);
-        if (searchParams.value.memberId) params.append('memberId', searchParams.value.memberId);
-        if (searchParams.value.classification) params.append('classification', searchParams.value.classification);
-        if (searchParams.value.startDate) params.append('startDate', `${searchParams.value.startDate} 00:00:00`);
-        if (searchParams.value.endDate) params.append('endDate', `${searchParams.value.endDate} 23:59:59`);
-
-        // 쿼리 문자열로 변환된 파라미터를 API 요청에 전달
-        const response = await $api.notice.getParams('', `?${params.toString()}`);
-
-        // 받은 데이터 처리
+        const params = {
+            page: Math.floor(first.value / rows.value),
+            size: rows.value,
+            title: searchParams.value.title || '',
+            tag: searchParams.value.tag || '',
+            memberId: searchParams.value.memberId || '',
+            classification: searchParams.value.classification || '',
+            startDate: searchParams.value.startDate || '',
+            endDate: searchParams.value.endDate || '',
+        };
+        if(params.title!=''){
+            params.title='&title='+params.title;
+        }
+        if(params.tag!=''){
+            params.tag='&tag='+params.tag;
+        }
+        if(params.memberId!=''){
+            params.memberId='&memberId='+params.memberId;
+        }
+        if(params.classification!=''){
+            params.classification='&classification='+params.classification;
+        }
+        if(params.startDate==null){
+            params.startDate=''
+            console.log(params.startDate);
+        }
+        else if(params.startDate!=''){
+            params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
+            console.log(params.startDate);
+        }
+        if(params.endDate==null){
+            params.endDate=''
+            console.log(params.endDate);
+        }
+        else if(params.endDate!=''){
+            params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
+            console.log(params.endDate);
+        }
+        console.log("test");
+        const response = await $api.notice.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
+        console.log(`?page=${params.page}&size=${params.size}${params.title}${params.tag}${params.memberId}${params.classification}${params.startDate}${params.endDate}`);
         tableData.value = response.content || [];
         totalRecords.value = response.totalElements || 0;
-        console.log("response" + response);
-
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     } finally {
         loading.value = false;
     }
 };
-
-
 
 onMounted(() => {
     loadData();
@@ -256,25 +335,10 @@ onMounted(() => {
 
 
 <style scoped>
-.top{
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /* 세로 가운데 정렬 */
-    width: 100%; /* 부모 요소 기준 크기 */
-    box-sizing: border-box; /* 테두리 포함 크기 계산 */
-}
-
-.path {
-    /* 나머지 요소를 오른쪽으로 밀어냄 */
-    margin-bottom: 10px;
-    display: flex;
-}
-
-.list {
+.list{
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight:bold;
 }
-
 .search-wrapper {
     display: flex;
     flex-direction: column;
@@ -295,5 +359,21 @@ onMounted(() => {
 .title-pos {
     margin-top: 15px;
     font-size: 16px
+}
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
 }
 </style>

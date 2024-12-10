@@ -1,6 +1,5 @@
 <template>
     <PageLayout>
-        <!-- SearchForm -->
         <div class="search-wrapper">
             <div class="top">
                 <div class="path">
@@ -9,7 +8,11 @@
                 <div class="flex-row content-end">
                     <div class="ml-l">
                         <div class="ml-xs">
-                            <CommonButton label="초기화" icon="pi pi-refresh" color="#F1F1FD" textColor="#6360AB" />
+                            <CommonButton label="초기화" 
+                            icon="pi pi-refresh" 
+                            @click="resetSearchParams"
+                            color="#F1F1FD" 
+                            textColor="#6360AB" />
                         </div>
                     </div>
                     <div class="search-button-wrapper ml-s">
@@ -17,9 +20,7 @@
                     </div>
                 </div>
             </div>
-            <div class="search-fields">
-                <SearchForm :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
-            </div>
+            <SearchForm class="mb-l" :fields="formFields" @open-modal="handleOpenModal" ref="searchFormRef" />
         </div>
         <div class="flex-row content-between mt-m">
             <div class="title-pos">
@@ -159,6 +160,30 @@ const exportCSV = async () => {
     }
 };
 
+const resetSearchParams = () => {
+    // searchParams 초기화
+    searchParams.value = {
+        title: '',
+        memberId: '',
+        productId: '',
+        customerId: '',
+        startDate: null,
+        endDate: null
+    };
+
+    // SearchForm 필드 초기화
+    if (searchFormRef.value?.initializeFormData) {
+        searchFormRef.value.initializeFormData(); // NoticeSearchForm 초기화
+    }
+
+    tableData.value = []; 
+    totalRecords.value = 0; 
+    first.value = 0; 
+
+    // 데이터 로드
+    loadData();
+};
+
 function handleView(rowData) {
     selectedDetail.value = rowData; // 클릭된 행 데이터 전달
     router.push({
@@ -285,23 +310,6 @@ onMounted(() => {
 
 
 <style scoped>
-.top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* 세로 가운데 정렬 */
-    width: 100%;
-    /* 부모 요소 기준 크기 */
-    box-sizing: border-box;
-    /* 테두리 포함 크기 계산 */
-}
-
-.path {
-    /* 나머지 요소를 오른쪽으로 밀어냄 */
-    margin-bottom: 10px;
-    display: flex;
-}
-
 .list {
     font-size: 1.2rem;
     font-weight: bold;
@@ -327,5 +335,21 @@ onMounted(() => {
 .title-pos {
     margin-top: 15px;
     font-size: 16px
+}
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 가운데 정렬 */
+    width: 100%;
+    /* 부모 요소 기준 크기 */
+    box-sizing: border-box;
+    /* 테두리 포함 크기 계산 */
+}
+
+.path {
+    /* 나머지 요소를 오른쪽으로 밀어냄 */
+    margin-bottom: 10px;
+    display: flex;
 }
 </style>

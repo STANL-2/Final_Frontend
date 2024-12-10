@@ -1,6 +1,6 @@
 <template>
     <ConfirmDialog></ConfirmDialog>
-    <PageLayout>
+    <PageLayout class = "page-layout">
         <div class="header width-s ml-l mb-m mt-xl">
             <h3>공지사항 상세 페이지</h3>
         </div>
