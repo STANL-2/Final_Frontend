@@ -352,7 +352,6 @@ onMounted(async () => {
     background-color: #F1F1FD;
     border-radius: 1rem;
     padding: 2.5rem;
-    width: 1480px;
 }
 
 .summary-cards {
