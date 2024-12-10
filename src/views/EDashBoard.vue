@@ -336,7 +336,7 @@ onMounted(async () => {
 .dashboard {
     background-color: #F1F1FD;
     border-radius: 1rem;
-    padding: 2.5rem;
+    padding: 2rem;
 }
 
 .summary-cards {
