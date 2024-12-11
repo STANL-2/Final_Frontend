@@ -194,7 +194,7 @@ const extractDataFromHTML = (html) => {
     const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
     const vehiclePrice = doc.querySelector(".vehiclePrice")?.innerText.trim() || "";
     const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
-    const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".centerName")?.innerText.trim() || "";
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
 
     // 필요한 필드를 추가적으로 추출
