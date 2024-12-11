@@ -77,14 +77,6 @@
                                         {{ detailInfo.title }}
                                     </td>
                                 </tr>
-                                <tr v-if="target">
-                                    <td class="left-column">대상</td>
-                                    <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(target)) }">
-                                            {{ tagMapping(target) }}
-                                        </span>
-                                    </td>
-                                </tr>
                                 <tr v-if="alarm.tag">
                                     <td class="left-column">분류</td>
                                     <td>
@@ -324,7 +316,6 @@ const apiOrderService = new ApiService('api/v1/order');
 const router = useRouter();
 const userStore = useUserStore();
 const userRole = userStore.auth;
-const target = "ALL";
 
 const props = defineProps({
     alarm: {
@@ -355,10 +346,10 @@ const tagMapping = (tag) => {
         'GOAL': '영업 목표',
         'STRATEGY': '영업 전략',
         'APPROVED': '승인',
-        "ALL": '전체',
-        "ADMIN": '영업 관리자',
-        "DIRECTOR":'영업 담당자',
-        "GOD": '시스템 관리자'
+        "all": '전체',
+        "admin": '영업 관리자',
+        "director":'영업 담당자',
+        "god": '시스템 관리자'
     };
 
     return tagMap[tag] || tag; // 일치하는 값이 없으면 원래 값 반환
@@ -404,8 +395,6 @@ const truncateContent = (htmlContent) => {
     if (!paragraphMatch || !paragraphMatch[1]) return '';
 
     const paragraphText = paragraphMatch[1].trim();
-
-    paragraphText = paragraphText.replace(/<\/?strong[^>]*>/gi, '');s
 
     // 70글자 내외로 자르고 초과 시 "..." 추가
     return paragraphText.length > 247
