@@ -2,7 +2,7 @@
     <Toast />
     <ConfirmDialog></ConfirmDialog>
     <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;"
-    @click="onClose">
+    @click="onClose" @hide="onClose">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">
@@ -37,7 +37,12 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
+        <template #footer>
+            <CommonButton label="닫기" @click="onClose" />
+        </template>
+    </Modal>
+
+    <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="발주 승인/취소 처리" width="20rem"
             height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
             <div class="status-content">
                 <p class="current-status">
@@ -65,11 +70,6 @@
             </template>
         </Modal>
 
-        <template #footer>
-            <CommonButton label="닫기" @click="onClose" />
-        </template>
-    </Modal>
-
     <PuchaseOrderModify v-model:visible="showModifyModal" :purchaseOrder-id="getDetailId" @close="closeModifyModal" />
 </template>
 
@@ -90,12 +90,7 @@ const props = defineProps({
     statusClass: String, // 상태 표시 스타일
 });
 
-function resetModalState() {
-    isVisible.value = false;
-    emit('close'); // 부모 컴포넌트에 close 이벤트 전달
-}
-
-const emit = defineEmits(['update:modelValue', 'refresh', 'update-status']);
+const emit = defineEmits(['update:modelValue', 'refresh']);
 
 // PrimeVue 훅
 const confirm = useConfirm();
@@ -125,8 +120,6 @@ const confirmStatusChange = async () => {
             },
             'status/' + getDetailId.value
         );
-        console.log('PUT 요청 응답 결과');
-        console.log(getDetailId.value);
         toast.add({
             severity: 'success',
             summary: '성공',
@@ -152,7 +145,6 @@ watch(
     () => props.details,
     (newDetails) => {
         if (newDetails?.purchaseOrderId) {
-            console.log('PurchaseOrderId:', newDetails.purchaseOrderId);
             getDetailId.value = newDetails.purchaseOrderId; // orderId를 저장
             getDetailRequest(); // 데이터 요청
         }
@@ -178,11 +170,7 @@ const getDetailRequest = async () => {
             getDetailId.value // contractId 전달
         );
 
-        console.log('GET DETAIL 요청 응답 결과');
-        console.log(response);
-
         props.details.content = response.result.content;
-        console.log("Updated details.content: " + props.details.content);
     } catch (error) {
         console.error('GET DETAIL 요청 실패: ', error);
     }
@@ -227,7 +215,7 @@ function closeModifyModal() {
 // 삭제 버튼 클릭 시 확인 다이얼로그 호출
 function deleteModal() {
     confirm.require({
-        message: '이 계약서를 삭제하시겠습니까?',
+        message: '이 발주서를 삭제하시겠습니까?',
         header: '삭제 확인',
         icon: 'pi pi-exclamation-circle',
         rejectLabel: '취소',
@@ -241,7 +229,7 @@ function deleteModal() {
                 }
 
                 await $api.purchaseOrder.delete(getDetailId.value);
-                toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
+                toast.add({ severity: 'success', summary: '성공', detail: '발주서가 삭제되었습니다.', life: 3000 });
                 emit('refresh');
                 emit('update:modelValue', false); // 모달 닫기
             } catch (error) {
