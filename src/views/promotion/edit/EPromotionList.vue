@@ -244,22 +244,18 @@ const loadData = async () => {
         }
         if(params.startDate==null){
             params.startDate=''
-            console.log("1");
             console.log(params.startDate);
         }
         else if(params.startDate!=''){
             params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
-            console.log("2");
             console.log(params.startDate);
         }
         if(params.endDate==null){
             params.endDate=''
-            console.log("3");
             console.log(params.endDate);
         }
         else if(params.endDate!=''){
             params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
-            console.log("4");
             console.log(params.endDate);
         }
         const response = await $api.promotion.getParams('',`?page=${params.page}&size=${params.size}${params.title}${params.memberId}${params.startDate}${params.endDate}`);
@@ -288,13 +284,11 @@ onMounted(() => {
 .search-wrapper {
     display: flex;
     flex-direction: column;
-    /* 버튼을 오른쪽 정렬 */
     margin-bottom: 1rem;
 }
 
 .search-button-wrapper {
     margin-bottom: 1rem;
-    /* 검색 조건과 버튼 사이 간격 */
 }
 
 .search-fields {
@@ -310,15 +304,11 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* 세로 가운데 정렬 */
     width: 100%;
-    /* 부모 요소 기준 크기 */
     box-sizing: border-box;
-    /* 테두리 포함 크기 계산 */
 }
 
 .path {
-    /* 나머지 요소를 오른쪽으로 밀어냄 */
     margin-bottom: 10px;
     display: flex;
 }

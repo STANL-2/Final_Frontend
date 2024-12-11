@@ -37,8 +37,6 @@
                 <div class="button-section ">
                     <button class="button back-button" @click="goBack">목록</button>
                     <div class="right-buttons">
-                        <!-- <button class="button delete-button" @click="deleteModal">삭제</button>
-                        <button class="button edit-button" @click="navigateToEditPage">수정</button> -->
                     </div>
                 </div>
             </div>

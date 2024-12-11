@@ -301,22 +301,18 @@ const loadData = async () => {
         }
         if(params.startDate==null){
             params.startDate=''
-            console.log("1");
             console.log(params.startDate);
         }
         else if(params.startDate!=''){
             params.startDate='&startDate='+params.startDate+'%2000%3A00%3A00';
-            console.log("2");
             console.log(params.startDate);
         }
         if(params.endDate==null){
             params.endDate=''
-            console.log("3");
             console.log(params.endDate);
         }
         else if(params.endDate!=''){
             params.endDate='&endDate='+params.endDate+'%2000%3A00%3A00';
-            console.log("4");
             console.log(params.endDate);
         }
         console.log("test");

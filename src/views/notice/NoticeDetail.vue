@@ -12,9 +12,7 @@
                 </div>
             </h3>
 
-            <!-- 첨부 파일 보여주기 -->
             <div class="bottom-section flex-col items-center width-s ml-l">
-                <!-- 첨부 파일 -->
                 <div class="file-section mb-xl">
                     <table class="file-table ml-s ">
                         <thead>
