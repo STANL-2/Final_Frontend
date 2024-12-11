@@ -37,7 +37,6 @@
             </div>
 
             <!-- 내 고객 정보 -->
-            <!-- <DashBoardCard style="width:400px;"> -->
             <DashBoardCard >
                 <div class="customer-info">
                     <div class="content-title">이번달 판매사원 순위</div>
@@ -48,7 +47,6 @@
 
         <div class="small-cards">
             <div class="announcement-card">
-                <!-- <DashBoardCard style="width:830px;"> -->
                 <DashBoardCard>
                     <div class="card-content">
                         <div class="content-title">공지사항</div>
@@ -62,7 +60,6 @@
                 </DashBoardCard>
             </div>
             <div class="news-card">
-                <!-- <DashBoardCard style="width:815px;"> -->
                 <DashBoardCard>
                     <div class="card-content">
                         <div class="content-title">뉴스 기사</div>
@@ -353,7 +350,7 @@ onMounted(async () => {
 .dashboard {
     background-color: #F1F1FD;
     border-radius: 1rem;
-    padding: 2.5rem;
+    padding: 2rem;
     width: 100%;
 }
 
@@ -426,7 +423,6 @@ onMounted(async () => {
 }
 
 .customer-info {
-    /* width: 25.5%; */
     width: 24.5rem;
 }
 
