@@ -353,8 +353,8 @@ const tagMapping = (tag) => {
         'VACATION': '휴가',
         'SESSION': '회의',
         'NORMAL': '일반',
-        'GOAL': '영업목표',
-        'STRATEGY': '영업전략',
+        'GOAL': '영업 목표',
+        'STRATEGY': '영업 전략',
         'APPROVED': '승인',
         "ALL": '전체',
         "ADMIN": '영업 관리자',
@@ -376,8 +376,8 @@ const tagColors = [
     { name: '수주서', color: '#B9E4C9' },
     { name: '중요', color: '#FFB3B3' },
     { name: '일반', color: '#E0FFB3' },
-    { name: '영업목표', color: '#D4A5A5' },
-    { name: '영업전략', color: '#A5D4C5' },
+    { name: '영업 목표', color: '#D4A5A5' },
+    { name: '영업 전략', color: '#A5D4C5' },
     { name: '승인', color: '#B3FFB3' },
     { name: '전체', color: '#D3D3D3' },
     { name: '영업 관리자', color: '#FFA07A' },
@@ -475,7 +475,7 @@ const fetchScheduleInfo = async () => {
 
 const fetchNoticeInfo = async () => {
 
-    const noticeTypes = ['일반', '영업전략', '영업목표'];
+    const noticeTypes = ['일반', '영업 전략', '영업 목표'];
     if (noticeTypes.includes(props.alarm.tag)) {
         try {
             const response = await apiNoticeService.get(
@@ -709,8 +709,8 @@ watch(() => props.alarm, async (newAlarm) => {
                 await fetchScheduleInfo();
                 break;
             case '일반':
-            case '영업전략':
-            case '영업목표':
+            case '영업 전략':
+            case '영업 목표':
                 await fetchNoticeInfo();
                 break;
             case '계약서':
