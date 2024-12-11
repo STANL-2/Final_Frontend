@@ -149,7 +149,7 @@ function closeModifyModal() {
 // 삭제 버튼 클릭 시 확인 다이얼로그 호출
 function deleteModal() {
     confirm.require({
-        message: '이 계약서를 삭제하시겠습니까?',
+        message: '이 수주서를 삭제하시겠습니까?',
         header: '삭제 확인',
         icon: 'pi pi-exclamation-circle',
         rejectLabel: '취소',
@@ -163,7 +163,7 @@ function deleteModal() {
                 }
 
                 await $api.order.delete(getDetailId.value);
-                toast.add({ severity: 'success', summary: '성공', detail: '계약서가 삭제되었습니다.', life: 3000 });
+                toast.add({ severity: 'success', summary: '성공', detail: '수주서가 삭제되었습니다.', life: 3000 });
                 emit('refresh');
                 emit('update:modelValue', false); // 모달 닫기
             } catch (error) {
