@@ -62,50 +62,6 @@ const toast = useToast();
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
 const showModifyModal = ref(false);
-const showStatusChangeModal = ref(false); // 상태 변경 모달 상태
-const newStatus = ref(props.status); // 새로운 상태 값
-
-function openStatusModal() {
-    showStatusChangeModal.value = true;
-}
-
-function closeStatusModal() {
-    showStatusChangeModal.value = false;
-}
-
-// 상태 변경 확인
-const confirmStatusChange = async () => {
-    try {
-    
-        // 업데이트된 HTML과 상태 저장
-        const response = await $api.order.put(
-            {
-                status: newStatus.value,
-            }, 
-            `status/` + getDetailId.value
-        );
-
-        // UI 피드백
-        toast.add({
-            severity: 'success',
-            summary: '성공',
-            detail: `상태가 "${newStatus.value}"로 변경되었습니다`,
-            life: 3000
-        });
-
-        emit('refresh');
-        closeStatusModal();
-        onClose();
-    } catch (error) {
-        console.error("상태 변경 오류:", error);
-        toast.add({
-            severity: 'error',
-            summary: '실패',
-            detail: '상태 변경 중 오류가 발생했습니다',
-            life: 3000
-        });
-    }
-};
 
 // details 값이 변경될 때마다 orderId를 업데이트
 watch(
