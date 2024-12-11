@@ -54,7 +54,7 @@ const firstRowFields = ref([
         value: '',
         // options: ['일별', '월별', '연도별'],
         // options: ['','월별', '연도별'],
-        options: ['조회기간별', '월별'],
+        options: ['일별', '월별'],
         showDivider: false,
     },
     {
@@ -134,7 +134,6 @@ const refresh = () => {
 }
 
 const handleButtonComparisonClick = async (field2) => {
-    console.log(`${field2.model} 비교 버튼 클릭됨`);
 
     const formData = searchFormRef.value?.formData;
 
@@ -149,7 +148,7 @@ const handleButtonComparisonClick = async (field2) => {
 
     const period = formData.period || '';
     const searchTypeMap = {
-        '조회기간별': 'daily',
+        '일별': 'daily',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -165,12 +164,9 @@ const handleButtonComparisonClick = async (field2) => {
         period: searchType,
     };
 
-    console.log("Comparison Request Body:", requestBody);
     if (field2.model === 'best') {
-        console.log("최고 데이터 요청:", requestBody);
         await loadBestData(requestBody, field2.label); // 최고 데이터 로드
     } else {
-        console.log("평균 데이터 요청:", requestBody);
         await loadComparisonData(requestBody, field2.label); // 기존 평균 로직
     }
 };
@@ -198,7 +194,7 @@ const handleButtonClick = async (field) => {
 
     const period = formData.period || ''; // '일별', '월별', '연도별' 중 하나
     const searchTypeMap = {
-        '조회기간별': 'daily',
+        '일별': 'daily',
         '월별': 'month',
         '연도별': 'year',
     };
@@ -213,7 +209,6 @@ const handleButtonClick = async (field) => {
 
     const searchType = searchTypeMap[period] || null; // 매핑되지 않은 값은 null
 
-    console.log('searchCriteria:', searchCriteria.value);
 
     // 데이터 로드 및 차트 업데이트
     await loadData(method.value, searchType, field.model, field.label);
@@ -227,7 +222,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
         // 별도로 날짜 처리
         const startDate = searchCriteria.value.salesHistorySearchDate_start || null;
 
-        console.log("startDate", searchCriteria.value.salesHistorySearchDate_start);
         if (searchCriteria.value.salesHistorySearchDate_end) {
             // salesHistoryDate_end 값을 Date 객체로 변환
             let date = new Date(searchCriteria.value.salesHistorySearchDate_end);
@@ -246,7 +240,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
             period: saveDaily
         }
 
-        console.log("searchParams.value", searchParams.value);
 
         let response;
 
@@ -257,10 +250,13 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
         else
             subUrl.value = `employee/statistics/search`;
         const queryString = `?startDate=${encodeURIComponent(searchParams.value.startDate)}&endDate=${encodeURIComponent(searchParams.value.endDate)}&period=${encodeURIComponent(searchParams.value.period)}`;
+        if (searchType == null && searchParams.value.startDate == null && searchParams.value.endDate == null) {
+            console.warn('검색조건을 입력해주세요');
+            DOMEventService.dispatchApiError("검색 조건을 입력해주세요.");
+            throw new Error('Non formData');
+        }
         response = await $api.salesHistory.getParams(subUrl.value, queryString);
 
-        console.log("queryString: " + queryString);
-        console.log("subUrl" + subUrl.value);
 
         if (response && response.result) {
             const result = response.result;
@@ -272,8 +268,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                     value: item[fieldModel] || 0,
                 }));
 
-                console.log("mappedData:", mappedData);
-
                 // 차트 업데이트
                 updateChartData(mappedData, fieldLabel);
             } else {
@@ -283,21 +277,20 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
                 }));
                 updateChartData(mappedData, fieldLabel);
             }
-            count = 0;
-        } else if (searchType == null && searchParams.value.startDate == null && searchParams.value.endDate == null) {
-            console.warn('검색조건을 입력해주세요');
-            if(count > 0){
-                DOMEventService.dispatchApiError("검색 조건을 입력해주세요.");
-                throw new Error('Non formData');
-            }
-            count++;
-        } else {
+            count = 0;}
+        // } else if (searchType == null && searchParams.value.startDate == null && searchParams.value.endDate == null) {
+        //     console.warn('검색조건을 입력해주세요');
+        //     if (count > 0) {
+        //         DOMEventService.dispatchApiError("검색 조건을 입력해주세요.");
+        //         throw new Error('Non formData');
+        //     }
+        //     count++;}
+        else {
+            DOMEventService.dispatchApiError("검색 결과가 없습니다.");
             throw new Error('Unsupported method');
         }
 
     } catch (error) {
-        DOMEventService.dispatchApiError("검색 결과가 없습니다.");
-
         console.error('데이터 로드 실패:', error.message);
     } finally {
         loading.value = false; // 로딩 종료
@@ -305,7 +298,6 @@ const loadData = async (method = 'POST', searchType = null, fieldModel = null, f
 };
 
 const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
-    console.log(`updateChartData 호출: fieldLabel = ${fieldLabel}, isComparison = ${isComparison}, data =`, mappedData);
 
     const labels = mappedData.map((item) => item.label);
     const data = mappedData.map((item) => item.value);
@@ -332,7 +324,6 @@ const updateChartData = (mappedData, fieldLabel, isComparison = false) => {
 
     isComparison = false;
 
-    console.log("Updated Chart Data:", targetChartData.value);
 };
 
 const loadComparisonData = async (requestBody, fieldLabel) => {
@@ -342,9 +333,6 @@ const loadComparisonData = async (requestBody, fieldLabel) => {
 
         if (response && response.result) {
             const result = response.result;
-
-            console.log("Response Result:", result);
-            console.log("saveButton: ", saveButton);
 
             // `saveButton` 값을 기반으로 매핑할 필드 결정
             const fieldMapping = {
@@ -365,7 +353,6 @@ const loadComparisonData = async (requestBody, fieldLabel) => {
                 value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
             }));
 
-            console.log("Mapped Comparison Data:", mappedData);
 
             // 비교 차트 데이터 업데이트
             updateChartData(mappedData, fieldLabel, true);
@@ -383,14 +370,12 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
     loading.value = true;
     try {
 
-        console.log
 
         const response = await $api.salesHistory.post(requestBody, `statistics/best`);
 
         if (response && response.result) {
             const result = response.result;
 
-            console.log("Response Result:", result);
 
             // `saveButton` 값을 기반으로 매핑할 필드 결정
             const fieldMapping = {
@@ -410,8 +395,6 @@ const loadBestData = async (requestBody, fieldLabel, searchType) => {
                 label: item.month || item.year || '',
                 value: item[mappedKey] || 0, // saveButton에 따라 동적으로 값 설정
             }));
-
-            console.log("Mapped Comparison Data:", mappedData);
 
             // 비교 차트 데이터 업데이트
             updateChartData(mappedData, fieldLabel, true);
