@@ -33,7 +33,9 @@
 
         <div class="chart-and-customer">
             <div class="chart">
-                <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+                <div class="chart-containerr">
+                    <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+                </div>
             </div>
 
             <!-- 내 고객 정보 -->
@@ -481,7 +483,7 @@ onMounted(async () => {
     background-color: #f5f5f5;
 }
 
-.chart-container[data-v-1a16159d] {
+.chart-container {
     position: relative;
     width: 100%;
     height: 100%;
