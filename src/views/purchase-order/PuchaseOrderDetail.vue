@@ -2,7 +2,7 @@
     <Toast />
     <ConfirmDialog></ConfirmDialog>
     <Modal :visible="modelValue" header="발주 상세 조회" width="70rem" height="none" style="z-index: 1000;"
-        @cancel="resetModalState">
+    @click="onClose">
         <div class="flex-row content-between items-end">
             <div class="flex-row">
                 <div class="status-display">

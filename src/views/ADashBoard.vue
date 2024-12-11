@@ -37,7 +37,7 @@
             </div>
 
             <!-- 내 고객 정보 -->
-            <DashBoardCard>
+            <DashBoardCard >
                 <div class="customer-info">
                     <div class="content-title">이번달 판매사원 순위</div>
                     <CustomerRank :customers="customers" class="customer-content" />
@@ -46,7 +46,7 @@
         </div>
 
         <div class="small-cards">
-            <div class="announcement-card card">
+            <div class="announcement-card">
                 <DashBoardCard>
                     <div class="card-content">
                         <div class="content-title">공지사항</div>
@@ -230,6 +230,11 @@ const loadData = async () => {
     loading.value = true; // 로딩 시작
     try {
 
+        const responseMember = await $api.member.get('','');
+
+        const myCenter = responseMember?.result?.centerId;
+
+
         let currentTime = new Date();
         let startTime = new Date();
         startTime.setFullYear(startTime.getFullYear() - 1);
@@ -239,48 +244,52 @@ const loadData = async () => {
             endDate: currentTime.toISOString(),
         });
 
-        const query = {
-            startDate: searchParams.value.startDate || '',
-            endDate: searchParams.value.endDate || '',
-        };
-
-        const queryString = `?${new URLSearchParams(query).toString()}`;
-        console.log("API 호출 URL:", queryString); // 디버깅용
-
         // API 호출
-        const response = await $api.salesHistory.getParams('employee/statistics/search/month', queryString);
+        const response = await $api.salesHistory.post(
+            {
+                "centerList": [myCenter],
+                "startDate": searchParams.value.startDate || '',
+                "endDate": searchParams.value.endDate || '',
+                "period" : 'month',
+            }
+            ,'statistics/search',
+        );
 
         const result = response?.result; // 응답 데이터 접근
 
-        if (result && Array.isArray(result)) {
-            chartData.value = result;
+        console.log(response?.result);
+        console.log(result.content);        
+
+
+        if (result && Array.isArray(result.content)) {
+            chartData.value = result.content;
 
             // 데이터 매핑
             bigCardChartData.value = {
                 ...bigCardChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...bigCardChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.incentive || 0),
+                        data: chartData.value.map((item) => item.totalIncentive || 0),
                     },
                 ],
             };
-
+            
             secondChartData.value = {
                 ...secondChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...secondChartData.value.datasets[0],
-                        data: chartData.value.map((item) => item.performance || 0),
+                        data: chartData.value.map((item) => item.totalPerformance || 0),
                     },
                 ],
             };
 
             thirdChartData.value = {
                 ...thirdChartData.value,
-                labels: chartData.value.map((item) => item.month || ''),
+                labels: chartData.value.map((item) => item.period || ''),
                 datasets: [
                     {
                         ...thirdChartData.value.datasets[0],
@@ -341,14 +350,14 @@ onMounted(async () => {
 .dashboard {
     background-color: #F1F1FD;
     border-radius: 1rem;
-    padding: 2.5rem;
-    width: 1480px;
+    padding: 2rem;
+    width: 100%;
 }
 
 .summary-cards {
     display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
+    gap: 2rem;
+    margin-bottom: 1.8rem;
 }
 
 .summary-card {
@@ -390,12 +399,13 @@ onMounted(async () => {
     padding-left: 0.5rem;
     padding-top: 12px;
     padding-bottom: 1rem;
+    width: 300%;
 }
 
 .chart-and-customer {
     display: flex;
-    align-items: stretch;
-    gap: 30px;
+    gap: 2rem;
+    width: 100%
 }
 
 .summary-value {
@@ -406,36 +416,38 @@ onMounted(async () => {
     justify-content: center;
     margin-top: 0.6rem;
     height: 80%;
-    /* 카드 전체 높이에 맞추기 */
 }
 
 .chart {
-    width: 71rem;
+    width: 74.5%;
 }
 
 .customer-info {
-    width: 328px;
+    width: 24.5rem;
 }
 
 
 .small-cards {
     display: flex;
     gap: 2rem;
-    margin-top: 25px;
+    margin-top: 1.8rem;
 }
 
 .card-content {
-    width: 40.7rem;
+    width: 100%;
     height: 18rem;
+}
+
+.announcement-card, .news-card {
+    width: 50%;
 }
 
 .announcement-list,
 .news-list {
     font-size: 18px;
-    /* 기사 제목 크기 키움 */
     font-weight: bold;
-    /* 더 강조된 텍스트 */
     color: #333333;
+    width: 50%;
 }
 
 .announcement-list li,
@@ -447,6 +459,7 @@ onMounted(async () => {
     padding: 6px;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    width: 200%;
 }
 
 .announcement-list li:hover,

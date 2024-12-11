@@ -1,5 +1,5 @@
 <template>
-    <main class="dashboard">
+    <div class="dashboard">
         <div class="summary-cards">
             <DashBoardCard class="summary-card custom-summary-card" @click="navigateToUrl('/contract/emlist')">
                 <div class="summary-icon-and-title">
@@ -75,7 +75,7 @@
                 </DashBoardCard>
             </div>
         </div>
-    </main>
+    </div>
 </template>
 
 
@@ -336,14 +336,14 @@ onMounted(async () => {
 .dashboard {
     background-color: #F1F1FD;
     border-radius: 1rem;
-    padding: 2.5rem;
-    width: 1480px;
+    padding: 2rem;
+    width: 100%;
 }
 
 .summary-cards {
     display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
+    gap: 2rem;
+    margin-bottom: 1.8rem;
 }
 
 .summary-card {
@@ -385,12 +385,13 @@ onMounted(async () => {
     padding-left: 0.5rem;
     padding-top: 12px;
     padding-bottom: 1rem;
+    width: 300%;
 }
 
 .chart-and-customer {
     display: flex;
-    align-items: stretch;
-    gap: 30px;
+    gap: 2rem;
+    width: 100%
 }
 
 .summary-value {
@@ -405,32 +406,35 @@ onMounted(async () => {
 }
 
 .chart {
-    width: 71rem;
+    width: 74.5%;
 }
 
 .customer-info {
-    width: 328px;
+    width: 24.5rem;
 }
 
 
 .small-cards {
     display: flex;
     gap: 2rem;
-    margin-top: 25px;
+    margin-top: 1.8rem;
 }
 
 .card-content {
-    width: 40.7rem;
+    width: 100%;
     height: 18rem;
+}
+
+.announcement-card, .news-card {
+    width: 50%;
 }
 
 .announcement-list,
 .news-list {
     font-size: 18px;
-    /* 기사 제목 크기 키움 */
     font-weight: bold;
-    /* 더 강조된 텍스트 */
     color: #333333;
+    width: 50%;
 }
 
 .announcement-list li,
@@ -442,6 +446,7 @@ onMounted(async () => {
     padding: 6px;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    width: 200%;
 }
 
 .announcement-list li:hover,
