@@ -131,6 +131,7 @@ const refresh = () => {
         });
     }
     // loadData();
+    window.location.reload();
 }
 
 const handleButtonComparisonClick = async (field2) => {

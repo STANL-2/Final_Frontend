@@ -197,7 +197,8 @@ const refresh = () => {
     searchQuery.value = '';
     modalTableData.value = [];
     selectedStoreCode.value = '';
-    loadData();
+
+    window.location.reload();
 }
 
 
