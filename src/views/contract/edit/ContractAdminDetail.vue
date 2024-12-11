@@ -36,8 +36,12 @@
             </div>
         </div>
 
-        <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
-            height="none" style="z-index: 1050;" class="status-modal" @close="closeStatusModal">
+        <template #footer>
+            <CommonButton label="닫기" @click="onClose" />
+        </template>
+    </Modal>
+    <Modal v-if="showStatusChangeModal" v-model:visible="showStatusChangeModal" header="계약 승인/취소 처리" width="20rem"
+            height="none" style="z-index: 1050;" @hide="closeStatusModal" class="status-modal">
             <div class="status-content">
                 <p class="current-status">
                     <strong>현재 상태:</strong>
@@ -59,15 +63,10 @@
                 </div>
             </div>
             <template #footer>
-                <CommonButton label="확인" @click="confirmStatusChange" />
-                <CommonButton label="취소" @click="closeStatusModal" />
+                <CommonButton label="확인" @click.stop="confirmStatusChange" />
+                <CommonButton label="취소" @click.stop="closeStatusModal" />
             </template>
         </Modal>
-
-        <template #footer>
-            <CommonButton label="닫기" @click="onClose" />
-        </template>
-    </Modal>
 
     <EContractModify v-model:visible="showModifyModal" :contract-id="getDetailId" @close="closeModifyModal" />
 </template>
