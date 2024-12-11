@@ -994,4 +994,13 @@ tbody td {
     font-size: 12px;
     color: #888;    
 }
+
+.alarm-list-container[data-v-628430e3] {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 40%;
+    height: 480px;
+    border-left: 1px solid #e4e4e4;
+    border-right: 1px solid #e4e4e4;
+}
 </style>
