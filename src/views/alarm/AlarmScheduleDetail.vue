@@ -78,14 +78,6 @@
                                     </td>
                                 </tr>
                                 <tr v-if="alarm.tag">
-                                    <td class="left-column">대상</td>
-                                    <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.tag)) }">
-                                            {{ tagMapping(detailInfo.tag) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr v-if="alarm.tag">
                                     <td class="left-column">분류</td>
                                     <td>
                                         <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">

@@ -33,7 +33,9 @@
 
         <div class="chart-and-customer">
             <div class="chart">
-                <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+                <div class="chart-containerr">
+                    <BigCard :chart-data="[bigCardChartData, secondChartData, thirdChartData]" />
+                </div>
             </div>
 
             <!-- 내 고객 정보 -->
@@ -463,5 +465,16 @@ onMounted(async () => {
     transform: translateY(-5px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     background-color: #f5f5f5;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 32rem;
+    background: #FFFFFF;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+    padding: 20px;
+    overflow: hidden;
 }
 </style>
