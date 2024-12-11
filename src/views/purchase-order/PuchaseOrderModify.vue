@@ -36,11 +36,6 @@
                 </Card>
             </div>
         </div>
-        <div class="flex-row content-between ml-l mr-xl">
-            <button class="custom-button" @click="openSignatureModal()">작성인 서명</button>
-        </div>
-        <SignatureModal v-model:visible="isSignatureModalVisible" @signatureSaved="handleSignature" />
-
         <template #footer>
             <CommonButton 
                 label="취소" 
@@ -206,7 +201,7 @@ const extractDataFromHTML = (html) => {
     const numberOfVehicles = doc.querySelector(".numberOfVehicles")?.innerText.trim() || "";
     const vehiclePrice = doc.querySelector(".vehiclePrice")?.innerText.trim() || "";
     const vehiclePrice1 = doc.querySelector(".vehiclePrice1")?.innerText.trim() || "";
-    const centerName = doc.querySelector(".totalSales")?.innerText.trim() || "";
+    const centerName = doc.querySelector(".centerName")?.innerText.trim() || "";
     const totalSales = doc.querySelector(".totalSales")?.innerText.trim() || "";
     const writerSignature = doc.querySelector("#writer-signature-area img")?.getAttribute("src") || null;
 
