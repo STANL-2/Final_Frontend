@@ -486,7 +486,7 @@ onMounted(async () => {
 .chart-container {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: 32rem;
     background: #FFFFFF;
     box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
     border-radius: 3px;
