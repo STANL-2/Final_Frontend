@@ -227,6 +227,7 @@ const refresh = () => {
     modalTableData.value = [];
     selectedStoreCode.value = '';
 
+    window.location.reload();
 };
 
 const handleTabChange = (event) => {

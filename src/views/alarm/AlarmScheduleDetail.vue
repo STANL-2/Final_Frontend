@@ -875,6 +875,7 @@ const formatKey = (key) => {
     line-height: 1.5;
     /* 수직 정렬을 위한 줄 높이 */
     vertical-align: middle;
+    width: 3.8rem;
 }
 
 .detail-item {
