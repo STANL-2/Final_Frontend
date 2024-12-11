@@ -125,7 +125,7 @@ const formFields = [
         {
             label: '제품명',
             type: 'input',
-            model: 'carName',
+            model: 'productName',
             showDivider: false
         },
         {
@@ -185,7 +185,7 @@ const formFields = [
 const tableHeaders = ref([
     { field: 'contractId', label: '계약서 번호', width: '15%' },
     { field: 'title', label: '계약서명', width: '25%' },
-    { field: 'carName', label: '제품명', width: '13%' },
+    { field: 'productName', label: '제품명', width: '13%' },
     { field: 'customerName', label: '고객명', width: '13%' },
     { field: 'customerPurchaseCondition', label: '구매 조건', width: '10%' },
     { field: 'createdAt', label: '계약일자', width: '15%' },

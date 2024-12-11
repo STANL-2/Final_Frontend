@@ -16,7 +16,7 @@
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
                 </div>
-                <div class="ml-xs">
+                <div class="ml-xs" v-if="canEdit">
                     <CommonButton label="수정" @click="openModifyModal" />
                 </div>
                 <div class="ml-xs">
@@ -94,6 +94,7 @@ const emit = defineEmits(['update:modelValue', 'refresh']);
 const confirm = useConfirm();
 const toast = useToast();
 
+const canEdit = ref(false); 
 // contractId를 저장할 ref 변수
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
@@ -143,17 +144,19 @@ const confirmStatusChange = async () => {
     }
 }
 
-// details 값이 변경될 때마다 contractId를 업데이트
 watch(
     () => props.details,
-    (newDetails) => {
+    async (newDetails) => {
         if (newDetails?.contractId) {
-            console.log('Iframe URL:', newDetails.createdUrl);
-            getDetailId.value = newDetails.contractId; // contractId를 저장
-            getDetailRequest(); // 데이터 요청
+            getDetailId.value = newDetails.contractId;
+            getDetailRequest();
+        }
+
+        if (newDetails?.memberId) {
+            await checkMemberId();
         }
     },
-    { immediate: true } // 컴포넌트가 처음 마운트될 때도 실행
+    { immediate: true }
 );
 
 // 모달 닫기
