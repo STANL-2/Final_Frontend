@@ -33,7 +33,8 @@
                                 <tr v-if="alarm.tag">
                                     <td class="left-column">태그</td>
                                     <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
+                                        <span class="tag"
+                                            :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
                                             {{ tagMapping(alarm.tag) }}
                                         </span>
                                     </td>
@@ -77,18 +78,19 @@
                                         {{ detailInfo.title }}
                                     </td>
                                 </tr>
-                                <tr v-if="target">
+                                <tr>
                                     <td class="left-column">대상</td>
                                     <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(target)) }">
-                                            {{ tagMapping(target) }}
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping('ALL')) }">
+                                            {{ tagMapping('ALL') }}
                                         </span>
                                     </td>
                                 </tr>
                                 <tr v-if="alarm.tag">
                                     <td class="left-column">분류</td>
                                     <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
+                                        <span class="tag"
+                                            :style="{ backgroundColor: getTagColor(tagMapping(alarm.tag)) }">
                                             {{ tagMapping(alarm.tag) }}
                                         </span>
                                     </td>
@@ -220,8 +222,8 @@
                             <tr v-if="detailInfo?.result.content">
                                 <td class="left-column">파일</td>
                                 <td>
-                                    <a :href="detailInfo.result.content" download target="_blank"
-                                        class="file-link">파일 보기</a>
+                                    <a :href="detailInfo.result.content" download target="_blank" class="file-link">파일
+                                        보기</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -324,7 +326,6 @@ const apiOrderService = new ApiService('api/v1/order');
 const router = useRouter();
 const userStore = useUserStore();
 const userRole = userStore.auth;
-const target = "ALL";
 
 const props = defineProps({
     alarm: {
@@ -352,12 +353,12 @@ const tagMapping = (tag) => {
         'VACATION': '휴가',
         'SESSION': '회의',
         'NORMAL': '일반',
-        'GOAL': '영업 목표',
-        'STRATEGY': '영업 전략',
+        'GOAL': '영업목표',
+        'STRATEGY': '영업전략',
         'APPROVED': '승인',
         "ALL": '전체',
         "ADMIN": '영업 관리자',
-        "DIRECTOR":'영업 담당자',
+        "DIRECTOR": '영업 담당자',
         "GOD": '시스템 관리자'
     };
 
@@ -375,13 +376,13 @@ const tagColors = [
     { name: '수주서', color: '#B9E4C9' },
     { name: '중요', color: '#FFB3B3' },
     { name: '일반', color: '#E0FFB3' },
-    { name: '영업 목표', color: '#D4A5A5' },
-    { name: '영업 전략', color: '#A5D4C5' },
+    { name: '영업목표', color: '#D4A5A5' },
+    { name: '영업전략', color: '#A5D4C5' },
     { name: '승인', color: '#B3FFB3' },
-    { name: '전체', color: '#D3D3D3' }, 
-    { name: '영업 관리자', color: '#FFA07A' }, 
-    { name: '영업 담당자', color: '#20B2AA' }, 
-    { name: '시스템 관리자', color: '#9370DB' } 
+    { name: '전체', color: '#D3D3D3' },
+    { name: '영업 관리자', color: '#FFA07A' },
+    { name: '영업 담당자', color: '#20B2AA' },
+    { name: '시스템 관리자', color: '#9370DB' }
 ];
 
 const getTagColor = (tag) => {
@@ -405,7 +406,7 @@ const truncateContent = (htmlContent) => {
 
     const paragraphText = paragraphMatch[1].trim();
 
-    paragraphText = paragraphText.replace(/<\/?strong[^>]*>/gi, '');s
+    paragraphText = paragraphText.replace(/<\/?strong[^>]*>/gi, ''); s
 
     // 70글자 내외로 자르고 초과 시 "..." 추가
     return paragraphText.length > 247
@@ -474,7 +475,7 @@ const fetchScheduleInfo = async () => {
 
 const fetchNoticeInfo = async () => {
 
-    const noticeTypes = ['일반', '영업 전략', '영업 목표'];
+    const noticeTypes = ['일반', '영업전략', '영업목표'];
     if (noticeTypes.includes(props.alarm.tag)) {
         try {
             const response = await apiNoticeService.get(
@@ -708,8 +709,8 @@ watch(() => props.alarm, async (newAlarm) => {
                 await fetchScheduleInfo();
                 break;
             case '일반':
-            case '영업 전략':
-            case '영업 목표':
+            case '영업전략':
+            case '영업목표':
                 await fetchNoticeInfo();
                 break;
             case '계약서':
@@ -882,6 +883,7 @@ const formatKey = (key) => {
     font-weight: bold;
     margin-bottom: 0;
     text-align: center;
+    width: 3.8rem;
     /* 텍스트 가로 정렬 */
     line-height: 1.5;
     /* 수직 정렬을 위한 줄 높이 */
@@ -974,27 +976,31 @@ tbody td {
 }
 
 .file-link {
-    color: #007bff; /* 기본 파란색 */
-    text-decoration: underline; /* 기본 밑줄 */
-    transition: color 0.3s ease; /* 부드러운 색상 전환 효과 */
+    color: #007bff;
+    /* 기본 파란색 */
+    text-decoration: underline;
+    /* 기본 밑줄 */
+    transition: color 0.3s ease;
+    /* 부드러운 색상 전환 효과 */
 }
 
 .file-link:hover {
-    color: #0056b3; /* 마우스 올렸을 때 더 어두운 파란색 */
+    color: #0056b3;
+    /* 마우스 올렸을 때 더 어두운 파란색 */
 }
 
 .content-cell {
-    height: 120px; 
-    vertical-align: top; 
-    overflow-y: auto; 
-    word-wrap: break-word; 
+    height: 120px;
+    vertical-align: top;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
-.member-position{
-    
+.member-position {
+
     margin-top: 8px;
     margin-left: 6px;
     font-size: 12px;
-    color: #888;    
+    color: #888;
 }
 </style>
