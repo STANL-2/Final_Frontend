@@ -77,11 +77,11 @@
                                         {{ detailInfo.title }}
                                     </td>
                                 </tr>
-                                <tr v-if="alarm.tag">
+                                <tr v-if="tag">
                                     <td class="left-column">대상</td>
                                     <td>
-                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(detailInfo.tag)) }">
-                                            {{ tagMapping(detailInfo.tag) }}
+                                        <span class="tag" :style="{ backgroundColor: getTagColor(tagMapping(tag)) }">
+                                            {{ tagMapping(tag) }}
                                         </span>
                                     </td>
                                 </tr>
@@ -324,6 +324,7 @@ const apiOrderService = new ApiService('api/v1/order');
 const router = useRouter();
 const userStore = useUserStore();
 const userRole = userStore.auth;
+const tag = "ALL";
 
 const props = defineProps({
     alarm: {
