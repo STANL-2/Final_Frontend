@@ -403,7 +403,7 @@ const truncateContent = (htmlContent) => {
     const paragraphMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/);
     if (!paragraphMatch || !paragraphMatch[1]) return '';
 
-    const paragraphText = paragraphMatch[1].trim();
+    let paragraphText = paragraphMatch[1].trim();
 
     paragraphText = paragraphText.replace(/<\/?strong[^>]*>/gi, '');s
 
