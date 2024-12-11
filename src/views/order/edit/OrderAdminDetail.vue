@@ -16,7 +16,7 @@
                 <div>
                     <CommonButton label="인쇄" icon="pi pi-print" @click="printIframeContent" />
                 </div>
-                <div class="ml-xs">
+                <div class="ml-xs" v-if="canEdit">
                     <CommonButton label="수정" @click="openModifyModal" />
                 </div>
                 <div class="ml-xs">
@@ -95,6 +95,8 @@ const emit = defineEmits(['update:modelValue', 'refresh']);
 const confirm = useConfirm();
 const toast = useToast();
 
+const canEdit = ref(false); 
+
 // orderId를 저장할 ref 변수
 const getDetailId = ref(null);
 // 등록 모달 상태 변수
@@ -109,6 +111,24 @@ function openStatusModal() {
 function closeStatusModal() {
     showStatusChangeModal.value = false;
 }
+
+// 서버에서 memberId를 가져와 비교
+const checkMemberId = async () => {
+    try {
+        const response = await $api.member.get(''); // 서버 요청
+        console.log("얍얍: ", response);
+        const serverMemberId = response.result.memberId;
+
+        if (serverMemberId && props.details?.memberId) {
+            canEdit.value = serverMemberId === props.details.memberId;
+        } else {
+            canEdit.value = false;
+        }
+    } catch (error) {
+        console.error('memberId 확인 실패:', error);
+        canEdit.value = false;
+    }
+};
 
 // 상태 변경 확인
 const confirmStatusChange = async () => {
@@ -144,18 +164,22 @@ const confirmStatusChange = async () => {
     }
 };
 
-// details 값이 변경될 때마다 orderId를 업데이트
+
 watch(
     () => props.details,
-    (newDetails) => {
+    async (newDetails) => {
         if (newDetails?.orderId) {
-            console.log('Iframe URL:', newDetails.content);
-            getDetailId.value = newDetails.orderId; // orderId를 저장
-            getDetailRequest(); // 데이터 요청
+            getDetailId.value = newDetails.orderId;
+            getDetailRequest();
+        }
+
+        if (newDetails?.memberId) {
+            await checkMemberId();
         }
     },
-    { immediate: true } // 컴포넌트가 처음 마운트될 때도 실행
+    { immediate: true }
 );
+
 
 // 모달 닫기
 function onClose() {
