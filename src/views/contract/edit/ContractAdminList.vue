@@ -334,7 +334,6 @@ const loadData = async () => {
         }
     } catch (error) {
         console.error("데이터 로드 실패:", error.message);
-        alert("데이터를 가져오는 데 실패했습니다. 관리자에게 문의하세요.");
     } finally {
         loading.value = false; // 로딩 종료
     }

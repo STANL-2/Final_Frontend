@@ -102,7 +102,7 @@ const initialHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약일</th>
-                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;" class="createdAt"></td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: left; width: 30%;" class="createdAt">2024-12-10</td>
                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f0f0; font-weight: bold; width: 20%;">계약장소</th>
                     <td style="border: 1px solid #ddd; padding: 10px; text-align: left;" class="centerName">서울 중앙 영업점</td>
                 </tr>

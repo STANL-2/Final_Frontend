@@ -890,6 +890,10 @@ onUnmounted(() => {
     overflow-y: auto;
     overflow-x: hidden;
     height: 480px;
+    width: 40%;
+    height: 480px;
+    border-left: 1px solid #e4e4e4;
+    border-right: 1px solid #e4e4e4;
     border-left: 1px solid #e4e4e4;
     border-right: 1px solid #e4e4e4;
 }
