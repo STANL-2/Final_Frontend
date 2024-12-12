@@ -197,7 +197,7 @@ function getStatusLabel(status) {
     switch (status) {
         case "WAIT":
             return "대기";
-        case "APPROVE":
+        case "APPROVED":
             return "승인";
         case "CANCEL":
             return "취소";
@@ -211,7 +211,7 @@ function getCustomTagClass(status) {
     switch (status) {
         case "WAIT":
             return "success"; // 노란색
-        case "APPROVE":
+        case "APPROVED":
             return "info"; // 초록색
         case "CANCEL":
             return "danger"; // 빨간색
