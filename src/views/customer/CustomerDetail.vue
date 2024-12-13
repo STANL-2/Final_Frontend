@@ -49,7 +49,7 @@
             <div class="component-wrapper">
                 <ViewTable :headers="tableHeaders" :data="tableData" :loading="loading" :totalRecords="totalRecords"
                     :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]" :selectable="true"
-                    :selection.sync="selectedItems" buttonLabel="조회" buttonHeader="상세조회" :buttonAction="handleView"
+                    :selection.sync="selectedItems" :buttonAction="handleView"
                     buttonField="code" @page="onPage" @sort="onSort" @filter="onFilter">
                     <template #body-status="{ data }">
                         <div class="custom-tag-wrapper">
@@ -197,7 +197,7 @@ function getStatusLabel(status) {
     switch (status) {
         case "WAIT":
             return "대기";
-        case "APPROVE":
+        case "APPROVED":
             return "승인";
         case "CANCEL":
             return "취소";
@@ -211,7 +211,7 @@ function getCustomTagClass(status) {
     switch (status) {
         case "WAIT":
             return "success"; // 노란색
-        case "APPROVE":
+        case "APPROVED":
             return "info"; // 초록색
         case "CANCEL":
             return "danger"; // 빨간색

@@ -394,7 +394,7 @@ const truncateContent = (htmlContent) => {
     const paragraphMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/);
     if (!paragraphMatch || !paragraphMatch[1]) return '';
 
-    const paragraphText = paragraphMatch[1].trim();
+    let paragraphText = paragraphMatch[1].trim();
 
     // 70글자 내외로 자르고 초과 시 "..." 추가
     return paragraphText.length > 247

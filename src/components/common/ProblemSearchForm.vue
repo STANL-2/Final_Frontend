@@ -31,12 +31,14 @@
                                 <input
                                     type="date"
                                     v-model="formData[`${field.model}_start`]"
+                                    @change="validateDateRange(field.model)"
                                     class="form-date"
                                 />
                                 <span class="date-separator">~</span>
                                 <input
                                     type="date"
                                     v-model="formData[`${field.model}_end`]"
+                                    @change="validateDateRange(field.model)"
                                     class="form-date"
                                 />
                             </div>
@@ -58,6 +60,19 @@ const props = defineProps({
         required: true,
     },
 });
+
+function validateDateRange(model) {
+    const startDate = formData.value[`${model}_start`];
+    const endDate = formData.value[`${model}_end`];
+
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        alert('조회 날짜를 다시 입력해 주세요.');
+        // 비정상적인 입력 값을 초기화
+        formData.value[`${model}_end`] = null;
+    }
+}
+
+
 
 const formData = ref({}); // formData 정의
 

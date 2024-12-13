@@ -108,8 +108,8 @@ export default {
                 initialHtml.value = response.content || '';
                 currentFileName.value = response.fileUrl || " ";
             } catch (error) {
-                console.error('공지사항 로드 오류:', error);
-                alert('공지사항 정보를 불러오지 못했습니다.');
+                console.error('프로모션 로드 오류:', error);
+                alert('프로모션 정보를 불러오지 못했습니다.');
             }
         });
 
@@ -136,8 +136,8 @@ export default {
                 alert('게시글이 수정되었습니다.');
                 router.push('/promotion/Elist');
             } catch (error) {
-                console.error('수정 중 오류 발생:', error);
-                alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+                console.error('수정 중 오류 발생: 권한이 없습니다.');
+                alert('수정할 수 없습니다.');
             }
         };
 
@@ -173,9 +173,6 @@ export default {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-button{
-    margin-right: 3rem;
 }
 
 .title-container{
@@ -221,12 +218,17 @@ input{
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+    margin-right: 40px;
 }
 .title-container{
     margin-left:40px;
 }
 .fileup{
     width:55rem;
+}
+
+.file-container button{
+    white-space: nowrap;
 }
 
 </style>

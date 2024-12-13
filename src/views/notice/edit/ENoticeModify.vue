@@ -18,11 +18,10 @@
                     <select id="classification-select" v-model="classification">
                         <option value="NORMAL">NORMAL</option>
                         <option value="GOAL">GOAL</option>
-                        <option value="STARETAGY">STARETAGY</option>
+                        <option value="STRATEGY">STRATEGY</option>
                     </select>
                 </div>
             </div>   
-
 
             <!-- 기존 파일 확인 및 새 파일 업로드 -->
             <div class="file-container">
@@ -154,6 +153,7 @@ export default {
                 router.push('/notice/Elist');
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
+                // if(error.message ==response is not defined)
                 alert('수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
             }
         };
@@ -164,7 +164,6 @@ export default {
             initialHtml,
             currentFileName,
             file,
-            tag,
             classification,
             onFileSelected,
             removeCurrentFile,
@@ -204,7 +203,6 @@ export default {
 }
 
 .title-container,
-.tag-container,
 .classification-container,
 .file-container {
     margin-bottom: 20px;
@@ -216,13 +214,9 @@ export default {
 .title-container{
     width:30rem;
 }
-.tag-container{
-    width:8rem;
-}
 
 .classification-container{
     width:8rem;
-    margin-left:100px;
 }
 
 select {
@@ -239,13 +233,6 @@ select {
     border-radius: 4px;
     font-size: 16px;
     width: 40rem;
-}
-
-.selectors-container {
-    display: flex;
-    justify-content: flex-start; /* 왼쪽 정렬 */
-    gap: 10px; /* 태그와 분류 사이 간격 */
-    width: 60%;
 }
 
 .title-container label,
@@ -281,13 +268,7 @@ label {
     font-weight: bold;
     margin-bottom: 8px;
 }
-#tag-select{
-    padding: 3px;
-    width: 150px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
+
 #classification-select{
     padding: 3px;
     border: 1px solid #ddd;

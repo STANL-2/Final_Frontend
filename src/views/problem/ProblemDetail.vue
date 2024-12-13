@@ -25,7 +25,7 @@
                         <tbody>
                             <tr v-if="problemImage">
                                 <td>
-                                    <a :href="problemImage" target="_blank" class="file-link">{{ problemImage }}</a>
+                                    <a :href="problemImage" target="_blank" class="file-link">첨부파일 다운로드하기</a>
                                 </td>
                             </tr>
                             <tr v-else>

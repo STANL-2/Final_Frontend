@@ -1,10 +1,10 @@
 <template>
     <ConfirmDialog></ConfirmDialog>
     <PageLayout class = "page-layout">
-        <div class="header width-s ml-l mb-m mt-xl">
-            <h3>공지사항 상세 페이지</h3>
+        <div class="header width-s ml-xxxxxl mb-m mt-xl">
+            <h2>공지사항 상세 페이지</h2>
         </div>
-        <div class="detail-container width-xxxs ml-xl">
+        <div class="detail-container width-xxxs ml-xxxxl">
             <h2 class="notice-title mb-l ml-xs ">{{ noticeTitle }}</h2>
             <h3 class="notice-content ml-xxxs">
                 <div class="notice-content ml-xs content-container">
@@ -250,5 +250,9 @@ function deleteModal() {
 .file-link:hover {
     color: #0056b3; 
     text-decoration: underline; 
+}
+.page-layout {
+    margin-left: 1000px; /* 화면의 10%만큼 우측으로 이동 */
+    position: relative;
 }
 </style>

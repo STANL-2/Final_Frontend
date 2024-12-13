@@ -25,7 +25,7 @@
                                         {{ option }}
                                     </option>
                                 </select>
-                                <i class="pi pi-chevron-down select-icon"></i> <!-- 드롭다운 아이콘 -->
+                                <i class="pi pi-chevron-down select-icon"></i>
                             </div>
                             <select v-else v-model="formData[field.model]" class="form-select">
                                 <option v-for="(option, idx) in field.options" :key="idx" :value="option">
@@ -40,12 +40,14 @@
                                 <input
                                     type="date"
                                     v-model="formData[`${field.model}_start`]"
+                                    @change="validateDateRange(field.model)"
                                     class="form-date"
                                 />
                                 <span class="date-separator">~</span>
                                 <input
                                     type="date"
                                     v-model="formData[`${field.model}_end`]"
+                                    @change="validateDateRange(field.model)"
                                     class="form-date"
                                 />
                             </div>
@@ -86,7 +88,16 @@ function initializeFormData() {
     console.log('초기화된 formData:', formData.value);
 }
 
+// 날짜 범위 유효성 검사
+function validateDateRange(model) {
+    const startDate = formData.value[`${model}_start`];
+    const endDate = formData.value[`${model}_end`];
 
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        alert('조회 날짜를 다시 입력해 주세요.');
+        formData.value[`${model}_end`] = null;
+    }
+}
 
 // 부모 컴포넌트에서 호출할 데이터 반환 메서드
 function getFormData() {
@@ -102,6 +113,7 @@ onMounted(() => {
     initializeFormData();
 });
 </script>
+
 
 <style scoped>
 *,

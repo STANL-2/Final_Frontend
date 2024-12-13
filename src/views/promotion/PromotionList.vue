@@ -27,10 +27,6 @@
                 <img src="@/assets/body/rectangle.png" class="mr-xs">전체목록
             </div>
             <div class="flex-row items-center mb-s">
-                <!-- <div><CommonButton label="추가" icon="pi pi-plus" @click="navigateToRegisterPage" /></div> -->
-                <div class="ml-xs">
-                    <CommonButton label="인쇄" icon="pi pi-print" />
-                </div>
                 <div class="ml-xs">
                     <CommonButton label="엑셀다운" @click="exportCSV($event)" icon="pi pi-download" />
                 </div>
@@ -51,7 +47,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageLayout from '@/components/common/layouts/PageLayout.vue';
-import ViewTable from '@/components/common/ListTable.vue';
+import ViewTable from '@/components/common/ListTable2.vue';
 import SearchForm from '@/components/common/PromotionSearchForm.vue';
 import CommonButton from '@/components/common/Button/CommonButton.vue';
 import { $api } from '@/services/api/api';
@@ -296,7 +292,6 @@ onMounted(() => {
 .search-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     /* 버튼을 오른쪽 정렬 */
     margin-bottom: 1rem;
 }
